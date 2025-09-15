@@ -29,11 +29,6 @@ android/
 ```bash
 # Android専用テストスイート（実装後）
 npm run test:e2e:android
-
-# 個別テスト（実装後）
-npm run test:e2e:android:launch
-npm run test:e2e:android:navigation
-npm run test:e2e:android:ui
 ```
 
 ## 🔧 必要な環境（実装時）

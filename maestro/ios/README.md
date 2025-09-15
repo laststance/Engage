@@ -28,13 +28,9 @@
 ## 🚀 実行方法
 
 ```bash
-# iOS専用テストスイート全体
-npm run test:e2e:ios
-
-# 個別テスト
-npm run test:e2e:ios:launch      # アプリ起動テスト
-npm run test:e2e:ios:navigation  # ナビゲーションテスト
-npm run test:e2e:ios:ui          # UI要素テスト
+# iOS専用テストスイート実行
+npm run test:e2e         # デフォルト（iOS）
+npm run test:e2e:ios     # iOS明示的実行
 ```
 
 ## 🔧 環境要件

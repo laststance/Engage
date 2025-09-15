@@ -17,13 +17,10 @@ Engageアプリの包括的なEnd-to-Endテストスイート。
 export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
 export PATH="$JAVA_HOME/bin:$PATH"
 
-# 全テスト実行
-npm run test:e2e:ios
-
-# 個別テスト実行
-npm run test:e2e:ios:launch      # アプリ起動
-npm run test:e2e:ios:navigation  # タブナビゲーション
-npm run test:e2e:ios:ui          # UI要素確認
+# E2Eテストスイート実行
+npm run test:e2e          # デフォルト（iOS）
+npm run test:e2e:ios      # iOS明示的実行
+npm run test:e2e:android  # Android（未実装通知）
 ```
 
 ## 📋 テスト概要
@@ -81,7 +78,7 @@ npm run test:e2e:ios:ui          # UI要素確認
 
 ```bash
 # 最新の成功記録（2025-09-15）
-npm run test:e2e:ios
+npm run test:e2e
 > [Passed] app-launch (3s) ✅
 > [Passed] navigation (12s) ✅  
 > [Passed] ui-elements (13s) ✅
