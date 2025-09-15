@@ -74,7 +74,7 @@
 
     - Create functions to calculate streak days, completion rates
     - Implement weekly and monthly statistics aggregation
-    - Add category breakdown calculations (business vs life)
+    - Add category breakdown calculations (supports any categories including default presets and custom categories)
     - _Requirements: 4.2, 4.3, 4.4, 4.5_
 
   - [ ] 3.4 Create E2E test for state management
@@ -103,7 +103,7 @@
 
     - Create task list display with category grouping
     - Implement completion checkboxes with visual feedback
-    - Add progress counters for each category (事業: 2/3, 生活: 0/1)
+    - Add progress counters for each category (事業: 2/3, 生活: 0/1, 勉強: 1/2, etc. - supports any custom categories)
     - Create journal input section with placeholder text
     - **Figma Design Implementation Process:**
       - Reference `figma-design/メインView.png` and `figma-design/メインViewタスク選択後.png` for exact visual specifications
@@ -115,7 +115,7 @@
 
   - [ ] 4.3 Implement Task Picker modal with preset selection
 
-    - Create categorized task list (生活 vs 事業)
+    - Create categorized task list (supports all categories including default "生活" and "事業" presets plus custom categories)
     - Add multi-selection functionality with visual indicators
     - Implement task confirmation and cancellation
     - Add edit button for preset management
@@ -156,7 +156,7 @@
 
   - [ ] 5.1 Implement default preset tasks initialization
 
-    - Create initial task seeding with business and life categories
+    - Create initial task seeding with default preset categories ("事業" and "生活") and their associated tasks
     - Add default tasks with proper titles and time durations
     - Implement first-launch task suggestion (3 recommended tasks)
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
@@ -165,7 +165,7 @@
 
     - Create CRUD interface for managing preset tasks
     - Implement task title and duration editing
-    - Add category assignment functionality
+    - Add category assignment functionality (supports assigning tasks to any existing category or creating new custom categories)
     - Create task deletion with confirmation
     - _Requirements: 2.6, 2.7, 7.5, 7.6_
 
@@ -237,7 +237,7 @@
 
   - [ ] 8.1 Implement Apple HIG-compliant design system
 
-    - Create color palette with business (blue) and life (green) themes
+    - Create color palette with default themes for preset categories (blue for "事業", green for "生活") and additional colors for custom categories
     - Implement typography system following iOS standards
     - Add consistent spacing and layout patterns
     - **Figma Design Implementation Process:**

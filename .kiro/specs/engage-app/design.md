@@ -66,7 +66,8 @@ interface DaySheetProps {
 
 const DaySheet: React.FC<DaySheetProps> = (props) => {
   // Displays selected tasks, completion checkboxes, and journal input
-  // Shows category counters (事業: 2/3, 生活: 0/1)
+  // Shows dynamic category counters (事業: 2/3, 生活: 0/1, 勉強: 1/2, etc.)
+  // Supports any number of custom categories beyond default presets
 }
 ```
 
@@ -83,9 +84,10 @@ interface TaskPickerProps {
 }
 
 const TaskPicker: React.FC<TaskPickerProps> = (props) => {
-  // Modal with categorized preset tasks
+  // Modal with dynamically categorized preset tasks
+  // Supports custom categories beyond default "事業" and "生活" presets
   // Allows multi-selection with visual feedback
-  // Includes edit button for preset management
+  // Includes edit button for preset and category management
 }
 ```
 
@@ -113,9 +115,10 @@ interface PresetEditorProps {
 }
 
 const PresetEditor: React.FC<PresetEditorProps> = (props) => {
-  // Allows CRUD operations on preset tasks
-  // Categorizes tasks by business/life
-  // Validates task titles and durations
+  // Allows CRUD operations on preset tasks and categories
+  // Supports custom categories beyond default "事業"/"生活" presets
+  // Enables creation of new categories (study, health, finance, etc.)
+  // Validates task titles, durations, and category assignments
 }
 ```
 
@@ -136,18 +139,37 @@ TabNavigator
 
 ## Data Models
 
+### Category System Design
+
+The app uses a flexible category system where "事業" (business) and "生活" (life) are merely default preset categories provided for initial user convenience. Users can create unlimited custom categories such as "勉強" (study), "健康" (health), "財務" (finance), etc. The system is designed to support any number of categories with dynamic color assignment and statistics calculation.
+
+**Key Design Principles:**
+
+- Categories are stored in a separate `categories` table with `id` and `name` fields
+- Tasks reference categories via `category_id` foreign key, not hardcoded enums
+- UI components dynamically render all available categories
+- Statistics and progress tracking work with any number of categories
+- Default presets ("事業", "生活") are seeded on first launch but can be modified or deleted
+
 ### Database Schema
 
 ```sql
+-- Categories table (supports custom categories beyond default presets)
+CREATE TABLE categories (
+  id TEXT PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL
+);
+
 -- Tasks table (preset and custom tasks)
 CREATE TABLE tasks (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
-  category TEXT CHECK(category IN ('business', 'life')) NOT NULL,
+  category_id TEXT NOT NULL,
   default_minutes INTEGER,
   archived INTEGER DEFAULT 0,
   created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (category_id) REFERENCES categories (id)
 );
 
 -- Daily journal entries
@@ -180,10 +202,15 @@ CREATE TABLE settings (
 ### TypeScript Interfaces
 
 ```typescript
+export interface Category {
+  id: string
+  name: string
+}
+
 export interface Task {
   id: string
   title: string
-  category: 'business' | 'life'
+  categoryId: string // References category.id - supports any custom category
   defaultMinutes?: number
   archived: boolean
   createdAt: number
@@ -220,10 +247,7 @@ export interface StatsData {
   totalTasks: number
   dailyAverage: number
   journalDays: number
-  categoryBreakdown: {
-    business: { completed: number; total: number }
-    life: { completed: number; total: number }
-  }
+  categoryBreakdown: Record<string, { completed: number; total: number }> // Flexible for any categories
 }
 ```
 
@@ -234,6 +258,7 @@ export interface StatsData {
 ```typescript
 interface AppState {
   // Data
+  categories: Category[] // Supports custom categories beyond default presets
   tasks: Task[]
   entries: Record<string, Entry> // date -> entry
   completions: Record<string, Completion[]> // date -> completions
@@ -242,6 +267,7 @@ interface AppState {
   selectedDate: string
   isTaskPickerVisible: boolean
   isPresetEditorVisible: boolean
+  isCategoryEditorVisible: boolean
   currentTab: 'calendar' | 'today' | 'stats'
 
   // Actions
@@ -251,6 +277,9 @@ interface AppState {
   updateJournalEntry: (date: string, content: string) => Promise<void>
   addTasksToDate: (date: string, taskIds: string[]) => Promise<void>
   updatePresetTasks: (tasks: Task[]) => Promise<void>
+  createCategory: (category: Omit<Category, 'id'>) => Promise<void>
+  updateCategory: (id: string, updates: Partial<Category>) => Promise<void>
+  deleteCategory: (id: string) => Promise<void>
 
   // Computed
   getStatsForPeriod: (period: 'week' | 'month') => StatsData
@@ -384,8 +413,14 @@ For each screen implementation, verify:
 ```typescript
 const colors = {
   primary: {
-    business: '#007AFF', // iOS Blue
-    life: '#34C759', // iOS Green
+    // Default category colors (can be customized per category)
+    business: '#007AFF', // iOS Blue - default for "事業" preset
+    life: '#34C759', // iOS Green - default for "生活" preset
+    // Additional colors for custom categories
+    study: '#FF9500', // Orange
+    health: '#FF2D92', // Pink
+    finance: '#5856D6', // Purple
+    // System generates colors for new categories
   },
   neutral: {
     background: '#F2F2F7',

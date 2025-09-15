@@ -4,6 +4,8 @@
 
 「生活（守る）× 事業（育てる）」を毎日まわせる、ミニマルで強力な Engage アプリです。仕事がない日でも必ず「カレンダーを開く → タスクを選ぶ → 少なくとも 1 つ達成 → 日記をひと言書く」という流れを実行することで、「衰え感」を止めることを目的としています。
 
+**カテゴリーシステムについて:** "事業" と "生活" は初期設定として提供されるプリセットカテゴリーであり、ユーザーは "勉強"、"健康"、"財務" など任意のカスタムカテゴリーを作成できます。システムは無制限のカテゴリーをサポートし、動的な統計計算と進捗追跡を提供します。
+
 ## Requirements
 
 ### Requirement 1
@@ -24,7 +26,7 @@
 #### Acceptance Criteria
 
 1. WHEN the user taps on a calendar date THEN the system SHALL display a Day Sheet with task selection options
-2. WHEN the user taps "タスクを選択" THEN the system SHALL display a modal with preset tasks categorized as "生活" and "事業"
+2. WHEN the user taps "タスクを選択" THEN the system SHALL display a modal with preset tasks categorized by their assigned categories (including default "生活" and "事業" presets, plus any custom categories)
 3. WHEN the user selects tasks from the preset list THEN the system SHALL add those tasks to the current day's task list
 4. WHEN tasks are added THEN the system SHALL display them in the Day Sheet with checkboxes for completion tracking
 5. WHEN the user checks a task as complete THEN the system SHALL mark it as completed and update the progress counters
@@ -52,7 +54,7 @@
 1. WHEN the user navigates to the statistics screen THEN the system SHALL display today's achievements summary
 2. WHEN viewing statistics THEN the system SHALL show consecutive days streak counter
 3. WHEN viewing weekly/monthly stats THEN the system SHALL display completion rates, active days, total tasks, and daily averages
-4. WHEN viewing category breakdown THEN the system SHALL show separate counters for "事業" and "生活" categories
+4. WHEN viewing category breakdown THEN the system SHALL show separate counters for all active categories (including default "事業" and "生活" presets, plus any custom categories like "勉強", "健康", etc.)
 5. WHEN the user switches between "今週" and "今月" views THEN the system SHALL update all statistics accordingly
 
 ### Requirement 5
@@ -83,12 +85,12 @@
 
 #### Acceptance Criteria
 
-1. WHEN the app is first launched THEN the system SHALL include default preset tasks for "事業" category including "ネットワーキング", "スキル学習 (30 分)", "アイデア記録"
-2. WHEN the app is first launched THEN the system SHALL include default preset tasks for "生活" category including "運動 (20 分以上)", "読書・勉強", "家族との時間", "健康的な食事", "十分な睡眠 (7 時間)", "整理整頓", "財務管理", "趣味・リラックス"
+1. WHEN the app is first launched THEN the system SHALL include default preset category "事業" with initial tasks including "ネットワーキング", "スキル学習 (30 分)", "アイデア記録" (users can create additional categories like "勉強", "健康", etc.)
+2. WHEN the app is first launched THEN the system SHALL include default preset category "生活" with initial tasks including "運動 (20 分以上)", "読書・勉強", "家族との時間", "健康的な食事", "十分な睡眠 (7 時間)", "整理整頓", "財務管理", "趣味・リラックス" (users can create additional categories as needed)
 3. WHEN the user first opens task selection THEN the system SHALL automatically suggest 3 recommended tasks to reduce initial friction
 4. WHEN tasks have default time durations THEN the system SHALL display them in the task titles (e.g., "運動 (20 分以上)")
-5. WHEN the user wants to customize preset tasks THEN the system SHALL allow adding new tasks, editing existing task titles and durations, and deleting unwanted tasks
-6. WHEN the user creates custom tasks THEN the system SHALL persist them and make them available in future task selections
+5. WHEN the user wants to customize preset tasks THEN the system SHALL allow adding new tasks, editing existing task titles and durations, deleting unwanted tasks, and creating custom categories beyond the default "事業" and "生活" presets
+6. WHEN the user creates custom tasks or categories THEN the system SHALL persist them and make them available in future task selections
 
 ### Requirement 8
 
