@@ -1,3 +1,7 @@
+---
+inclusion: always
+---
+
 # 🧪 Maestro E2E Tests
 
 Engageアプリの包括的なEnd-to-Endテストスイート。

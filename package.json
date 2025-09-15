@@ -9,10 +9,15 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test:e2e": "maestro test maestro/",
-    "test:e2e:launch": "maestro test maestro/app-launch.yaml",
-    "test:e2e:navigation": "maestro test maestro/basic-navigation.yaml",
-    "test:e2e:ui": "maestro test maestro/ui-elements.yaml"
+    "test:e2e": "maestro test maestro/ios/",
+    "test:e2e:ios": "maestro test maestro/ios/",
+    "test:e2e:ios:launch": "maestro test maestro/ios/app-launch.yaml",
+    "test:e2e:ios:navigation": "maestro test maestro/ios/navigation.yaml",
+    "test:e2e:ios:ui": "maestro test maestro/ios/ui-elements.yaml",
+    "test:e2e:android": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios'",
+    "test:e2e:android:launch": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios:launch'",
+    "test:e2e:android:navigation": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios:navigation'",
+    "test:e2e:android:ui": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios:ui'"
   },
   "dependencies": {
     "@expo/html-elements": "^0.10.1",
