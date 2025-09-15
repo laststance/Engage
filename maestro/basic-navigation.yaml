@@ -1,0 +1,31 @@
+appId: com.anonymous.engage
+---
+# Test basic app navigation between Calendar, Today, and Stats screens
+
+- launchApp
+- waitForAnimationToEnd
+
+# Test Calendar screen is active by default
+- assertVisible:
+    id: 'calendar-screen'
+
+# Navigate to Today tab using coordinate-based approach
+- tapOn:
+    point: 50%, 90%
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'today-screen'
+
+# Navigate to Stats tab using coordinate-based approach
+- tapOn:
+    point: 80%, 90%
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'stats-screen'
+
+# Navigate back to Calendar tab using coordinate-based approach
+- tapOn:
+    point: 20%, 90%
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'calendar-screen'

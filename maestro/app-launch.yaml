@@ -1,0 +1,25 @@
+appId: com.anonymous.engage
+---
+# Test that the app launches successfully and shows the main UI elements
+
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# First check if the main Calendar text is visible (this is the main content)
+- assertVisible:
+    text: 'Calendar'
+    timeout: 10000
+
+# Then check for tab bar elements
+- assertVisible:
+    text: 'Today'
+    timeout: 5000
+- assertVisible:
+    text: 'Stats'
+    timeout: 5000
+
+# Finally check for the description text
+- assertVisible:
+    text: 'This screen will show the monthly calendar with habit completion heatmap.'
+    timeout: 5000

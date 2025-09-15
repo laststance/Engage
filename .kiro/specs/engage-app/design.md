@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the technical design for the habit tracker mobile app that enables users to maintain daily routines through a simple flow: Calendar → Task Selection → Achievement → Journal Entry. The app follows a minimal, Apple HIG-compliant design with offline-first architecture.
+This document outlines the technical design for the Engage mobile app that enables users to maintain daily routines through a simple flow: Calendar → Task Selection → Achievement → Journal Entry. The app follows a minimal, Apple HIG-compliant design with offline-first architecture.
 
 ## Architecture
 
@@ -343,6 +343,39 @@ appId: com.habittracker.app
 - **Database Performance**: Test query execution times with large datasets
 - **Memory Usage**: Monitor memory consumption during extended usage
 - **Battery Impact**: Test notification scheduling and background processing
+
+## Figma Design Implementation Process
+
+### Design Reference Files
+
+The app implementation must match the Figma design files located in the `figma-design/` folder:
+
+- `カレンダーview.png` - Calendar screen with monthly view and heatmap
+- `メインView.png` - Main day view with task list and journal
+- `メインViewタスク選択.png` - Task selection modal interface
+- `メインViewタスク選択後.png` - Day view after task selection
+- `実績View.png` - Statistics and achievements screen
+
+### Implementation Verification Process
+
+For each UI component and screen, follow this 4-step verification process:
+
+1. **Faithful Recreation**: Implement the UI component to match the corresponding Figma design file exactly
+2. **Screenshot Comparison**: Take screenshots of the implemented component and compare with the reference Figma design
+3. **Difference Identification**: Identify and document any visual differences between implementation and design
+4. **Iterative Refinement**: Modify the implementation to address differences and repeat steps 2-4 until perfect match is achieved
+
+### Design Validation Checklist
+
+For each screen implementation, verify:
+
+- [ ] Layout and spacing match Figma design exactly
+- [ ] Typography (font sizes, weights, colors) matches design
+- [ ] Color palette matches specified colors in design
+- [ ] Interactive elements (buttons, inputs) match design states
+- [ ] Icons and visual elements are positioned correctly
+- [ ] Component hierarchy and z-index match design
+- [ ] Responsive behavior maintains design integrity
 
 ## Design System
 

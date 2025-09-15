@@ -1,0 +1,55 @@
+import { Tabs } from 'expo-router'
+import React from 'react'
+
+import { HapticTab } from '@/components/haptic-tab'
+import { IconSymbol } from '@/components/ui/icon-symbol'
+import { Colors } from '@/constants/theme'
+import { useColorScheme } from '@/hooks/use-color-scheme'
+
+export default function TabLayout() {
+  const colorScheme = useColorScheme()
+
+  return (
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        headerShown: false,
+        tabBarButton: HapticTab,
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Calendar',
+          tabBarTestID: 'calendar-tab',
+          tabBarAccessibilityLabel: 'calendar-tab',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="calendar" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="today"
+        options={{
+          title: 'Today',
+          tabBarTestID: 'today-tab',
+          tabBarAccessibilityLabel: 'today-tab',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="checkmark.circle.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="stats"
+        options={{
+          title: 'Stats',
+          tabBarTestID: 'stats-tab',
+          tabBarAccessibilityLabel: 'stats-tab',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="chart.bar.fill" color={color} />
+          ),
+        }}
+      />
+    </Tabs>
+  )
+}

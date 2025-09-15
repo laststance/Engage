@@ -1,0 +1,41 @@
+---
+inclusion: always
+---
+
+# Research & Troubleshooting Guidelines
+
+## Research Tool Priority
+
+When encountering issues or needing information, use tools in this order:
+
+1. **`mcp_exa_web_search_exa`** - Quick searches, current documentation
+2. **`mcp_perplexity_ask_perplexity_ask`** - Technical analysis and explanations
+3. **`mcp_exa_deep_researcher_start/check`** - Complex multi-source research
+
+## Framework-Specific Sources
+
+### React Native/Expo (v0.81.4/~54.0.7)
+
+- Official docs: `expo.dev/docs`, `reactnative.dev`
+- Version-specific GitHub issues and release notes
+- Expo Discord community for real-time help
+
+### NativeWind/Tailwind (v4.2.0/3.4.17)
+
+- NativeWind docs for React Native implementations
+- Tailwind CSS docs for utility classes
+- Search "nativewind react native" for specific issues
+
+### Platform-Specific Issues
+
+- **iOS**: Xcode, CocoaPods, Swift compatibility
+- **Android**: Gradle, build tools, Java/Kotlin
+- **Web**: Metro bundler, web-specific polyfills
+
+## Research Best Practices
+
+- **Start with official docs** - Framework maintainers know best
+- **Match versions exactly** - Our stack uses specific versions
+- **Prefer recent solutions** - Mobile frameworks evolve rapidly
+- **Test in context** - Verify solutions work with our architecture
+- **Check multiple sources** - Cross-reference GitHub issues, Stack Overflow

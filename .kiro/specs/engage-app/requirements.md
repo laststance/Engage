@@ -2,7 +2,7 @@
 
 ## Introduction
 
-「生活（守る）× 事業（育てる）」を毎日まわせる、ミニマルで強力な習慣トラッカーアプリです。仕事がない日でも必ず「カレンダーを開く → タスクを選ぶ → 少なくとも 1 つ達成 → 日記をひと言書く」という流れを実行することで、「衰え感」を止めることを目的としています。
+「生活（守る）× 事業（育てる）」を毎日まわせる、ミニマルで強力な Engage アプリです。仕事がない日でも必ず「カレンダーを開く → タスクを選ぶ → 少なくとも 1 つ達成 → 日記をひと言書く」という流れを実行することで、「衰え感」を止めることを目的としています。
 
 ## Requirements
 
@@ -100,3 +100,15 @@
 2. WHEN displaying colors THEN the system SHALL use a minimal color palette with green for "生活" category and blue for "事業" category
 3. WHEN showing interactive elements THEN the system SHALL provide clear visual feedback and appropriate touch targets
 4. WHEN the app is used THEN the system SHALL maintain consistent navigation patterns and familiar iOS interaction paradigms
+
+### Requirement 9
+
+**User Story:** As a developer, I want to ensure pixel-perfect implementation of Figma designs, so that the final app matches the intended visual design exactly.
+
+#### Acceptance Criteria
+
+1. WHEN implementing any UI component THEN the system SHALL match the corresponding Figma design file in figma-design folder exactly
+2. WHEN a screen is implemented THEN the developer SHALL take screenshots and compare them with the reference Figma design files (カレンダー view.png, メイン View.png, メイン View タスク選択.png, メイン View タスク選択後.png, 実績 View.png)
+3. WHEN visual differences are identified THEN the developer SHALL modify the implementation to match the Figma design
+4. WHEN comparing designs THEN the developer SHALL repeat the comparison and modification process until the implementation matches the Figma design completely
+5. WHEN all screens are implemented THEN each screen SHALL be visually identical to its corresponding Figma design file

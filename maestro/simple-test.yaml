@@ -1,0 +1,6 @@
+appId: com.anonymous.habittracker
+---
+# Simple test to verify basic functionality
+
+- openLink: http://localhost:8081
+- assertVisible: 'Calendar'

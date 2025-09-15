@@ -1,0 +1,14 @@
+appId: com.anonymous.engage
+---
+# Simple test to verify app launches and basic elements are visible
+
+- launchApp
+- waitForAnimationToEnd
+
+# Use extendedWaitUntil to wait for the Calendar text to appear
+- extendedWaitUntil:
+    visible: 'Calendar'
+    timeout: 15000
+
+# Assert that the Calendar text is visible
+- assertVisible: 'Calendar'

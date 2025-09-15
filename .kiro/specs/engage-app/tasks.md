@@ -1,15 +1,15 @@
 # Implementation Plan
 
-- [ ] 1. Project Setup and Core Infrastructure
+- [x] 1. Project Setup and Core Infrastructure
 
-  - [ ] 1.1 Research and install latest development tools
+  - [x] 1.1 Research and install latest development tools
 
     - Search for latest Expo CLI installation methods and best practices
     - Research current versions of Gluestack UI, NativeWind, Zustand, and expo-sqlite
     - Verify compatibility between all dependencies
     - _Requirements: 8.1, 8.4_
 
-  - [ ] 1.2 Initialize Expo project with TypeScript and dependencies
+  - [x] 1.2 Initialize Expo project with TypeScript and dependencies
 
     - Create new Expo project with TypeScript template
     - Install and configure Gluestack UI, NativeWind, Zustand, and expo-sqlite
@@ -17,7 +17,7 @@
     - Create basic navigation structure with tab navigator
     - _Requirements: 8.1, 8.4_
 
-  - [ ] 1.3 Create E2E test for basic app navigation
+  - [x] 1.3 Create E2E test for basic app navigation
     - Write Maestro test to verify app launches successfully
     - Test tab navigation between Calendar, Today, and Stats screens
     - Verify basic UI elements are rendered correctly
@@ -91,7 +91,13 @@
     - Add heatmap coloring based on completion data
     - Create month navigation functionality
     - Handle date selection and tap events
-    - _Requirements: 1.1, 1.2, 1.3, 1.4_
+    - **Figma Design Implementation Process:**
+      - Reference `figma-design/カレンダーview.png` for exact visual specifications
+      - Take screenshot of implemented calendar component
+      - Compare screenshot with `figma-design/カレンダーview.png`
+      - Identify and fix any visual differences (spacing, colors, typography, layout)
+      - Repeat comparison and refinement until implementation matches Figma design exactly
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 9.1, 9.2, 9.3, 9.4, 9.5_
 
   - [ ] 4.2 Build Day Sheet component for task management
 
@@ -99,7 +105,13 @@
     - Implement completion checkboxes with visual feedback
     - Add progress counters for each category (事業: 2/3, 生活: 0/1)
     - Create journal input section with placeholder text
-    - _Requirements: 2.1, 2.4, 2.5, 3.1, 3.2, 3.4_
+    - **Figma Design Implementation Process:**
+      - Reference `figma-design/メインView.png` and `figma-design/メインViewタスク選択後.png` for exact visual specifications
+      - Take screenshot of implemented Day Sheet component
+      - Compare screenshot with corresponding Figma design files
+      - Identify and fix any visual differences (task layout, checkbox styling, progress counters, journal section)
+      - Repeat comparison and refinement until implementation matches Figma design exactly
+    - _Requirements: 2.1, 2.4, 2.5, 3.1, 3.2, 3.4, 9.1, 9.2, 9.3, 9.4, 9.5_
 
   - [ ] 4.3 Implement Task Picker modal with preset selection
 
@@ -107,7 +119,13 @@
     - Add multi-selection functionality with visual indicators
     - Implement task confirmation and cancellation
     - Add edit button for preset management
-    - _Requirements: 2.2, 2.3, 2.6_
+    - **Figma Design Implementation Process:**
+      - Reference `figma-design/メインViewタスク選択.png` for exact visual specifications
+      - Take screenshot of implemented Task Picker modal
+      - Compare screenshot with `figma-design/メインViewタスク選択.png`
+      - Identify and fix any visual differences (modal layout, task categories, selection indicators, buttons)
+      - Repeat comparison and refinement until implementation matches Figma design exactly
+    - _Requirements: 2.2, 2.3, 2.6, 9.1, 9.2, 9.3, 9.4, 9.5_
 
   - [ ] 4.4 Create Statistics screen with analytics display
 
@@ -115,13 +133,24 @@
     - Add streak counter with prominent display
     - Create weekly/monthly toggle with data updates
     - Display completion rates, active days, and averages
-    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
+    - **Figma Design Implementation Process:**
+      - Reference `figma-design/実績View.png` for exact visual specifications
+      - Take screenshot of implemented Statistics screen
+      - Compare screenshot with `figma-design/実績View.png`
+      - Identify and fix any visual differences (layout, charts, counters, toggle buttons)
+      - Repeat comparison and refinement until implementation matches Figma design exactly
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 9.1, 9.2, 9.3, 9.4, 9.5_
 
   - [ ] 4.5 Create E2E test for core UI components
     - Write Maestro test for calendar navigation and date selection
     - Test Day Sheet task management and journal functionality
     - Verify Task Picker modal and Statistics screen interactions
-    - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5_
+    - **Figma Design Validation:**
+      - Take screenshots during E2E test execution
+      - Compare test screenshots with all Figma design files
+      - Verify visual consistency across all screens during user interactions
+      - Document any remaining visual discrepancies for final polish
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 9.1, 9.2, 9.3, 9.4, 9.5_
 
 - [ ] 5. Preset Task Management System
 
@@ -211,7 +240,13 @@
     - Create color palette with business (blue) and life (green) themes
     - Implement typography system following iOS standards
     - Add consistent spacing and layout patterns
-    - _Requirements: 8.1, 8.2, 8.3, 8.4_
+    - **Figma Design Implementation Process:**
+      - Extract exact color values, typography specifications, and spacing from all Figma design files
+      - Implement design tokens that match Figma specifications exactly
+      - Take screenshots of design system components
+      - Compare with Figma design files to ensure consistency
+      - Refine design tokens until they produce pixel-perfect matches with Figma designs
+    - _Requirements: 8.1, 8.2, 8.3, 8.4, 9.1, 9.2, 9.3, 9.4, 9.5_
 
   - [ ] 8.2 Add visual feedback and interaction states
 
@@ -219,7 +254,13 @@
     - Add loading states and transitions
     - Create empty state illustrations and copy
     - Polish calendar heatmap visualization
-    - _Requirements: 8.3, 8.4_
+    - **Figma Design Implementation Process:**
+      - Reference all Figma design files for interaction state specifications
+      - Implement hover, pressed, and disabled states as shown in designs
+      - Take screenshots of all interaction states
+      - Compare with Figma design specifications for interactive elements
+      - Refine interaction feedback until it matches Figma design exactly
+    - _Requirements: 8.3, 8.4, 9.1, 9.2, 9.3, 9.4, 9.5_
 
   - [ ] 8.3 Create onboarding and first-run experience
 
@@ -233,7 +274,12 @@
     - Write Maestro test for onboarding flow
     - Test visual feedback and interaction states
     - Verify Apple HIG compliance through UI interactions
-    - _Requirements: 7.3, 8.1, 8.2, 8.3, 8.4_
+    - **Final Figma Design Validation:**
+      - Take comprehensive screenshots of entire app during E2E testing
+      - Create side-by-side comparison with all Figma design files
+      - Document final visual accuracy report
+      - Ensure 100% visual match with Figma designs before deployment
+    - _Requirements: 7.3, 8.1, 8.2, 8.3, 8.4, 9.1, 9.2, 9.3, 9.4, 9.5_
 
 - [ ] 9. Data Persistence and Offline Support
 
@@ -279,31 +325,59 @@
     - Implement memory usage monitoring
     - _Requirements: 5.2, 5.3_
 
-- [ ] 11. Final Integration and Deployment Preparation
+- [ ] 11. Figma Design Validation and Visual Quality Assurance
 
-  - [ ] 11.1 Research deployment best practices
+  - [ ] 11.1 Comprehensive Figma design comparison audit
+
+    - Take high-resolution screenshots of all implemented screens
+    - Create detailed side-by-side comparison with each Figma design file
+    - Document pixel-level differences and create improvement plan
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
+
+  - [ ] 11.2 Visual refinement and pixel-perfect implementation
+
+    - Address all identified visual differences from Figma comparison
+    - Refine spacing, typography, colors, and layout to match Figma exactly
+    - Implement any missing visual details or micro-interactions
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
+
+  - [ ] 11.3 Final visual validation and approval
+
+    - Take final screenshots of all screens after refinements
+    - Perform final comparison with Figma design files
+    - Obtain visual approval confirmation that implementation matches Figma designs 100%
+    - Create visual quality assurance report
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
+
+- [ ] 12. Final Integration and Deployment Preparation
+
+  - [ ] 12.1 Research deployment best practices
 
     - Search for latest EAS build and deployment configuration methods
     - Research App Store and Google Play submission requirements
     - Verify TestFlight and internal testing setup procedures
     - _Requirements: All requirements_
 
-  - [ ] 11.2 Integration testing and bug fixes
+  - [ ] 12.2 Integration testing and bug fixes
 
     - Test complete app functionality end-to-end
     - Fix any integration issues between components
     - Validate all requirements are met
     - _Requirements: All requirements_
 
-  - [ ] 11.3 Prepare for deployment with EAS
+  - [ ] 12.3 Prepare for deployment with EAS
 
     - Configure EAS build and deployment settings
     - Create app store assets and metadata
     - Set up TestFlight/internal testing distribution
     - _Requirements: All requirements_
 
-  - [ ] 11.4 Final E2E regression testing
+  - [ ] 12.4 Final E2E regression testing
     - Run complete test suite to ensure no regressions
     - Test app on multiple devices and screen sizes
     - Verify all features work correctly before deployment
-    - _Requirements: All requirements_
+    - **Final Figma Design Validation:**
+      - Perform final visual validation on target devices
+      - Ensure Figma design fidelity is maintained across different screen sizes
+      - Document final visual quality assurance approval
+    - _Requirements: All requirements including 9.1, 9.2, 9.3, 9.4, 9.5_
