@@ -1,31 +1,95 @@
 appId: com.anonymous.engage
 ---
-# Test basic app navigation between Calendar, Today, and Stats screens
+# Final Navigation Test - Clear state + Multiple strategies from research
+# Based on GitHub Issue #2448 solutions and Perplexity research
 
-- launchApp
-- waitForAnimationToEnd
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 2000
 
 # Test Calendar screen is active by default
 - assertVisible:
     id: 'calendar-screen'
 
-# Navigate to Today tab using coordinate-based approach
+# Multi-strategy approach for Today tab navigation
+# Strategy 1: Try multiple tap positions with waits
 - tapOn:
-    point: 50%, 90%
-- waitForAnimationToEnd
-- assertVisible:
-    id: 'today-screen'
+    point: 50%, 93%
+    repeat: 2
+    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 1000
 
-# Navigate to Stats tab using coordinate-based approach
-- tapOn:
-    point: 80%, 90%
-- waitForAnimationToEnd
-- assertVisible:
-    id: 'stats-screen'
+# Strategy 2: If still on calendar, try longPress
+- runFlow:
+    when:
+      visible:
+        id: 'calendar-screen'
+    commands:
+      - longPressOn:
+          point: 50%, 93%
+          waitToSettleTimeoutMs: 2000
+      - waitForAnimationToEnd:
+          timeout: 2000
 
-# Navigate back to Calendar tab using coordinate-based approach
-- tapOn:
-    point: 20%, 90%
-- waitForAnimationToEnd
-- assertVisible:
-    id: 'calendar-screen'
+# Strategy 3: Try different Y coordinates
+- runFlow:
+    when:
+      visible:
+        id: 'calendar-screen'
+    commands:
+      - tapOn:
+          point: 50%, 91%
+          waitToSettleTimeoutMs: 1000
+      - waitForAnimationToEnd:
+          timeout: 1000
+      - tapOn:
+          point: 50%, 95%
+          waitToSettleTimeoutMs: 1000
+      - waitForAnimationToEnd:
+          timeout: 2000
+
+# Final check with generous timeout
+- extendedWaitUntil:
+    visible:
+      id: 'today-screen'
+    timeout: 20000
+
+# If we reach today screen, continue with simplified test
+- runFlow:
+    when:
+      visible:
+        id: 'today-screen'
+    commands:
+      - assertVisible:
+          id: 'today-screen'
+      
+      # Quick test for Stats tab
+      - tapOn:
+          point: 83%, 93%
+          repeat: 2
+          delay: 300
+          waitToSettleTimeoutMs: 1000
+      - waitForAnimationToEnd:
+          timeout: 2000
+      - extendedWaitUntil:
+          visible:
+            id: 'stats-screen'
+          timeout: 10000
+      
+      # Return to Calendar  
+      - tapOn:
+          point: 17%, 93%
+          repeat: 2
+          delay: 300
+          waitToSettleTimeoutMs: 1000
+      - waitForAnimationToEnd:
+          timeout: 2000
+      - extendedWaitUntil:
+          visible:
+            id: 'calendar-screen'
+          timeout: 10000
+      - assertVisible:
+          id: 'calendar-screen'

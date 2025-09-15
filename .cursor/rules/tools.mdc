@@ -8,9 +8,10 @@ alwaysApply: true
 
 When encountering issues or needing information, use tools in this order:
 
-1. **`mcp_exa_web_search_exa`** - Quick searches, current documentation
-2. **`mcp_perplexity_ask_perplexity_ask`** - Technical analysis and explanations
-3. **`mcp_exa_deep_researcher_start/check`** - Complex multi-source research
+1. **`web_search_exa`** - Quick searches, current documentation
+2. **`perplexity_ask`** - Technical analysis and explanations
+3. **web_search**
+4. **`deep_researcher_start/check`** - Complex multi-source research
 
 ## Framework-Specific Sources
 
