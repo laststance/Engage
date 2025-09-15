@@ -1,29 +1,34 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Box } from '@/components/ui/box'
-import { Text } from '@/components/ui/text'
-import { VStack } from '@/components/ui/vstack'
-import { Center } from '@/components/ui/center'
+import { Calendar } from '@/src/components/Calendar'
+import { DayModal } from '@/src/components/DayModal'
+import { useAppStore } from '@/src/stores/app-store'
 
 export default function CalendarScreen() {
+  const [isDayModalVisible, setIsDayModalVisible] = useState(false)
+
+  const { selectedDate, selectDate, getAchievementData } = useAppStore()
+
+  const achievementData = getAchievementData()
+
+  const handleDateSelect = (date: string) => {
+    selectDate(date)
+    setIsDayModalVisible(true)
+  }
+
+  const handleModalClose = () => {
+    setIsDayModalVisible(false)
+  }
+
   return (
     <Box className="flex-1 bg-white" testID="calendar-screen">
-      <Center className="flex-1">
-        <VStack space="md" className="items-center">
-          <Text
-            className="text-2xl font-bold text-gray-800"
-            testID="calendar-title"
-          >
-            Calendar
-          </Text>
-          <Text
-            className="text-gray-600 text-center px-4"
-            testID="calendar-description"
-          >
-            This screen will show the monthly calendar with habit completion
-            heatmap.
-          </Text>
-        </VStack>
-      </Center>
+      <Calendar
+        selectedDate={selectedDate}
+        onDateSelect={handleDateSelect}
+        achievementData={achievementData}
+      />
+
+      <DayModal isVisible={isDayModalVisible} onClose={handleModalClose} />
     </Box>
   )
 }

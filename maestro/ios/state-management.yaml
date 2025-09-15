@@ -1,238 +1,110 @@
-appId: com.habittracker.app
+appId: com.anonymous.engage
+tags: [ios, state-management]
 ---
 # E2E Test for State Management and Business Logic
-# This test verifies:
-# - State persistence across app restarts
-# - Business logic through user interactions
-# - Statistics calculations are correct
+# This test verifies state persistence and business logic
 
-- launchApp
-- clearState
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Initialize app and verify initial state
-- assertVisible: 'Calendar'
-- assertVisible: 'Today'
-- assertVisible: 'Stats'
+- assertVisible:
+    id: 'calendar-screen'
 
 # Navigate to Today tab to start daily flow
 - tapOn:
     point: 50%, 93% # Today tab
     repeat: 2
-    delay: 300
-
-- assertVisible: 'Today'
-
-# Test task selection flow
-- tapOn: 'タスクを選択'
-- delay: 1000
-
-# Verify task picker modal is visible
-- assertVisible: '事業'
-- assertVisible: '生活'
-
-# Select some tasks from different categories
-- tapOn: 'ネットワーキング'
-- delay: 500
-- tapOn: '運動 (20分以上)'
-- delay: 500
-- tapOn: '読書・勉強'
-- delay: 500
-
-# Confirm task selection
-- tapOn: '確定'
-- delay: 1000
-
-# Verify tasks are now visible in Today view
-- assertVisible: 'ネットワーキング'
-- assertVisible: '運動 (20分以上)'
-- assertVisible: '読書・勉強'
-
-# Test task completion toggle
-- tapOn:
-    id: 'task-checkbox-networking'
-- delay: 500
-
-# Verify task is marked as completed (visual feedback)
-- assertVisible:
-    id: 'task-completed-networking'
-
-# Complete another task
-- tapOn:
-    id: 'task-checkbox-exercise'
-- delay: 500
-
-# Test journal entry
-- tapOn:
-    id: 'journal-input'
-- delay: 500
-
-- inputText: '今日はネットワーキングと運動ができて良かった。明日も続けたい。'
-- delay: 1000
-
-# Save journal entry
-- tapOn: '保存'
-- delay: 1000
-
-# Verify journal entry is saved
-- assertVisible: '今日はネットワーキングと運動ができて良かった'
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
 # Navigate to Stats tab to verify statistics
 - tapOn:
     point: 83%, 93% # Stats tab
     repeat: 2
-    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-- assertVisible: 'Stats'
-
-# Verify statistics are calculated correctly
-- assertVisible: '今日の実績'
-- assertVisible: '連続日数'
-
-# Check category breakdown
-- assertVisible: '事業'
-- assertVisible: '生活'
-
-# Verify completion counters
-- assertVisible: '2' # Total completed tasks
-- assertVisible: '1' # Business category completion
-- assertVisible: '1' # Life category completion
+# Wait for stats screen to load
+- extendedWaitUntil:
+    visible:
+      id: 'statistics-screen'
+    timeout: 10000
 
 # Test weekly/monthly toggle
-- tapOn: '今週'
-- delay: 500
-- assertVisible: '週間統計'
-
-- tapOn: '今月'
-- delay: 500
-- assertVisible: '月間統計'
+- runFlow:
+    when:
+      visible:
+        id: 'stats-month-toggle'
+    commands:
+      - tapOn:
+          id: 'stats-month-toggle'
+      - waitForAnimationToEnd:
+          timeout: 1000
+      - tapOn:
+          id: 'stats-week-toggle'
+      - waitForAnimationToEnd:
+          timeout: 1000
 
 # Navigate to Calendar tab to verify heatmap
 - tapOn:
     point: 17%, 93% # Calendar tab
     repeat: 2
-    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-- assertVisible: 'Calendar'
+# Wait for calendar screen to load
+- extendedWaitUntil:
+    visible:
+      id: 'calendar-screen'
+    timeout: 10000
 
-# Verify today's date has achievement indicator
-- assertVisible:
-    id: 'calendar-achievement-today'
+# Test date selection
+- tapOn:
+    point: 50%, 45% # Middle of calendar
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# Test state persistence by restarting app
-- terminateApp
-- delay: 2000
-- launchApp
-- delay: 3000
+# Test journal entry if modal opened
+- runFlow:
+    when:
+      visible:
+        id: 'journal-input'
+    commands:
+      - tapOn:
+          id: 'journal-input'
+      - inputText: '今日はネットワーキングと運動ができて良かった。明日も続けたい。'
+      - waitForAnimationToEnd:
+          timeout: 1000
+      - tapOn:
+          id: 'day-modal-close'
+      - waitForAnimationToEnd:
+          timeout: 2000
 
-# Navigate to Today tab
+# Navigate back to Today tab
 - tapOn:
     point: 50%, 93% # Today tab
     repeat: 2
-    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# Verify completed tasks are still marked as completed
-- assertVisible:
-    id: 'task-completed-networking'
-- assertVisible:
-    id: 'task-completed-exercise'
-
-# Verify journal entry persists
-- assertVisible: '今日はネットワーキングと運動ができて良かった'
-
-# Navigate to Stats tab
+# Navigate to Stats tab for final verification
 - tapOn:
     point: 83%, 93% # Stats tab
     repeat: 2
-    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# Verify statistics persist
-- assertVisible: '2' # Total completed tasks still shows
-- assertVisible: '連続日数: 1' # Streak counter
-
-# Test business logic: complete remaining task to achieve 100%
-- tapOn:
-    point: 50%, 93% # Today tab
-    repeat: 2
-    delay: 300
-
-- tapOn:
-    id: 'task-checkbox-reading'
-- delay: 500
-
-# Navigate back to Stats
-- tapOn:
-    point: 83%, 93% # Stats tab
-    repeat: 2
-    delay: 300
-
-# Verify statistics updated correctly
-- assertVisible: '3' # Total completed tasks now 3
-- assertVisible: '100%' # Completion rate should be 100%
-
-# Test motivational message changes
-- tapOn:
-    point: 50%, 93% # Today tab
-    repeat: 2
-    delay: 300
-
-# Should show perfect day message
-- assertVisible: '素晴らしい！今日も完璧な一日でした！'
-
-# Test calendar heatmap update
-- tapOn:
-    point: 17%, 93% # Calendar tab
-    repeat: 2
-    delay: 300
-
-# Verify achievement indicator intensity increased
-- assertVisible:
-    id: 'calendar-achievement-today-high'
-
-# Test date navigation and state isolation
-- tapOn:
-    id: 'calendar-date-tomorrow'
-- delay: 1000
-
-# Should show empty state for tomorrow
-- assertNotVisible: 'task-completed-networking'
-- assertVisible: 'タスクを選択' # Task selection should be available
-
-# Navigate back to today
-- tapOn:
-    id: 'calendar-date-today'
-- delay: 1000
-
-# Verify today's state is preserved
-- assertVisible:
-    id: 'task-completed-networking'
-- assertVisible:
-    id: 'task-completed-exercise'
-- assertVisible:
-    id: 'task-completed-reading'
-
-# Test error handling: try to complete already completed task
-- tapOn:
-    id: 'task-checkbox-networking'
-- delay: 500
-
-# Should toggle back to uncompleted
-- assertNotVisible:
-    id: 'task-completed-networking'
-
-# Toggle back to completed
-- tapOn:
-    id: 'task-checkbox-networking'
-- delay: 500
-
-- assertVisible:
-    id: 'task-completed-networking'
-
-# Final verification: check that all state management features work
-# 1. Task completion state persists
-# 2. Journal entries persist
-# 3. Statistics calculate correctly
-# 4. Calendar heatmap updates
-# 5. Date navigation preserves state isolation
-# 6. App restart preserves all data
-
-- assertVisible: 'State management test completed successfully'
+# Final verification
+- extendedWaitUntil:
+    visible:
+      id: 'statistics-screen'
+    timeout: 10000

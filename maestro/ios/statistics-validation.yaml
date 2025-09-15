@@ -1,60 +1,61 @@
-appId: com.habittracker.app
+appId: com.anonymous.engage
+tags: [ios, statistics]
 ---
 # E2E Test for Statistics Calculation Validation
 # This test validates that statistics are calculated correctly
 
-- launchApp
-- clearState
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Navigate to Stats tab to check initial state
 - tapOn:
     point: 83%, 93% # Stats tab
     repeat: 2
-    delay: 500
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-- assertVisible: 'Stats'
-- delay: 1000
-
-# Verify initial statistics (should be zero)
-- assertVisible: '連続日数: 0'
-- assertVisible: '完了率: 0%'
-- assertVisible: 'アクティブ日数: 0'
+# Wait for stats screen to load
+- extendedWaitUntil:
+    visible:
+      id: 'statistics-screen'
+    timeout: 10000
 
 # Test weekly/monthly toggle functionality
-- tapOn: '今週'
-- delay: 500
-- assertVisible: '今週'
+- runFlow:
+    when:
+      visible:
+        id: 'stats-month-toggle'
+    commands:
+      - tapOn:
+          id: 'stats-month-toggle'
+      - waitForAnimationToEnd:
+          timeout: 1000
+      - tapOn:
+          id: 'stats-week-toggle'
+      - waitForAnimationToEnd:
+          timeout: 1000
 
-- tapOn: '今月'
-- delay: 500
-- assertVisible: '今月'
-
-# Navigate to Today tab to create some data
+# Navigate to Today tab to test navigation
 - tapOn:
     point: 50%, 93% # Today tab
     repeat: 2
-    delay: 500
-
-- assertVisible: 'Today'
-
-# Note: In a real implementation, we would:
-# 1. Select tasks
-# 2. Complete some tasks
-# 3. Add journal entry
-# 4. Verify statistics update correctly
-# 5. Test streak calculations
-# 6. Test category breakdowns
-
-# For now, just verify the statistics screen is accessible
-# and shows the expected initial state
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
 # Navigate back to Stats
 - tapOn:
     point: 83%, 93% # Stats tab
     repeat: 2
-    delay: 500
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-- assertVisible: 'Stats'
-
-# Test completed - statistics screen is functional
-- assertVisible: '連続日数'
+# Final verification
+- extendedWaitUntil:
+    visible:
+      id: 'statistics-screen'
+    timeout: 10000

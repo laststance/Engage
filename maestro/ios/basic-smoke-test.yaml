@@ -1,0 +1,56 @@
+appId: com.anonymous.engage
+tags: [ios, smoke]
+---
+# Basic Smoke Test - Verifies core functionality works
+# This test should pass if the app is running correctly
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Test 1: App launches successfully
+- assertVisible:
+    id: 'calendar-screen'
+
+# Test 2: Calendar component is visible
+- assertVisible:
+    id: 'calendar-component'
+
+# Test 3: Navigation elements are present
+- assertVisible:
+    id: 'calendar-month-year'
+- assertVisible:
+    id: 'calendar-prev-month'
+- assertVisible:
+    id: 'calendar-next-month'
+
+# Test 4: Month navigation works
+- tapOn:
+    id: 'calendar-next-month'
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: 'calendar-prev-month'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 5: Tab navigation works
+- tapOn:
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 6: Return to Calendar tab
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Final verification
+- assertVisible:
+    id: 'calendar-screen'

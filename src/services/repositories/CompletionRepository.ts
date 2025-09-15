@@ -228,11 +228,12 @@ export class CompletionRepository {
 
       // Count total tasks by category
       tasks.forEach((task) => {
-        categoryTotals[task.categoryId] = (categoryTotals[task.categoryId] || 0) + 1
+        categoryTotals[task.categoryId] =
+          (categoryTotals[task.categoryId] || 0) + 1
       })
 
       // Initialize completion counts
-      Object.keys(categoryTotals).forEach(categoryId => {
+      Object.keys(categoryTotals).forEach((categoryId) => {
         categoryCompletions[categoryId] = 0
       })
 
@@ -240,13 +241,14 @@ export class CompletionRepository {
       completions.forEach((completion) => {
         const task = taskLookup.get(completion.taskId)
         if (task) {
-          categoryCompletions[task.categoryId] = (categoryCompletions[task.categoryId] || 0) + 1
+          categoryCompletions[task.categoryId] =
+            (categoryCompletions[task.categoryId] || 0) + 1
         }
       })
 
       // Build result
       const result: Record<string, { completed: number; total: number }> = {}
-      Object.keys(categoryTotals).forEach(categoryId => {
+      Object.keys(categoryTotals).forEach((categoryId) => {
         result[categoryId] = {
           completed: categoryCompletions[categoryId] || 0,
           total: categoryTotals[categoryId] || 0,
@@ -254,7 +256,6 @@ export class CompletionRepository {
       })
 
       return result
-      }
     } catch (error) {
       throw new DatabaseError('Failed to get category breakdown', error)
     }

@@ -83,9 +83,9 @@
     - Verify statistics calculations are correct
     - _Requirements: 2.5, 3.3, 3.5, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 4. Core UI Components Development
+- [x] 4. Core UI Components Development
 
-  - [ ] 4.1 Create Calendar component with heatmap visualization
+  - [x] 4.1 Create Calendar component with heatmap visualization
 
     - Implement monthly calendar grid layout
     - Add heatmap coloring based on completion data
@@ -99,7 +99,7 @@
       - Repeat comparison and refinement until implementation matches Figma design exactly
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 9.1, 9.2, 9.3, 9.4, 9.5_
 
-  - [ ] 4.2 Build Day Sheet component for task management
+  - [x] 4.2 Build Day Sheet component for task management
 
     - Create task list display with category grouping
     - Implement completion checkboxes with visual feedback
@@ -113,7 +113,7 @@
       - Repeat comparison and refinement until implementation matches Figma design exactly
     - _Requirements: 2.1, 2.4, 2.5, 3.1, 3.2, 3.4, 9.1, 9.2, 9.3, 9.4, 9.5_
 
-  - [ ] 4.3 Implement Task Picker modal with preset selection
+  - [x] 4.3 Implement Task Picker modal with preset selection
 
     - Create categorized task list (supports all categories including default "生活" and "事業" presets plus custom categories)
     - Add multi-selection functionality with visual indicators
@@ -127,7 +127,7 @@
       - Repeat comparison and refinement until implementation matches Figma design exactly
     - _Requirements: 2.2, 2.3, 2.6, 9.1, 9.2, 9.3, 9.4, 9.5_
 
-  - [ ] 4.4 Create Statistics screen with analytics display
+  - [x] 4.4 Create Statistics screen with analytics display
 
     - Implement today's achievements summary
     - Add streak counter with prominent display
@@ -141,7 +141,7 @@
       - Repeat comparison and refinement until implementation matches Figma design exactly
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 9.1, 9.2, 9.3, 9.4, 9.5_
 
-  - [ ] 4.5 Create E2E test for core UI components
+  - [x] 4.5 Create E2E test for core UI components
     - Write Maestro test for calendar navigation and date selection
     - Test Day Sheet task management and journal functionality
     - Verify Task Picker modal and Statistics screen interactions

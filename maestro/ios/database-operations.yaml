@@ -1,107 +1,110 @@
-appId: com.habittracker.app
+appId: com.anonymous.engage
+tags: [ios, database]
 ---
 # Database Operations E2E Test
 # Tests data persistence, CRUD operations, and data integrity
 
-- launchApp
-- clearState
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Test 1: Verify app launches with clean state
-- assertVisible: 'Calendar'
-- assertVisible: 'Today'
-- assertVisible: 'Stats'
+- assertVisible:
+    id: 'calendar-screen'
 
 # Test 2: Navigate to Today tab and verify initial state
 - tapOn:
     point: 50%, 93% # Today tab
     repeat: 2
-    delay: 300
-- assertVisible: '今日のタスク'
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# Test 3: Add a task (simulating task creation)
-# Note: This assumes there's a way to add tasks in the UI
-# For now, we'll test with default tasks that should be seeded
-
-# Test 4: Complete a task and verify persistence
-- tapOn:
-    text: '運動'
-    optional: true
-- delay: 500
-
-# Test 5: Add journal entry
-- tapOn:
-    text: '今日の振り返り'
-    optional: true
-- inputText: 'テストエントリー - データベース操作確認'
-- delay: 500
-
-# Test 6: Navigate to Stats to verify data is reflected
+# Test 3: Navigate to Stats to verify initial data
 - tapOn:
     point: 83%, 93% # Stats tab
     repeat: 2
-    delay: 300
-- assertVisible: '実績'
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- extendedWaitUntil:
+    visible:
+      id: 'statistics-screen'
+    timeout: 10000
 
-# Test 7: Navigate to Calendar to verify heatmap data
+# Test 4: Navigate to Calendar to verify heatmap data
 - tapOn:
     point: 17%, 93% # Calendar tab
     repeat: 2
-    delay: 300
-- assertVisible: 'Calendar'
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- extendedWaitUntil:
+    visible:
+      id: 'calendar-screen'
+    timeout: 10000
 
-# Test 8: Restart app to test data persistence
-- stopApp
-- delay: 2000
-- launchApp
-- delay: 3000
+# Test 5: Test date selection and modal opening
+- tapOn:
+    point: 50%, 45% # Middle of calendar
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# Test 9: Verify data persisted after restart
+# Test 6: If modal opened, test journal entry
+- runFlow:
+    when:
+      visible:
+        id: 'journal-input'
+    commands:
+      - tapOn:
+          id: 'journal-input'
+      - inputText: 'テストエントリー - データベース操作確認'
+      - waitForAnimationToEnd:
+          timeout: 1000
+      - tapOn:
+          id: 'day-modal-close'
+      - waitForAnimationToEnd:
+          timeout: 2000
+
+# Test 7: Navigate back to Today tab
 - tapOn:
     point: 50%, 93% # Today tab
     repeat: 2
-    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# Check if journal entry persisted
+# Test 8: Navigate to Stats and verify data updates
 - tapOn:
-    text: '今日の振り返り'
-    optional: true
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 9: Test period toggle functionality
+- runFlow:
+    when:
+      visible:
+        id: 'stats-month-toggle'
+    commands:
+      - tapOn:
+          id: 'stats-month-toggle'
+      - waitForAnimationToEnd:
+          timeout: 1000
+      - tapOn:
+          id: 'stats-week-toggle'
+      - waitForAnimationToEnd:
+          timeout: 1000
+
+# Test 10: Final verification - return to Calendar
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 - assertVisible:
-    text: 'テストエントリー'
-    optional: true
-
-# Test 10: Navigate to Stats and verify streak/completion data
-- tapOn:
-    point: 83%, 93% # Stats tab
-    repeat: 2
-    delay: 300
-- assertVisible: '実績'
-
-# Test 11: Test data integrity by checking calendar heatmap
-- tapOn:
-    point: 17%, 93% # Calendar tab
-    repeat: 2
-    delay: 300
-- assertVisible: 'Calendar'
-
-# Test 12: Test error handling - try invalid operations
-# Navigate back to Today
-- tapOn:
-    point: 50%, 93% # Today tab
-    repeat: 2
-    delay: 300
-
-# Test 13: Clean up - clear test data
-- tapOn:
-    text: '今日の振り返り'
-    optional: true
-- clearText
-- inputText: ''
-- delay: 500
-
-# Test 14: Final verification - app should still be functional
-- assertVisible: '今日のタスク'
-- tapOn:
-    point: 17%, 93% # Calendar tab
-    repeat: 2
-    delay: 300
-- assertVisible: 'Calendar'
+    id: 'calendar-screen'

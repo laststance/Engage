@@ -1,0 +1,184 @@
+appId: com.anonymous.engage
+tags: [ios, ui-components]
+---
+# Core UI Components E2E Test
+# Tests Calendar, Day Sheet, Task Picker, and Statistics components
+# Platform: iOS only (coordinates optimized for iPhone simulators)
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# === CALENDAR COMPONENT TESTS ===
+- assertVisible:
+    id: 'calendar-screen'
+
+# Test calendar component is visible
+- assertVisible:
+    id: 'calendar-component'
+
+# Test month navigation
+- assertVisible:
+    id: 'calendar-month-year'
+- assertVisible:
+    id: 'calendar-prev-month'
+- assertVisible:
+    id: 'calendar-next-month'
+
+# Test month navigation functionality
+- tapOn:
+    id: 'calendar-next-month'
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: 'calendar-prev-month'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test date selection (tap on a calendar date)
+# Note: Using coordinate-based approach for date selection
+- tapOn:
+    point: 50%, 45% # Middle of calendar grid
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# === DAY SHEET COMPONENT TESTS ===
+# Check if Day Modal opened
+- assertVisible:
+    id: 'day-sheet'
+
+# Test Day Sheet header
+- assertVisible:
+    id: 'day-sheet-date'
+
+# Test task selection button
+- assertVisible:
+    id: 'task-selection-button'
+- tapOn:
+    id: 'task-selection-button'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# === TASK PICKER COMPONENT TESTS ===
+# Check if Task Picker modal opened
+- assertVisible:
+    id: 'task-picker-close'
+
+# Test edit presets button
+- assertVisible:
+    id: 'edit-presets-button'
+
+# Test task picker controls
+- assertVisible:
+    id: 'task-picker-cancel'
+- assertVisible:
+    id: 'task-picker-confirm'
+
+# Close task picker
+- tapOn:
+    id: 'task-picker-cancel'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test journal input
+- assertVisible:
+    id: 'journal-input'
+- tapOn:
+    id: 'journal-input'
+- inputText: 'Test journal entry for E2E testing'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Close Day Modal
+- tapOn:
+    id: 'day-modal-close'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# === STATISTICS COMPONENT TESTS ===
+# Navigate to Stats tab
+- tapOn:
+    point: 83%, 93% # Stats tab coordinate
+    repeat: 2
+    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Wait for stats screen to load
+- extendedWaitUntil:
+    visible:
+      id: 'statistics-screen'
+    timeout: 10000
+
+# Test statistics screen elements
+- assertVisible:
+    id: 'statistics-screen'
+
+# Test period toggle buttons
+- assertVisible:
+    id: 'stats-week-toggle'
+- assertVisible:
+    id: 'stats-month-toggle'
+
+# Test period switching
+- tapOn:
+    id: 'stats-month-toggle'
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: 'stats-week-toggle'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# === TODAY TAB TESTS ===
+# Navigate to Today tab
+- tapOn:
+    point: 50%, 93% # Today tab coordinate
+    repeat: 2
+    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Wait for today screen to load
+- extendedWaitUntil:
+    visible:
+      id: 'today-screen'
+    timeout: 10000
+
+# Test Today screen (should show same Day Sheet for current date)
+- runFlow:
+    when:
+      visible:
+        id: 'today-screen'
+    commands:
+      - assertVisible:
+          id: 'today-screen'
+
+# === RETURN TO CALENDAR ===
+# Navigate back to Calendar tab
+- tapOn:
+    point: 17%, 93% # Calendar tab coordinate
+    repeat: 2
+    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Final verification
+- extendedWaitUntil:
+    visible:
+      id: 'calendar-screen'
+    timeout: 10000
+- assertVisible:
+    id: 'calendar-screen'
+- assertVisible:
+    id: 'calendar-component'
+
+# === VISUAL CONSISTENCY CHECK ===
+# Take screenshot for Figma design comparison
+- takeScreenshot: 'final-calendar-view.png'
+# Test completed successfully

@@ -1,0 +1,138 @@
+appId: com.anonymous.engage
+tags: [ios, visual-validation, figma]
+---
+# Figma Design Validation Test
+# Takes screenshots of all major UI components for comparison with Figma designs
+# Validates visual consistency across all screens during user interactions
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# === CALENDAR VIEW VALIDATION ===
+# Reference: figma-design/カレンダーview.png
+- assertVisible:
+    id: 'calendar-screen'
+- takeScreenshot: 'calendar-view-validation.png'
+
+# Test calendar interactions and visual feedback
+- tapOn:
+    id: 'calendar-next-month'
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: 'calendar-next-month.png'
+
+- tapOn:
+    id: 'calendar-prev-month'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# === DAY SHEET VIEW VALIDATION ===
+# Reference: figma-design/メインView.png
+- tapOn:
+    point: 50%, 45% # Select a date
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- assertVisible:
+    id: 'day-sheet'
+- takeScreenshot: 'day-sheet-main-view.png'
+
+# === TASK SELECTION MODAL VALIDATION ===
+# Reference: figma-design/メインViewタスク選択.png
+- tapOn:
+    id: 'task-selection-button'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: 'task-selection-modal.png'
+
+# Close task picker to test day sheet with tasks
+- tapOn:
+    id: 'task-picker-cancel'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# === DAY SHEET WITH TASKS VALIDATION ===
+# Reference: figma-design/メインViewタスク選択後.png
+- takeScreenshot: 'day-sheet-with-tasks.png'
+
+# Test journal interaction
+- tapOn:
+    id: 'journal-input'
+- inputText: 'Visual validation test entry'
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: 'day-sheet-with-journal.png'
+
+# Close Day Modal
+- tapOn:
+    id: 'day-modal-close'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# === STATISTICS VIEW VALIDATION ===
+# Reference: figma-design/実績View.png
+- tapOn:
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- extendedWaitUntil:
+    visible:
+      id: 'statistics-screen'
+    timeout: 10000
+
+- takeScreenshot: 'statistics-view-week.png'
+
+# Test monthly view
+- tapOn:
+    id: 'stats-month-toggle'
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: 'statistics-view-month.png'
+
+# === TODAY TAB VALIDATION ===
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- extendedWaitUntil:
+    visible:
+      id: 'today-screen'
+    timeout: 10000
+
+- takeScreenshot: 'today-view.png'
+
+# === FINAL VALIDATION ===
+# Return to calendar for final comparison
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    delay: 300
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- extendedWaitUntil:
+    visible:
+      id: 'calendar-screen'
+    timeout: 10000
+
+- takeScreenshot: 'final-calendar-validation.png'
+# Test completed - screenshots ready for Figma comparison
+# Compare screenshots with figma-design/ folder files:
+# 1. calendar-view-validation.png vs カレンダーview.png
+# 2. day-sheet-main-view.png vs メインView.png
+# 3. task-selection-modal.png vs メインViewタスク選択.png
+# 4. day-sheet-with-tasks.png vs メインViewタスク選択後.png
+# 5. statistics-view-week.png vs 実績View.png

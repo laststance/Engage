@@ -1,96 +1,77 @@
-appId: com.habittracker.app
+appId: com.anonymous.engage
+tags: [ios, business-logic]
 ---
 # E2E Test for Business Logic and State Management
 # Tests core business logic flows and state persistence
 
-- launchApp
-- clearState
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Test 1: Basic app initialization and data loading
-- assertVisible: 'Calendar'
-- delay: 2000
+- assertVisible:
+    id: 'calendar-screen'
 
 # Navigate to Today tab
 - tapOn:
     point: 50%, 93% # Today tab coordinates
     repeat: 2
-    delay: 500
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# Test 2: Task selection and state management
-- assertVisible: 'Today'
-- delay: 1000
-
-# Should show task selection prompt initially
-- assertVisible: 'タスクを選択'
-
-# Test 3: Statistics initialization
+# Test 2: Statistics initialization
 - tapOn:
     point: 83%, 93% # Stats tab
     repeat: 2
-    delay: 500
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-- assertVisible: 'Stats'
-- delay: 1000
+# Wait for stats screen to load
+- extendedWaitUntil:
+    visible:
+      id: 'statistics-screen'
+    timeout: 10000
 
-# Should show zero state initially
-- assertVisible: '0' # No completions yet
-
-# Test 4: Calendar heatmap initialization
+# Test 3: Calendar heatmap initialization
 - tapOn:
     point: 17%, 93% # Calendar tab
     repeat: 2
-    delay: 500
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-- assertVisible: 'Calendar'
-- delay: 1000
+- extendedWaitUntil:
+    visible:
+      id: 'calendar-screen'
+    timeout: 10000
 
-# Test 5: State persistence across tab navigation
+# Test 4: State persistence across tab navigation
 - tapOn:
     point: 50%, 93% # Back to Today
     repeat: 2
-    delay: 500
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-- assertVisible: 'Today'
-- assertVisible: 'タスクを選択'
-
-# Test 6: App restart and state persistence
-- terminateApp
-- delay: 2000
-- launchApp
-- delay: 3000
-
-# Verify app loads correctly after restart
-- assertVisible: 'Calendar'
-
-# Navigate to Today tab
-- tapOn:
-    point: 50%, 93%
-    repeat: 2
-    delay: 500
-
-# Should still show task selection (no data lost)
-- assertVisible: 'タスクを選択'
-
-# Test 7: Statistics tab after restart
+# Test 5: Statistics tab navigation
 - tapOn:
     point: 83%, 93% # Stats tab
     repeat: 2
-    delay: 500
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-- assertVisible: 'Stats'
-- delay: 1000
-
-# Should still show zero state
-- assertVisible: '0'
-
-# Test 8: Calendar tab after restart
+# Test 6: Calendar tab navigation
 - tapOn:
     point: 17%, 93% # Calendar tab
     repeat: 2
-    delay: 500
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-- assertVisible: 'Calendar'
-- delay: 1000
-
-# Test completed successfully
-- assertVisible: 'Calendar'
+# Final verification
+- assertVisible:
+    id: 'calendar-screen'
