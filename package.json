@@ -9,9 +9,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test:e2e": "maestro test maestro/test-suite.yaml",
-    "test:e2e:simple": "maestro test maestro/simple-launch-test.yaml",
-    "test:e2e:app-launch": "maestro test maestro/app-launch.yaml",
+    "test:e2e": "maestro test maestro/",
+    "test:e2e:launch": "maestro test maestro/app-launch.yaml",
     "test:e2e:navigation": "maestro test maestro/basic-navigation.yaml",
     "test:e2e:ui": "maestro test maestro/ui-elements.yaml"
   },

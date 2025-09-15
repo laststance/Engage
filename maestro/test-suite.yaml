@@ -1,8 +1,1 @@
-# Maestro Test Suite for Engage App
-# This file defines all the E2E tests for basic app functionality
-
-flows:
-  - simple-launch-test.yaml
-  - app-launch.yaml
-  - basic-navigation.yaml
-  - ui-elements.yaml
+ 
