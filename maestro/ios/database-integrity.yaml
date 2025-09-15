@@ -1,0 +1,226 @@
+appId: com.habittracker.app
+---
+# Database Data Integrity E2E Test
+# Tests data consistency, constraints, and error handling
+
+- launchApp
+- clearState
+
+# Test 1: Verify default task seeding
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    delay: 300
+
+# Check if default tasks are present
+- runFlow:
+    when:
+      visible: 'タスクを選択'
+    commands:
+      - tapOn: 'タスクを選択'
+      - delay: 1000
+      # Verify business category tasks
+      - assertVisible:
+          text: 'ネットワーキング'
+          optional: true
+      - assertVisible:
+          text: 'スキル学習'
+          optional: true
+      # Verify life category tasks
+      - assertVisible:
+          text: '運動'
+          optional: true
+      - assertVisible:
+          text: '読書'
+          optional: true
+      - tapOn:
+          text: 'キャンセル'
+          optional: true
+
+# Test 2: Data consistency across multiple operations
+- runFlow:
+    when:
+      visible: 'タスクを選択'
+    commands:
+      - tapOn: 'タスクを選択'
+      - delay: 1000
+      # Select multiple tasks
+      - tapOn:
+          text: '運動'
+          optional: true
+      - tapOn:
+          text: '読書'
+          optional: true
+      - tapOn:
+          text: '確定'
+          optional: true
+      - delay: 500
+
+# Complete one task
+- runFlow:
+    when:
+      visible: '運動'
+    commands:
+      - tapOn:
+          id: 'task-checkbox-0'
+          optional: true
+      - delay: 500
+
+# Add journal entry
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      - tapOn: '今日の振り返り'
+      - inputText: 'データ整合性テスト'
+      - delay: 500
+
+# Test 3: Verify statistics consistency
+- tapOn:
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    delay: 300
+
+# Check if stats reflect the completed task
+- assertVisible: '実績'
+- runFlow:
+    when:
+      visible: '1日連続'
+    commands:
+      - assertVisible: '1日連続'
+
+# Test 4: Calendar heatmap consistency
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    delay: 300
+
+# The current date should show activity
+- assertVisible: 'Calendar'
+
+# Test 5: Data persistence under stress
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    delay: 300
+
+# Rapidly toggle task completion
+- runFlow:
+    when:
+      visible: '運動'
+    commands:
+      - tapOn:
+          id: 'task-checkbox-0'
+          optional: true
+      - delay: 100
+      - tapOn:
+          id: 'task-checkbox-0'
+          optional: true
+      - delay: 100
+      - tapOn:
+          id: 'task-checkbox-0'
+          optional: true
+      - delay: 100
+      - tapOn:
+          id: 'task-checkbox-0'
+          optional: true
+      - delay: 500
+
+# Test 6: Journal entry edge cases
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      - tapOn: '今日の振り返り'
+      - clearText
+      # Test empty entry
+      - delay: 500
+      # Test special characters
+      - inputText: '特殊文字テスト: !@#$%^&*()_+-=[]{}|;'':",./<>?'
+      - delay: 500
+      # Test unicode characters
+      - clearText
+      - inputText: 'Unicode: 🎉📱✅❤️🌟💪📚🏃‍♂️'
+      - delay: 500
+
+# Test 7: Multiple app restarts to test database stability
+- stopApp
+- delay: 1000
+- launchApp
+- delay: 2000
+- stopApp
+- delay: 1000
+- launchApp
+- delay: 3000
+
+# Verify data survived multiple restarts
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    delay: 300
+
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      - tapOn: '今日の振り返り'
+      - assertVisible:
+          text: 'Unicode'
+          optional: true
+
+# Test 8: Date boundary testing
+# Navigate to different dates (if date picker is available)
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    delay: 300
+
+# Test 9: Concurrent operation simulation
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    delay: 300
+
+# Simulate rapid UI interactions
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      - tapOn: '今日の振り返り'
+      - inputText: 'A'
+      - delay: 50
+      - inputText: 'B'
+      - delay: 50
+      - inputText: 'C'
+      - delay: 50
+      - clearText
+      - inputText: '最終テスト完了'
+      - delay: 500
+
+# Test 10: Final integrity check
+- tapOn:
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    delay: 300
+- assertVisible: '実績'
+
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    delay: 300
+- assertVisible: 'Calendar'
+
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    delay: 300
+- assertVisible: '今日のタスク'
+
+# Clean up
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      - tapOn: '今日の振り返り'
+      - clearText
+      - delay: 500

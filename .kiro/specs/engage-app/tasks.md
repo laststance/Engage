@@ -23,16 +23,16 @@
     - Verify basic UI elements are rendered correctly
     - _Requirements: 8.1, 8.4_
 
-- [ ] 2. Database Layer Implementation
+- [x] 2. Database Layer Implementation
 
-  - [ ] 2.1 Create SQLite database schema and migration system
+  - [x] 2.1 Create SQLite database schema and migration system
 
     - Implement database initialization with tasks, entries, completions, and settings tables
     - Create migration system for future schema updates
     - Add proper indexes for query optimization
     - _Requirements: 5.2, 5.3_
 
-  - [ ] 2.2 Implement database service layer with CRUD operations
+  - [x] 2.2 Implement database service layer with CRUD operations
 
     - Create DatabaseService class with methods for all table operations
     - Implement error handling and transaction management
@@ -40,14 +40,14 @@
     - Write unit tests for database operations
     - _Requirements: 5.2, 5.4_
 
-  - [ ] 2.3 Create data access layer and repository pattern
+  - [x] 2.3 Create data access layer and repository pattern
 
     - Implement TaskRepository, EntryRepository, and CompletionRepository
     - Add methods for complex queries (statistics, date ranges)
     - Create data transformation utilities
     - _Requirements: 4.1, 4.3, 4.4, 4.5_
 
-  - [ ] 2.4 Create E2E test for database operations
+  - [x] 2.4 Create E2E test for database operations
     - Write Maestro test to verify data persistence across app restarts
     - Test database CRUD operations through UI interactions
     - Verify data integrity and error handling

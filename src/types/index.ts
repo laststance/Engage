@@ -1,7 +1,12 @@
+export interface Category {
+  id: string
+  name: string
+}
+
 export interface Task {
   id: string
   title: string
-  category: 'business' | 'life'
+  categoryId: string
   defaultMinutes?: number
   archived: boolean
   createdAt: number
@@ -38,8 +43,5 @@ export interface StatsData {
   totalTasks: number
   dailyAverage: number
   journalDays: number
-  categoryBreakdown: {
-    business: { completed: number; total: number }
-    life: { completed: number; total: number }
-  }
+  categoryBreakdown: Record<string, { completed: number; total: number }>
 }

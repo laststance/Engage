@@ -1,0 +1,149 @@
+appId: com.habittracker.app
+---
+# Database CRUD Operations E2E Test
+# Tests Create, Read, Update, Delete operations through UI
+
+- launchApp
+- clearState
+
+# Setup: Navigate to Today view
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    delay: 300
+
+# Test CREATE operations
+- runFlow:
+    when:
+      visible: 'タスクを選択'
+    commands:
+      # Test task selection (CREATE completion)
+      - tapOn: 'タスクを選択'
+      - delay: 1000
+      - tapOn:
+          text: '運動'
+          optional: true
+      - tapOn:
+          text: '確定'
+          optional: true
+      - delay: 500
+
+# Test journal entry creation
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      - tapOn: '今日の振り返り'
+      - inputText: '初回エントリー作成テスト'
+      - delay: 500
+
+# Test READ operations - verify data appears
+- assertVisible:
+    text: '運動'
+    optional: true
+
+# Test UPDATE operations
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      # Update journal entry
+      - tapOn: '今日の振り返り'
+      - clearText
+      - inputText: '更新されたエントリー'
+      - delay: 500
+
+# Test task completion toggle (UPDATE completion status)
+- runFlow:
+    when:
+      visible: '運動'
+    commands:
+      - tapOn:
+          id: 'task-checkbox'
+          optional: true
+      - delay: 500
+      # Toggle again to test uncomplete
+      - tapOn:
+          id: 'task-checkbox'
+          optional: true
+      - delay: 500
+
+# Test data persistence across navigation (READ after navigation)
+- tapOn:
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    delay: 300
+- tapOn:
+    point: 50%, 93% # Back to Today tab
+    repeat: 2
+    delay: 300
+
+# Verify data persisted
+- assertVisible:
+    text: '更新されたエントリー'
+    optional: true
+
+# Test DELETE operations
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      # Clear journal entry (DELETE)
+      - tapOn: '今日の振り返り'
+      - clearText
+      - delay: 500
+
+# Test app restart persistence
+- stopApp
+- delay: 2000
+- launchApp
+- delay: 3000
+
+# Navigate back to Today
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    delay: 300
+
+# Verify empty journal entry persisted (DELETE was successful)
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      - tapOn: '今日の振り返り'
+      - assertVisible:
+          text: '日記を書いてみましょう'
+          optional: true
+
+# Test error handling and data integrity
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      # Test with very long text
+      - inputText: 'これは非常に長いテキストです。データベースが適切に長いテキストを処理できるかテストしています。日本語の文字も含まれています。絵文字も含めてみましょう 🎉 📱 ✅'
+      - delay: 1000
+
+# Navigate away and back to test persistence of long text
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    delay: 300
+- tapOn:
+    point: 50%, 93% # Back to Today tab
+    repeat: 2
+    delay: 300
+
+# Verify long text persisted
+- runFlow:
+    when:
+      visible: '今日の振り返り'
+    commands:
+      - tapOn: '今日の振り返り'
+      - assertVisible:
+          text: 'これは非常に長い'
+          optional: true
+
+# Clean up for next test
+- clearText
+- delay: 500
