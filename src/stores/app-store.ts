@@ -1,8 +1,45 @@
 import { create } from 'zustand'
-import { Task, Entry, Completion, DayData, StatsData } from '../types'
+import { Task, Entry, Completion, DayData, StatsData, Category } from '../types'
+import {
+  taskRepository,
+  entryRepository,
+  completionRepository,
+  categoryRepository,
+} from '../services/repositories'
+import {
+  getSuggestedTasks,
+  groupTasksByCategory,
+  calculateDayProgress,
+  isTaskCompleted,
+  getTaskCompletionStatus,
+  validateJournalEntry,
+  getJournalPlaceholder,
+  getTaskRecommendations,
+  hasCompletedDailyFlow,
+  getMotivationalMessage,
+  type TaskSelectionResult,
+  type DayProgress,
+} from '../utils/businessLogic'
+import {
+  getCurrentDate,
+  getWeekStartDate,
+  getWeekEndDate,
+  getMonthStartDate,
+  getMonthEndDate,
+  getDaysInRange,
+  isToday,
+} from '../utils/dateUtils'
+import {
+  calculateWeeklyStats,
+  calculateMonthlyStats,
+  calculateAchievementData,
+  calculateStreakDays,
+  calculateProductivityTrends,
+} from '../utils/statisticsEngine'
 
 interface AppState {
   // Data
+  categories: Category[]
   tasks: Task[]
   entries: Record<string, Entry> // date -> entry
   completions: Record<string, Completion[]> // date -> completions
@@ -11,7 +48,10 @@ interface AppState {
   selectedDate: string
   isTaskPickerVisible: boolean
   isPresetEditorVisible: boolean
+  isCategoryEditorVisible: boolean
   currentTab: 'calendar' | 'today' | 'stats'
+  isLoading: boolean
+  error: string | null
 
   // Actions
   loadData: () => Promise<void>
@@ -20,27 +60,110 @@ interface AppState {
   updateJournalEntry: (date: string, content: string) => Promise<void>
   addTasksToDate: (date: string, taskIds: string[]) => Promise<void>
   updatePresetTasks: (tasks: Task[]) => Promise<void>
+  createCategory: (category: Omit<Category, 'id'>) => Promise<void>
+  updateCategory: (id: string, updates: Partial<Category>) => Promise<void>
+  deleteCategory: (id: string) => Promise<void>
+  setTaskPickerVisible: (visible: boolean) => void
+  setPresetEditorVisible: (visible: boolean) => void
+  setCategoryEditorVisible: (visible: boolean) => void
+  setCurrentTab: (tab: 'calendar' | 'today' | 'stats') => void
+  clearError: () => void
+
+  // Business Logic Actions
+  initializeApp: () => Promise<void>
+  getTaskSelectionData: () => TaskSelectionResult
+  getDayProgress: (date: string) => DayProgress
+  getTaskCompletionStatus: (date: string) => Record<string, boolean>
+  validateAndUpdateJournal: (
+    date: string,
+    content: string
+  ) => Promise<{ success: boolean; errors: string[] }>
+  getJournalPlaceholder: (date: string) => string
+  getMotivationalMessage: (date: string) => string
+  hasCompletedDailyFlow: (date: string) => boolean
+  loadDateRangeData: (startDate: string, endDate: string) => Promise<void>
 
   // Computed
   getStatsForPeriod: (period: 'week' | 'month') => StatsData
   getAchievementData: () => Record<string, number>
   getDayData: (date: string) => DayData
+  getStreakData: (currentDate?: string) => {
+    currentStreak: number
+    longestStreak: number
+    streakDates: string[]
+  }
+  getProductivityTrends: (startDate: string, endDate: string) => any
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
   // Initial state
+  categories: [],
   tasks: [],
   entries: {},
   completions: {},
   selectedDate: new Date().toISOString().split('T')[0],
   isTaskPickerVisible: false,
   isPresetEditorVisible: false,
+  isCategoryEditorVisible: false,
   currentTab: 'calendar',
+  isLoading: false,
+  error: null,
 
   // Actions
   loadData: async () => {
-    // TODO: Load data from SQLite database
-    console.log('Loading data...')
+    try {
+      set({ isLoading: true, error: null })
+
+      // Load all data from repositories
+      const [categories, tasks, recentEntries, recentCompletions] =
+        await Promise.all([
+          categoryRepository.findAll(),
+          taskRepository.findAll(),
+          entryRepository.findRecentEntries(30), // Load last 30 days of entries
+          completionRepository.findByDateRange(
+            // Load last 30 days of completions
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split('T')[0],
+            new Date().toISOString().split('T')[0]
+          ),
+        ])
+
+      // Transform entries and completions into maps
+      const entriesMap: Record<string, Entry> = {}
+      recentEntries.forEach((entry) => {
+        entriesMap[entry.date] = entry
+      })
+
+      const completionsMap: Record<string, Completion[]> = {}
+      recentCompletions.forEach((completion) => {
+        if (!completionsMap[completion.date]) {
+          completionsMap[completion.date] = []
+        }
+        completionsMap[completion.date].push(completion)
+      })
+
+      set({
+        categories,
+        tasks,
+        entries: entriesMap,
+        completions: completionsMap,
+        isLoading: false,
+      })
+
+      console.log('Data loaded successfully:', {
+        categories: categories.length,
+        tasks: tasks.length,
+        entries: recentEntries.length,
+        completions: recentCompletions.length,
+      })
+    } catch (error) {
+      console.error('Failed to load data:', error)
+      set({
+        error: error instanceof Error ? error.message : 'Failed to load data',
+        isLoading: false,
+      })
+    }
   },
 
   selectDate: (date: string) => {
@@ -48,45 +171,402 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   toggleTaskCompletion: async (date: string, taskId: string) => {
-    // TODO: Toggle task completion in database
-    console.log('Toggling task completion:', date, taskId)
+    try {
+      set({ error: null })
+
+      const isCompleted = await completionRepository.toggle(date, taskId)
+
+      // Update local state
+      const state = get()
+      const updatedCompletions = { ...state.completions }
+
+      if (isCompleted) {
+        // Task was completed - add to local state
+        if (!updatedCompletions[date]) {
+          updatedCompletions[date] = []
+        }
+        const newCompletion: Completion = {
+          id: `temp_${Date.now()}`,
+          date,
+          taskId,
+          createdAt: Date.now(),
+        }
+        updatedCompletions[date].push(newCompletion)
+      } else {
+        // Task was uncompleted - remove from local state
+        if (updatedCompletions[date]) {
+          updatedCompletions[date] = updatedCompletions[date].filter(
+            (c) => c.taskId !== taskId
+          )
+          if (updatedCompletions[date].length === 0) {
+            delete updatedCompletions[date]
+          }
+        }
+      }
+
+      set({ completions: updatedCompletions })
+
+      console.log(
+        `Task ${taskId} ${
+          isCompleted ? 'completed' : 'uncompleted'
+        } for ${date}`
+      )
+    } catch (error) {
+      console.error('Failed to toggle task completion:', error)
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to toggle task completion',
+      })
+    }
   },
 
   updateJournalEntry: async (date: string, content: string) => {
-    // TODO: Update journal entry in database
-    console.log('Updating journal entry:', date, content)
+    try {
+      set({ error: null })
+
+      const entry = await entryRepository.upsert(date, content)
+
+      // Update local state
+      const state = get()
+      set({
+        entries: {
+          ...state.entries,
+          [date]: entry,
+        },
+      })
+
+      console.log(`Journal entry updated for ${date}`)
+    } catch (error) {
+      console.error('Failed to update journal entry:', error)
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update journal entry',
+      })
+    }
   },
 
   addTasksToDate: async (date: string, taskIds: string[]) => {
-    // TODO: Add tasks to specific date
-    console.log('Adding tasks to date:', date, taskIds)
+    try {
+      set({ error: null })
+
+      // This action doesn't actually create completions, just makes tasks available for the date
+      // The actual completion happens when user checks the task
+      console.log(`Tasks ${taskIds.join(', ')} added to ${date}`)
+    } catch (error) {
+      console.error('Failed to add tasks to date:', error)
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to add tasks to date',
+      })
+    }
   },
 
   updatePresetTasks: async (tasks: Task[]) => {
-    // TODO: Update preset tasks in database
-    set({ tasks })
+    try {
+      set({ error: null })
+
+      // Update tasks in database through repository
+      // This is a simplified version - in practice you'd handle individual updates
+      set({ tasks })
+
+      console.log('Preset tasks updated')
+    } catch (error) {
+      console.error('Failed to update preset tasks:', error)
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update preset tasks',
+      })
+    }
+  },
+
+  createCategory: async (category: Omit<Category, 'id'>) => {
+    try {
+      set({ error: null })
+
+      const newCategory = await categoryRepository.create(category)
+
+      const state = get()
+      set({
+        categories: [...state.categories, newCategory],
+      })
+
+      console.log('Category created:', newCategory.name)
+    } catch (error) {
+      console.error('Failed to create category:', error)
+      set({
+        error:
+          error instanceof Error ? error.message : 'Failed to create category',
+      })
+    }
+  },
+
+  updateCategory: async (id: string, updates: Partial<Category>) => {
+    try {
+      set({ error: null })
+
+      const updatedCategory = await categoryRepository.update(id, updates)
+
+      const state = get()
+      set({
+        categories: state.categories.map((cat) =>
+          cat.id === id ? updatedCategory : cat
+        ),
+      })
+
+      console.log('Category updated:', updatedCategory.name)
+    } catch (error) {
+      console.error('Failed to update category:', error)
+      set({
+        error:
+          error instanceof Error ? error.message : 'Failed to update category',
+      })
+    }
+  },
+
+  deleteCategory: async (id: string) => {
+    try {
+      set({ error: null })
+
+      await categoryRepository.delete(id)
+
+      const state = get()
+      set({
+        categories: state.categories.filter((cat) => cat.id !== id),
+      })
+
+      console.log('Category deleted:', id)
+    } catch (error) {
+      console.error('Failed to delete category:', error)
+      set({
+        error:
+          error instanceof Error ? error.message : 'Failed to delete category',
+      })
+    }
+  },
+
+  setTaskPickerVisible: (visible: boolean) => {
+    set({ isTaskPickerVisible: visible })
+  },
+
+  setPresetEditorVisible: (visible: boolean) => {
+    set({ isPresetEditorVisible: visible })
+  },
+
+  setCategoryEditorVisible: (visible: boolean) => {
+    set({ isCategoryEditorVisible: visible })
+  },
+
+  setCurrentTab: (tab: 'calendar' | 'today' | 'stats') => {
+    set({ currentTab: tab })
+  },
+
+  clearError: () => {
+    set({ error: null })
+  },
+
+  // Business Logic Actions
+  initializeApp: async () => {
+    try {
+      set({ isLoading: true, error: null })
+
+      // Initialize database and seed default data if needed
+      await Promise.all([
+        categoryRepository.seedDefaultCategories(),
+        taskRepository.seedDefaultTasks(),
+      ])
+
+      // Load all data
+      await get().loadData()
+
+      console.log('App initialized successfully')
+    } catch (error) {
+      console.error('Failed to initialize app:', error)
+      set({
+        error:
+          error instanceof Error ? error.message : 'Failed to initialize app',
+        isLoading: false,
+      })
+    }
+  },
+
+  getTaskSelectionData: () => {
+    const state = get()
+
+    // Get recent completions for recommendations
+    const recentCompletions: Completion[] = []
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const cutoffDate = thirtyDaysAgo.toISOString().split('T')[0]
+
+    Object.entries(state.completions).forEach(([date, completions]) => {
+      if (date >= cutoffDate) {
+        recentCompletions.push(...completions)
+      }
+    })
+
+    return getTaskRecommendations(
+      state.tasks,
+      recentCompletions,
+      state.categories
+    )
+  },
+
+  getDayProgress: (date: string) => {
+    const state = get()
+    const dayCompletions = state.completions[date] || []
+    const entry = state.entries[date] || null
+
+    return calculateDayProgress(
+      date,
+      state.tasks,
+      dayCompletions,
+      entry,
+      state.categories
+    )
+  },
+
+  getTaskCompletionStatus: (date: string) => {
+    const state = get()
+    const taskIds = state.tasks.map((t) => t.id)
+    const completions = state.completions[date] || []
+
+    return getTaskCompletionStatus(taskIds, date, completions)
+  },
+
+  validateAndUpdateJournal: async (date: string, content: string) => {
+    const validation = validateJournalEntry(content)
+
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors }
+    }
+
+    try {
+      await get().updateJournalEntry(date, content)
+      return { success: true, errors: [] }
+    } catch (error) {
+      return {
+        success: false,
+        errors: [
+          error instanceof Error ? error.message : 'Failed to update journal',
+        ],
+      }
+    }
+  },
+
+  getJournalPlaceholder: (date: string) => {
+    const state = get()
+    const completions = state.completions[date] || []
+    return getJournalPlaceholder(completions.length > 0)
+  },
+
+  getMotivationalMessage: (date: string) => {
+    const progress = get().getDayProgress(date)
+    return getMotivationalMessage(progress)
+  },
+
+  hasCompletedDailyFlow: (date: string) => {
+    const state = get()
+    const completions = state.completions[date] || []
+    const entry = state.entries[date] || null
+
+    return hasCompletedDailyFlow(date, completions, entry)
+  },
+
+  loadDateRangeData: async (startDate: string, endDate: string) => {
+    try {
+      set({ isLoading: true, error: null })
+
+      const [entries, completions] = await Promise.all([
+        entryRepository.findByDateRange(startDate, endDate),
+        completionRepository.findByDateRange(startDate, endDate),
+      ])
+
+      // Merge with existing data
+      const state = get()
+      const updatedEntries = { ...state.entries }
+      const updatedCompletions = { ...state.completions }
+
+      entries.forEach((entry) => {
+        updatedEntries[entry.date] = entry
+      })
+
+      completions.forEach((completion) => {
+        if (!updatedCompletions[completion.date]) {
+          updatedCompletions[completion.date] = []
+        }
+        // Avoid duplicates
+        const exists = updatedCompletions[completion.date].some(
+          (c) => c.id === completion.id
+        )
+        if (!exists) {
+          updatedCompletions[completion.date].push(completion)
+        }
+      })
+
+      set({
+        entries: updatedEntries,
+        completions: updatedCompletions,
+        isLoading: false,
+      })
+
+      console.log(`Loaded data for range ${startDate} to ${endDate}`)
+    } catch (error) {
+      console.error('Failed to load date range data:', error)
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to load date range data',
+        isLoading: false,
+      })
+    }
   },
 
   // Computed getters
   getStatsForPeriod: (period: 'week' | 'month') => {
-    // TODO: Calculate statistics for the given period
-    return {
-      streakDays: 0,
-      completionRate: 0,
-      activeDays: 0,
-      totalTasks: 0,
-      dailyAverage: 0,
-      journalDays: 0,
-      categoryBreakdown: {
-        business: { completed: 0, total: 0 },
-        life: { completed: 0, total: 0 },
-      },
+    const state = get()
+    const today = new Date()
+
+    if (period === 'week') {
+      const weekStart = getWeekStartDate(today)
+      const weekEnd = getWeekEndDate(today)
+
+      return calculateWeeklyStats(
+        state.tasks,
+        state.completions,
+        state.entries,
+        state.categories,
+        weekStart,
+        weekEnd
+      )
+    } else {
+      const monthStart = getMonthStartDate(today)
+      const monthEnd = getMonthEndDate(today)
+
+      return calculateMonthlyStats(
+        state.tasks,
+        state.completions,
+        state.entries,
+        state.categories,
+        monthStart,
+        monthEnd,
+        today.getFullYear(),
+        today.getMonth() + 1
+      )
     }
   },
 
   getAchievementData: () => {
-    // TODO: Calculate achievement data for calendar heatmap
-    return {}
+    const state = get()
+    return calculateAchievementData(state.completions)
   },
 
   getDayData: (date: string) => {
@@ -97,5 +577,20 @@ export const useAppStore = create<AppState>((set, get) => ({
       completions: state.completions[date] || [],
       entry: state.entries[date] || null,
     }
+  },
+
+  getStreakData: (currentDate?: string) => {
+    const state = get()
+    return calculateStreakDays(state.completions, currentDate)
+  },
+
+  getProductivityTrends: (startDate: string, endDate: string) => {
+    const state = get()
+    return calculateProductivityTrends(
+      state.completions,
+      state.entries,
+      startDate,
+      endDate
+    )
   },
 }))

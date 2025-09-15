@@ -15,7 +15,8 @@
     "test:e2e": "maestro test maestro/ios/",
     "test:e2e:ios": "maestro test maestro/ios/",
     "test:e2e:android": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios'",
-    "test:e2e:database": "maestro test maestro/ios/database-operations.yaml maestro/ios/database-crud.yaml maestro/ios/database-integrity.yaml"
+    "test:e2e:database": "maestro test maestro/ios/database-operations.yaml maestro/ios/database-crud.yaml maestro/ios/database-integrity.yaml",
+    "test:e2e:state": "maestro test maestro/ios/business-logic.yaml maestro/ios/statistics-validation.yaml maestro/ios/state-management.yaml"
   },
   "dependencies": {
     "@expo/html-elements": "^0.10.1",
