@@ -30,7 +30,7 @@ const Text = React.forwardRef<React.ComponentRef<typeof RNText>, ITextProps>(
           bold: bold as boolean,
           underline: underline as boolean,
           strikeThrough: strikeThrough as boolean,
-          size,
+          size: size as '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl',
           sub: sub as boolean,
           italic: italic as boolean,
           highlight: highlight as boolean,

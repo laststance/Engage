@@ -13,13 +13,13 @@ export default function TodayScreen() {
             className="text-2xl font-bold text-gray-800"
             testID="today-title"
           >
-            Today's Tasks
+            Today&#39;s Tasks
           </Text>
           <Text
             className="text-gray-600 text-center px-4"
             testID="today-description"
           >
-            This screen will show today's selected tasks and journal entry.
+            This screen will show today&#39;s selected tasks and journal entry.
           </Text>
         </VStack>
       </Center>

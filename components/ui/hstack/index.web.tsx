@@ -10,7 +10,7 @@ const HStack = React.forwardRef<React.ComponentRef<'div'>, IHStackProps>(
     return (
       <div
         className={hstackStyle({
-          space,
+          space: space as 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl',
           reversed: reversed as boolean,
           class: className,
         })}

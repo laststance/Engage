@@ -12,7 +12,7 @@ const VStack = React.forwardRef<React.ComponentRef<typeof View>, IVStackProps>(
     return (
       <View
         className={vstackStyle({
-          space,
+          space: space as 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl',
           reversed: reversed as boolean,
           class: className,
         })}

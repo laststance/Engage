@@ -1,8 +1,8 @@
 'use client';
 import React from 'react';
 import { createButton } from '@gluestack-ui/core/button/creator';
-import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import {
+  tva,
   withStyleContext,
   useStyleContext,
 } from '@gluestack-ui/utils/nativewind-utils';
@@ -327,7 +327,7 @@ const ButtonText = React.forwardRef<
           action: parentAction,
         },
         variant: variant as 'link' | 'outline' | 'solid' | undefined,
-        size,
+        size: size as 'xs' | 'sm' | 'md' | 'lg' | 'xl' | undefined,
         action: action as
           | 'primary'
           | 'secondary'
@@ -390,7 +390,7 @@ const ButtonIcon = React.forwardRef<
           variant: parentVariant,
           action: parentAction,
         },
-        size,
+        size: size as 'xs' | 'sm' | 'md' | 'lg' | 'xl' | undefined,
         class: className,
       })}
       ref={ref}
@@ -419,7 +419,7 @@ const ButtonGroup = React.forwardRef<
       <UIButton.Group
         className={buttonGroupStyle({
           class: className,
-          space,
+          space: space as 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl',
           isAttached: isAttached as boolean,
           flexDirection: flexDirection as any,
         })}
