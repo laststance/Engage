@@ -11,6 +11,10 @@ import {
   type PresetInitializationResult,
 } from '../services/presetService'
 import {
+  journalService,
+  type JournalSaveResult,
+} from '../services/journalService'
+import {
   getSuggestedTasks,
   groupTasksByCategory,
   calculateDayProgress,
@@ -86,7 +90,7 @@ interface AppState {
   validateAndUpdateJournal: (
     date: string,
     content: string
-  ) => Promise<{ success: boolean; errors: string[] }>
+  ) => Promise<JournalSaveResult>
   getJournalPlaceholder: (date: string) => string
   getMotivationalMessage: (date: string) => string
   hasCompletedDailyFlow: (date: string) => boolean
@@ -237,18 +241,22 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       set({ error: null })
 
-      const entry = await entryRepository.upsert(date, content)
+      const result = await journalService.saveEntry(date, content)
 
-      // Update local state
-      const state = get()
-      set({
-        entries: {
-          ...state.entries,
-          [date]: entry,
-        },
-      })
+      if (result.success && result.entry) {
+        // Update local state
+        const state = get()
+        set({
+          entries: {
+            ...state.entries,
+            [date]: result.entry,
+          },
+        })
 
-      console.log(`Journal entry updated for ${date}`)
+        console.log(`Journal entry updated for ${date}`)
+      } else {
+        throw new Error(result.errors.join(', '))
+      }
     } catch (error) {
       console.error('Failed to update journal entry:', error)
       set({
@@ -543,20 +551,28 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   validateAndUpdateJournal: async (date: string, content: string) => {
-    const validation = validateJournalEntry(content)
-
-    if (!validation.isValid) {
-      return { success: false, errors: validation.errors }
-    }
-
     try {
-      await get().updateJournalEntry(date, content)
-      return { success: true, errors: [] }
+      const result = await journalService.saveEntry(date, content)
+
+      if (result.success && result.entry) {
+        // Update local state
+        const state = get()
+        set({
+          entries: {
+            ...state.entries,
+            [date]: result.entry,
+          },
+        })
+      }
+
+      return result
     } catch (error) {
       return {
         success: false,
         errors: [
-          error instanceof Error ? error.message : 'Failed to update journal',
+          error instanceof Error
+            ? error.message
+            : 'Failed to validate and update journal',
         ],
       }
     }

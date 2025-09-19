@@ -1,0 +1,74 @@
+appId: com.anonymous.engage
+---
+# Journal Placeholder Text Test
+# Tests dynamic placeholder text based on task completion status
+
+- launchApp
+- clearState
+
+# Test default placeholder (no tasks completed)
+- assertVisible:
+    id: 'calendar-screen'
+- tapOn:
+    point: 50%, 50%
+    delay: 500
+
+- assertVisible:
+    id: 'journal-input-container'
+- assertVisible: '日記を書いてみましょう'
+
+# Test empty state encouragement
+- assertVisible: '今日の気持ちや学んだことを一言でも書いてみませんか？'
+
+# Add and complete a task to change placeholder
+- tapOn:
+    id: 'task-selection-button'
+- assertVisible:
+    id: 'task-picker-modal'
+
+# Select a task
+- tapOn:
+    point: 50%, 40% # First available task
+    delay: 300
+- tapOn: '確定'
+
+# Complete the task
+- tapOn:
+    point: 50%, 60% # Task checkbox
+    delay: 300
+
+# Verify placeholder changes with completions
+- tapOn:
+    id: 'journal-text-input'
+- assertVisible: '達成したことについて振り返ってみましょう'
+
+# Test that empty state message changes
+- assertVisible: '今日の気持ちや学んだことを一言でも書いてみませんか？'
+
+# Test with journal content
+- inputText: 'タスクを完了しました！'
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# Verify no empty state message when content exists
+- assertNotVisible: '今日の気持ちや学んだことを一言でも書いてみませんか？'
+
+# Test date-specific placeholder
+- tapOn:
+    id: 'day-modal-close'
+- tapOn:
+    point: 60%, 50% # Different date
+    delay: 500
+
+# Should show default placeholder for new date
+- assertVisible: '日記を書いてみましょう'
+
+# Test focus state changes
+- tapOn:
+    id: 'journal-text-input'
+- assertNotVisible: '今日の気持ちや学んだことを一言でも書いてみませんか？'
+
+# Test blur brings back empty state
+- tapOn:
+    point: 50%, 20% # Tap outside
+- assertVisible: '今日の気持ちや学んだことを一言でも書いてみませんか？'

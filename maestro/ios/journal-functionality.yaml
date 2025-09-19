@@ -1,0 +1,202 @@
+appId: com.anonymous.engage
+---
+# Journal Functionality E2E Test
+# Tests journal entry creation, editing, auto-save, and persistence
+
+- launchApp
+- clearState
+
+# Navigate to Calendar and select a date
+- assertVisible:
+    id: 'calendar-screen'
+- tapOn:
+    point: 50%, 50% # Tap on a calendar date
+    delay: 500
+
+# Verify Day Modal opens
+- assertVisible:
+    id: 'day-sheet'
+- assertVisible:
+    id: 'journal-input-container'
+
+# Test initial journal state
+- assertVisible:
+    id: 'journal-text-input'
+- assertVisible: '今日の振り返り'
+
+# Test journal entry creation
+- tapOn:
+    id: 'journal-text-input'
+- inputText: '今日は素晴らしい一日でした。新しいことを学び、目標に向かって前進できました。'
+
+# Wait for auto-save (1 second debounce)
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Verify auto-save status appears
+- assertVisible: '保存'
+
+# Test character count display
+- assertVisible:
+    id: 'character-count'
+
+# Test journal editing
+- tapOn:
+    id: 'journal-text-input'
+- inputText: ' 明日も頑張ります！'
+
+# Wait for auto-save again
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Close the modal
+- tapOn:
+    id: 'day-modal-close'
+
+# Reopen the same date to test persistence
+- tapOn:
+    point: 50%, 50% # Same calendar date
+    delay: 500
+
+# Verify journal entry persisted
+- assertVisible:
+    id: 'journal-text-input'
+- assertVisible: '今日は素晴らしい一日でした。新しいことを学び、目標に向かって前進できました。 明日も頑張ります！'
+
+# Test journal with task completion (for different placeholder)
+- tapOn:
+    id: 'task-selection-button'
+
+# Select a task (if available)
+- assertVisible:
+    id: 'task-picker-modal'
+- tapOn:
+    point: 50%, 40% # Tap on first available task
+    delay: 300
+- tapOn: '確定'
+
+# Complete the selected task
+- tapOn:
+    point: 50%, 60% # Tap on task checkbox
+    delay: 300
+
+# Check journal placeholder changes with completions
+- tapOn:
+    id: 'journal-text-input'
+- clearText
+- assertVisible: '達成したことについて振り返ってみましょう'
+
+# Test empty state encouragement
+- assertVisible: '今日の気持ちや学んだことを一言でも書いてみませんか？'
+
+# Test character limit warning
+- inputText: 'これは非常に長い日記エントリーのテストです。文字数制限の警告が表示されるかどうかを確認します。' # Repeat to approach limit
+- repeat:
+    times: 10
+    commands:
+      - inputText: '追加のテキストで文字数を増やします。'
+
+# Verify character limit warning appears
+- assertVisible: '文字まで入力できます'
+
+# Test maximum character limit
+- inputText: 'a'
+- repeat:
+    times: 50
+    commands:
+      - inputText: 'a'
+
+# Verify character limit reached
+- assertVisible: '文字数の上限に達しました'
+
+# Clear and test normal entry
+- clearText
+- inputText: '通常の日記エントリーです。'
+
+# Test blur auto-save
+- tapOn:
+    point: 50%, 20% # Tap outside text input to blur
+
+# Wait for blur save
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Verify save status
+- assertVisible: '保存'
+
+# Test navigation away and back (persistence test)
+- tapOn:
+    id: 'day-modal-close'
+
+# Navigate to Today tab
+- tapOn:
+    point: 50%, 93% # Today tab
+    delay: 500
+
+# Navigate back to Calendar
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    delay: 500
+
+# Reopen the same date
+- tapOn:
+    point: 50%, 50%
+    delay: 500
+
+# Verify journal entry still persists after navigation
+- assertVisible: '通常の日記エントリーです。'
+
+# Test different date (should be empty)
+- tapOn:
+    id: 'day-modal-close'
+- tapOn:
+    point: 60%, 50% # Different calendar date
+    delay: 500
+
+# Verify empty journal for new date
+- assertVisible:
+    id: 'journal-text-input'
+- assertVisible: '日記を書いてみましょう'
+
+# Test app restart persistence
+- tapOn:
+    id: 'journal-text-input'
+- inputText: 'アプリ再起動テスト用のエントリー'
+
+# Wait for auto-save
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Close app and relaunch
+- tapOn:
+    id: 'day-modal-close'
+- stopApp
+- launchApp
+
+# Navigate back to the same date
+- tapOn:
+    point: 60%, 50% # Same date as before restart
+    delay: 500
+
+# Verify journal persisted across app restart
+- assertVisible: 'アプリ再起動テスト用のエントリー'
+
+# Test Today screen journal integration
+- tapOn:
+    id: 'day-modal-close'
+- tapOn:
+    point: 50%, 93% # Today tab
+    delay: 500
+
+# Verify Today screen shows current date journal (if implemented)
+- assertVisible:
+    id: 'today-screen'
+
+# Return to Calendar for cleanup
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    delay: 500
+
+# Final verification - journal functionality complete
+- assertVisible:
+    id: 'calendar-screen'

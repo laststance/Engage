@@ -13,7 +13,11 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e:ios": "maestro test maestro/ios/",
-    "test:e2e:android": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios'"
+    "test:e2e:android": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios'",
+    "test:e2e:journal": "maestro test maestro/ios/journal-functionality.yaml maestro/ios/journal-auto-save.yaml maestro/ios/journal-placeholder-text.yaml",
+    "test:e2e:journal:basic": "maestro test maestro/ios/journal-functionality.yaml",
+    "test:e2e:journal:autosave": "maestro test maestro/ios/journal-auto-save.yaml",
+    "test:e2e:journal:placeholder": "maestro test maestro/ios/journal-placeholder-text.yaml"
   },
   "dependencies": {
     "@expo/html-elements": "^0.10.1",

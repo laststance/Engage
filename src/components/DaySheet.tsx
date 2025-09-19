@@ -1,12 +1,13 @@
-import React, { useState } from 'react'
-import { TextInput } from 'react-native'
+import React from 'react'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
 import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import { JournalInput } from './JournalInput'
 import { Task, Entry, Completion, Category } from '@/src/types'
+import { useAppStore } from '@/src/stores/app-store'
 
 interface DaySheetProps {
   date: string
@@ -29,7 +30,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
   onJournalUpdate,
   onTaskSelectionPress,
 }) => {
-  const [journalText, setJournalText] = useState(journalEntry?.note || '')
+  const { getJournalPlaceholder } = useAppStore()
 
   // Create a map of completed task IDs for quick lookup
   const completedTaskIds = new Set(completions.map((c) => c.taskId))
@@ -84,10 +85,9 @@ export const DaySheet: React.FC<DaySheetProps> = ({
     return `${month}月${day}日 (${dayOfWeek})`
   }
 
-  const handleJournalChange = (text: string) => {
-    setJournalText(text)
-    onJournalUpdate(text)
-  }
+  // Get dynamic placeholder text based on completion status
+  const hasCompletions = completions.length > 0
+  const placeholder = getJournalPlaceholder(date)
 
   return (
     <Box className="flex-1 bg-white" testID="day-sheet">
@@ -204,24 +204,12 @@ export const DaySheet: React.FC<DaySheetProps> = ({
         )}
 
         {/* Journal Section */}
-        <VStack space="sm">
-          <Text className="text-lg font-semibold text-gray-800">
-            今日の振り返り
-          </Text>
-
-          <Box className="bg-gray-50 rounded-lg p-4 min-h-[120px]">
-            <TextInput
-              value={journalText}
-              onChangeText={handleJournalChange}
-              placeholder="日記を書いてみましょう..."
-              placeholderTextColor="#9CA3AF"
-              multiline
-              textAlignVertical="top"
-              className="flex-1 text-gray-800 text-base leading-6"
-              testID="journal-input"
-            />
-          </Box>
-        </VStack>
+        <JournalInput
+          date={date}
+          entry={journalEntry}
+          onUpdate={onJournalUpdate}
+          placeholder={placeholder}
+        />
       </VStack>
     </Box>
   )

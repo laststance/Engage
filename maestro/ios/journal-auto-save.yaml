@@ -1,0 +1,98 @@
+appId: com.anonymous.engage
+---
+# Journal Auto-Save Functionality Test
+# Specifically tests the auto-save debouncing and persistence
+
+- launchApp
+- clearState
+
+# Navigate to a specific date
+- assertVisible:
+    id: 'calendar-screen'
+- tapOn:
+    point: 50%, 50%
+    delay: 500
+
+# Open journal input
+- assertVisible:
+    id: 'journal-input-container'
+- tapOn:
+    id: 'journal-text-input'
+
+# Test rapid typing (should debounce auto-save)
+- inputText: 'テスト'
+- waitForAnimationToEnd:
+    timeout: 200
+- inputText: '中'
+- waitForAnimationToEnd:
+    timeout: 200
+- inputText: 'です'
+
+# Wait for debounced auto-save (1 second)
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# Verify auto-save completed
+- assertVisible: '保存'
+
+# Test immediate save on blur
+- inputText: ' 追加テキスト'
+- tapOn:
+    point: 50%, 20% # Tap outside to blur
+
+# Verify immediate save on blur
+- waitForAnimationToEnd:
+    timeout: 500
+- assertVisible: '保存'
+
+# Test auto-save status updates
+- tapOn:
+    id: 'journal-text-input'
+- inputText: ' さらに追加'
+
+# Check saving status appears
+- assertVisible: '保存中'
+
+# Wait for save completion
+- waitForAnimationToEnd:
+    timeout: 2000
+- assertVisible: '保存済み'
+
+# Test persistence after modal close/reopen
+- tapOn:
+    id: 'day-modal-close'
+- tapOn:
+    point: 50%, 50%
+    delay: 500
+
+# Verify all text persisted
+- assertVisible: 'テスト中です 追加テキスト さらに追加'
+
+# Test empty entry handling
+- tapOn:
+    id: 'journal-text-input'
+- clearText
+
+# Wait for auto-save of empty content
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# Verify empty state
+- assertVisible: '空の日記エントリーです'
+
+# Test recovery after app backgrounding
+- inputText: 'バックグラウンドテスト'
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# Simulate app backgrounding and foregrounding
+- tapOn:
+    id: 'day-modal-close'
+- stopApp
+- launchApp
+
+# Verify persistence after app restart
+- tapOn:
+    point: 50%, 50%
+    delay: 500
+- assertVisible: 'バックグラウンドテスト'
