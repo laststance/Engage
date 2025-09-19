@@ -144,7 +144,7 @@ export const Calendar: React.FC<CalendarProps> = ({
 
         <Text
           className="text-xl font-semibold text-gray-800"
-          testID="calendar-month-year"
+          testID="calendar-title"
         >
           {currentMonth.getFullYear()}年{MONTHS[currentMonth.getMonth()]}
         </Text>

@@ -19,7 +19,7 @@ tags: [ios, smoke]
 
 # Test 3: Navigation elements are present
 - assertVisible:
-    id: 'calendar-month-year'
+    id: 'calendar-title'
 - assertVisible:
     id: 'calendar-prev-month'
 - assertVisible:

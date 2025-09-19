@@ -20,7 +20,7 @@ tags: [ios, ui-components]
 
 # Test month navigation
 - assertVisible:
-    id: 'calendar-month-year'
+    id: 'calendar-title'
 - assertVisible:
     id: 'calendar-prev-month'
 - assertVisible:

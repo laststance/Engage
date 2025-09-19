@@ -21,6 +21,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Calendar',
+          tabBarTestID: 'calendar-tab',
           tabBarAccessibilityLabel: 'calendar-tab',
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="calendar" color={color} />
@@ -31,6 +32,7 @@ export default function TabLayout() {
         name="today"
         options={{
           title: 'Today',
+          tabBarTestID: 'today-tab',
           tabBarAccessibilityLabel: 'today-tab',
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="checkmark.circle.fill" color={color} />
@@ -41,6 +43,7 @@ export default function TabLayout() {
         name="stats"
         options={{
           title: 'Stats',
+          tabBarTestID: 'stats-tab',
           tabBarAccessibilityLabel: 'stats-tab',
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="chart.bar.fill" color={color} />
