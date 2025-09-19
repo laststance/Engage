@@ -1,0 +1,88 @@
+---
+alwaysApply: true
+description: E2E testing workflow with Maestro
+---
+
+# 📱 Maestro E2E Testing Workflow
+
+## ⚠️ CRITICAL: iOS Simulator Setup Required
+
+**ALWAYS** follow the [development workflow](mdc:.cursor/rules/development-workflow.mdc) before running E2E tests:
+
+```bash
+# 1. First, start the iOS app in simulator (see development-workflow.mdc)
+npm run ios
+
+# 2. Wait for app to fully initialize (check logs for "App initialization completed successfully")
+
+# 3. Then run Maestro tests
+npm run test:e2e:ios
+```
+
+## 🚫 Do NOT Run Tests Without App
+
+**NEVER** run `npm run test:e2e:ios` without first starting the app with `npm run ios`. 
+
+This will result in test failures like:
+- `Assertion is false: id: calendar-screen is visible`
+- `Assertion is false: id: statistics-screen is visible`
+
+## 📱 Platform Support
+
+- **iOS**: ✅ Fully supported - Use `npm run ios` + `npm run test:e2e:ios`
+- **Android**: ❌ Not implemented yet - Command shows: `'Android tests not implemented yet. Run: npm run test:e2e:ios'`
+
+## 🔧 Environment Requirements
+
+1. **Java Runtime**: Maestro requires Java (OpenJDK 17+ recommended)
+2. **iOS Simulator**: iPhone 16 Pro (iOS 18.6+) optimized
+3. **Tmux Sessions**: Use tmux for long-running processes to avoid blocking terminal
+
+```bash
+# Check Java version
+java --version
+
+# Check Maestro version
+maestro --version
+
+# Boot specific iPhone simulator
+xcrun simctl boot BD11E026-36E4-434E-B630-2513C5C69D9B
+```
+
+## 📋 Complete Testing Workflow
+
+```bash
+# 1. Start iOS simulator and app (in tmux session)
+tmux new -s expo-ios -d
+tmux send-keys -t expo-ios 'npm run ios' Enter
+
+# 2. Wait for app initialization logs:
+# "App initialization completed successfully"
+# "Database initialized successfully" 
+# "Preset initialization complete"
+
+# 3. Run Maestro tests (in separate tmux session)
+tmux new -s maestro-test -d
+tmux send-keys -t maestro-test 'npm run test:e2e:ios' Enter
+
+# 4. Monitor test progress
+tmux capture-pane -t maestro-test -p
+
+# 5. Cleanup after testing
+tmux kill-session -t expo-ios
+tmux kill-session -t maestro-test
+```
+
+## 🎯 Test Success Indicators
+
+- App logs show database and preset initialization
+- Tests like `business-logic`, `basic-navigation`, `state-management` should pass
+- Current issues are mainly missing testIDs, not app functionality
+
+## 🐛 Common Test Failure Patterns
+
+1. **Missing testIDs**: Add `testID` props to UI components
+2. **Navigation issues**: Coordinate-based navigation due to Expo Router limitations
+3. **Text element issues**: Japanese text elements need proper rendering
+
+Remember: The app itself works fine - test failures are primarily due to missing test identifiers!

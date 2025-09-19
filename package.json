@@ -12,11 +12,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:e2e": "maestro test maestro/ios/",
     "test:e2e:ios": "maestro test maestro/ios/",
-    "test:e2e:android": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios'",
-    "test:e2e:database": "maestro test maestro/ios/database-operations.yaml maestro/ios/database-crud.yaml maestro/ios/database-integrity.yaml",
-    "test:e2e:state": "maestro test maestro/ios/business-logic.yaml maestro/ios/statistics-validation.yaml maestro/ios/state-management.yaml"
+    "test:e2e:android": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios'"
   },
   "dependencies": {
     "@expo/html-elements": "^0.10.1",
@@ -60,12 +57,17 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
     "@types/react-test-renderer": "^19.1.0",
+    "babel-jest": "^30.1.2",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "jest": "^30.1.3",
+    "jsdom": "^27.0.0",
+    "react-native-testing-library": "^2.2.0",
     "react-test-renderer": "^19.1.1",
     "ts-jest": "^29.4.1",
     "typescript": "~5.9.2"

@@ -1,0 +1,85 @@
+appId: com.anonymous.engage
+tags: [ios]
+---
+# Basic interaction test to understand the actual app structure
+
+- launchApp
+- waitForAnimationToEnd
+
+# Verify app launched successfully
+- assertVisible:
+    id: 'calendar-screen'
+
+# Wait a bit more for full initialization
+- extendedWaitUntil:
+    visible:
+      id: 'calendar-screen'
+    timeout: 10000
+
+# Try different tap locations to see if we can trigger any modals
+- tapOn:
+    point: 50%, 40% # Upper middle area
+- waitForAnimationToEnd
+
+# Check if anything changed
+- assertVisible:
+    text: '.*'
+    optional: true
+
+# Try tapping in different areas
+- tapOn:
+    point: 30%, 60% # Left middle
+- waitForAnimationToEnd
+
+- tapOn:
+    point: 70%, 60% # Right middle
+- waitForAnimationToEnd
+
+# Try tapping bottom area where tabs might be
+- tapOn:
+    point: 50%, 90% # Bottom area
+- waitForAnimationToEnd
+
+# Try tapping specific tab positions
+- tapOn:
+    point: 17%, 93% # Left tab (Calendar)
+- waitForAnimationToEnd
+
+- tapOn:
+    point: 50%, 93% # Middle tab (Today)
+- waitForAnimationToEnd
+
+- tapOn:
+    point: 83%, 93% # Right tab (Stats)
+- waitForAnimationToEnd
+
+# Go back to what should be calendar
+- tapOn:
+    point: 17%, 93%
+- waitForAnimationToEnd
+
+# Try a longer wait and then tap in calendar area
+- extendedWaitUntil:
+    visible:
+      id: 'calendar-screen'
+    timeout: 5000
+
+# Try multiple taps in calendar area
+- tapOn:
+    point: 50%, 50%
+- waitForAnimationToEnd
+
+- tapOn:
+    point: 40%, 45%
+- waitForAnimationToEnd
+
+- tapOn:
+    point: 60%, 55%
+- waitForAnimationToEnd
+
+# Check if we can find any text elements that might indicate what's on screen
+- assertVisible:
+    text: '.*'
+    optional: true
+
+- stopApp

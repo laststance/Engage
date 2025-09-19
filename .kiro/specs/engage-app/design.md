@@ -350,7 +350,7 @@ class ErrorBoundary extends React.Component {
 
 ```yaml
 # maestro/complete_daily_flow.yaml
-appId: com.habittracker.app
+appId: com.anonymous.engage
 ---
 - launchApp
 - tapOn: '14' # Calendar date

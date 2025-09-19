@@ -8,6 +8,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol'
 import { DaySheet } from './DaySheet'
 import { TaskPicker } from './TaskPicker'
 import { useAppStore } from '@/src/stores/app-store'
+import { Task } from '@/src/types'
 
 interface DayModalProps {
   isVisible: boolean
@@ -27,6 +28,8 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
     setTaskPickerVisible,
     setPresetEditorVisible,
     addTasksToDate,
+    updatePresetTasks,
+    createCategory,
   } = useAppStore()
 
   const dayCompletions = completions[selectedDate] || []
@@ -54,8 +57,15 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
   }
 
   const handleEditPresets = () => {
-    setTaskPickerVisible(false)
-    setPresetEditorVisible(true)
+    // Keep task picker visible, it will handle the preset editor internally
+  }
+
+  const handleUpdatePresets = async (tasks: Task[]) => {
+    await updatePresetTasks(tasks)
+  }
+
+  const handleCreateCategory = async (name: string) => {
+    await createCategory({ name })
   }
 
   // Get currently selected tasks for the day (tasks that are available for completion)
@@ -100,6 +110,8 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
           onTaskSelect={handleTaskSelect}
           onClose={handleTaskPickerClose}
           onEditPresets={handleEditPresets}
+          onUpdatePresets={handleUpdatePresets}
+          onCreateCategory={handleCreateCategory}
         />
       </SafeAreaView>
     </Modal>

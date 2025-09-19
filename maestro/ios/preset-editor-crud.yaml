@@ -1,0 +1,338 @@
+appId: com.anonymous.engage
+tags: [ios]
+---
+# Preset Task Editor CRUD Operations E2E Test
+# Tests Create, Read, Update, Delete operations for preset tasks and categories
+
+- launchApp
+- clearState
+- waitForAnimationToEnd
+
+# Navigate to preset editor
+- tapOn:
+    point: 50%, 50% # Open a day
+- waitForAnimationToEnd
+- tapOn: 'タスクを選択'
+- waitForAnimationToEnd
+- tapOn: 'プリセットを編集'
+- waitForAnimationToEnd
+
+# Verify preset editor is open
+- assertVisible: 'プリセットタスク編集'
+
+# Test 1: CREATE - Add a new task
+- tapOn: '新しいタスクを追加'
+- waitForAnimationToEnd
+
+# Scroll to find the new task input
+- scroll
+- waitForAnimationToEnd
+
+# Fill in task details
+- tapOn:
+    text: 'タスク名を入力'
+- inputText: 'テストタスク'
+
+# Set duration
+- tapOn:
+    text: '例: 30'
+- inputText: '45'
+
+# Test 2: CREATE - Add a new category
+- tapOn: 'カテゴリー追加'
+- waitForAnimationToEnd
+
+- tapOn:
+    text: '新しいカテゴリー名'
+- inputText: 'テストカテゴリー'
+
+- tapOn: '作成'
+- waitForAnimationToEnd
+
+# Verify new category is available
+- assertVisible: 'テストカテゴリー'
+
+# Assign new task to new category
+- swipe:
+    direction: UP
+- waitForAnimationToEnd
+
+# Select the new category for the new task
+- tapOn:
+    text: 'テストカテゴリー'
+- waitForAnimationToEnd
+
+# Test 3: READ - Verify task details are displayed correctly
+- scroll
+- waitForAnimationToEnd
+
+# Verify task title is shown
+- assertVisible: 'テストタスク'
+
+# Verify duration is shown in input
+- assertVisible: '45'
+
+# Test 4: UPDATE - Edit an existing task
+- swipe:
+    direction: UP
+- waitForAnimationToEnd
+
+# Find an existing task to edit
+- tapOn:
+    text: 'ネットワーキング'
+- eraseText
+- inputText: '更新されたネットワーキング'
+
+# Update its duration
+- tapOn:
+    text: '例: 30'
+- eraseText
+- inputText: '60'
+
+# Change its category
+- tapOn:
+    text: 'テストカテゴリー'
+- waitForAnimationToEnd
+
+# Test 5: DELETE - Remove a task
+- scroll
+- waitForAnimationToEnd
+
+# Find delete button for a task
+- tapOn: '削除'
+- waitForAnimationToEnd
+
+# Confirm deletion in alert
+- assertVisible: 'タスクを削除'
+- tapOn: '削除'
+- waitForAnimationToEnd
+
+# Test 6: Validation - Try to save with empty task title
+- tapOn: '新しいタスクを追加'
+- waitForAnimationToEnd
+
+# Leave task title empty and try to save
+- tapOn: '保存'
+- waitForAnimationToEnd
+
+# Should show validation error
+- assertVisible: 'エラー'
+- tapOn: 'OK'
+- waitForAnimationToEnd
+
+# Fill in the empty task to fix validation
+- scroll
+- waitForAnimationToEnd
+- tapOn:
+    text: 'タスク名を入力'
+- inputText: '有効なタスク'
+
+# Test 7: Validation - Try to create duplicate task names in same category
+- tapOn: '新しいタスクを追加'
+- waitForAnimationToEnd
+
+- scroll
+- waitForAnimationToEnd
+
+# Create task with same name in same category
+- tapOn:
+    text: 'タスク名を入力'
+- inputText: '有効なタスク' # Same name as above
+
+# Make sure it's in the same category
+- tapOn:
+    text: 'テストカテゴリー'
+- waitForAnimationToEnd
+
+# Try to save - should show validation error
+- tapOn: '保存'
+- waitForAnimationToEnd
+
+- assertVisible: 'エラー'
+- assertVisible: '重複'
+- tapOn: 'OK'
+- waitForAnimationToEnd
+
+# Fix the duplicate by changing the name
+- scroll
+- waitForAnimationToEnd
+- tapOn:
+    text: '有効なタスク'
+- eraseText
+- inputText: '別の有効なタスク'
+
+# Test 8: Save changes successfully
+- tapOn: '保存'
+- waitForAnimationToEnd
+
+# Should return to task picker
+- assertVisible: 'タスクを選択'
+
+# Verify changes are reflected
+- assertVisible: 'テストカテゴリー'
+- assertVisible: 'テストタスク'
+- assertVisible: '更新されたネットワーキング'
+- assertVisible: '有効なタスク'
+- assertVisible: '別の有効なタスク'
+
+# Test 9: Verify changes persist in preset editor
+- tapOn: 'プリセットを編集'
+- waitForAnimationToEnd
+
+# Verify all changes are still there
+- assertVisible: 'テストタスク'
+- assertVisible: '更新されたネットワーキング'
+
+# Verify task details are preserved
+- scroll
+- waitForAnimationToEnd
+
+# Check that duration was saved
+- assertVisible: '45' # Duration for テストタスク
+
+# Test 10: Cancel changes without saving
+- tapOn: '新しいタスクを追加'
+- waitForAnimationToEnd
+
+- scroll
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'タスク名を入力'
+- inputText: 'キャンセルされるタスク'
+
+# Cancel without saving
+- tapOn: 'キャンセル'
+- waitForAnimationToEnd
+
+# Confirm cancellation
+- assertVisible: '変更を破棄'
+- tapOn: '破棄'
+- waitForAnimationToEnd
+
+# Verify cancelled task is not present
+- assertNotVisible: 'キャンセルされるタスク'
+
+# Test 11: Verify category management
+- tapOn: 'プリセットを編集'
+- waitForAnimationToEnd
+
+# Verify custom category is available
+- assertVisible: 'テストカテゴリー'
+
+# Test creating another category
+- tapOn: 'カテゴリー追加'
+- waitForAnimationToEnd
+
+- tapOn:
+    text: '新しいカテゴリー名'
+- inputText: '健康'
+
+- tapOn: '作成'
+- waitForAnimationToEnd
+
+# Verify new category is available
+- assertVisible: '健康'
+
+# Test 12: Verify task-category relationships
+# Move a task to different category
+- swipe:
+    direction: UP
+- waitForAnimationToEnd
+
+# Find a task and change its category
+- tapOn:
+    text: '健康' # Assign to health category
+- waitForAnimationToEnd
+
+# Save changes
+- tapOn: '保存'
+- waitForAnimationToEnd
+
+# Verify task appears under correct category in task picker
+- assertVisible: '健康'
+
+# Test 13: Verify error handling for category creation
+- tapOn: 'プリセットを編集'
+- waitForAnimationToEnd
+
+- tapOn: 'カテゴリー追加'
+- waitForAnimationToEnd
+
+# Try to create category with empty name
+- tapOn: '作成'
+- waitForAnimationToEnd
+
+# Should not create category (no error dialog expected, just no action)
+
+# Try with valid name
+- tapOn:
+    text: '新しいカテゴリー名'
+- inputText: '仕事'
+
+- tapOn: '作成'
+- waitForAnimationToEnd
+
+- assertVisible: '仕事'
+
+# Test 14: Verify task count limits and performance
+# Add multiple tasks to test performance
+- tapOn: '新しいタスクを追加'
+- tapOn: '新しいタスクを追加'
+- tapOn: '新しいタスクを追加'
+
+# Fill in multiple tasks quickly
+- scroll
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'タスク名を入力'
+- inputText: 'タスク1'
+
+- tapOn:
+    text: 'タスク名を入力'
+- inputText: 'タスク2'
+
+- tapOn:
+    text: 'タスク名を入力'
+- inputText: 'タスク3'
+
+# Save all changes
+- tapOn: '保存'
+- waitForAnimationToEnd
+
+# Verify all tasks are saved
+- assertVisible: 'タスク1'
+- assertVisible: 'タスク2'
+- assertVisible: 'タスク3'
+
+# Test 15: Final verification of CRUD operations
+- tapOn: 'プリセットを編集'
+- waitForAnimationToEnd
+
+# Verify we can see all our created/modified content
+- assertVisible: 'テストカテゴリー'
+- assertVisible: '健康'
+- assertVisible: '仕事'
+- assertVisible: 'テストタスク'
+- assertVisible: '更新されたネットワーキング'
+
+# Close without making changes
+- tapOn: 'キャンセル'
+- waitForAnimationToEnd
+- tapOn: '破棄'
+- waitForAnimationToEnd
+
+# Close task picker
+- tapOn:
+    id: 'task-picker-close'
+- waitForAnimationToEnd
+
+# Close day modal
+- tapOn:
+    id: 'day-modal-close'
+- waitForAnimationToEnd
+
+# CRUD operations test completed successfully
+- assertVisible:
+    id: 'calendar-screen'

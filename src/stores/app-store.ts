@@ -7,6 +7,10 @@ import {
   categoryRepository,
 } from '../services/repositories'
 import {
+  presetService,
+  type PresetInitializationResult,
+} from '../services/presetService'
+import {
   getSuggestedTasks,
   groupTasksByCategory,
   calculateDayProgress,
@@ -52,6 +56,8 @@ interface AppState {
   currentTab: 'calendar' | 'today' | 'stats'
   isLoading: boolean
   error: string | null
+  isFirstLaunch: boolean
+  suggestedTasks: Task[]
 
   // Actions
   loadData: () => Promise<void>
@@ -71,6 +77,9 @@ interface AppState {
 
   // Business Logic Actions
   initializeApp: () => Promise<void>
+  initializePresets: () => Promise<PresetInitializationResult>
+  getSuggestedTasks: () => Promise<Task[]>
+  getPresetTasksByCategory: () => Promise<Record<string, Task[]>>
   getTaskSelectionData: () => TaskSelectionResult
   getDayProgress: (date: string) => DayProgress
   getTaskCompletionStatus: (date: string) => Record<string, boolean>
@@ -108,6 +117,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   currentTab: 'calendar',
   isLoading: false,
   error: null,
+  isFirstLaunch: false,
+  suggestedTasks: [],
 
   // Actions
   loadData: async () => {
@@ -271,11 +282,62 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       set({ error: null })
 
-      // Update tasks in database through repository
-      // This is a simplified version - in practice you'd handle individual updates
-      set({ tasks })
+      // Get current tasks to determine what needs to be created, updated, or deleted
+      const currentTasks = get().tasks
+      const currentTaskIds = new Set(currentTasks.map((t) => t.id))
+      const newTaskIds = new Set(tasks.map((t) => t.id))
 
-      console.log('Preset tasks updated')
+      // Tasks to create (new tasks without existing IDs)
+      const tasksToCreate = tasks.filter(
+        (t) => !t.id || !currentTaskIds.has(t.id)
+      )
+
+      // Tasks to update (existing tasks with changes)
+      const tasksToUpdate = tasks.filter(
+        (t) => t.id && currentTaskIds.has(t.id)
+      )
+
+      // Tasks to delete (current tasks not in new list)
+      const tasksToDelete = currentTasks.filter((t) => !newTaskIds.has(t.id))
+
+      // Execute database operations
+      const operations: (() => Promise<void>)[] = []
+
+      // Delete tasks
+      tasksToDelete.forEach((task) => {
+        operations.push(async () => {
+          await taskRepository.delete(task.id)
+        })
+      })
+
+      // Create new tasks
+      tasksToCreate.forEach((task) => {
+        operations.push(async () => {
+          const { id, createdAt, updatedAt, ...taskData } = task
+          await taskRepository.create(taskData)
+        })
+      })
+
+      // Update existing tasks
+      tasksToUpdate.forEach((task) => {
+        operations.push(async () => {
+          const { id, createdAt, ...updates } = task
+          await taskRepository.update(id, updates)
+        })
+      })
+
+      // Execute all operations
+      await Promise.all(operations.map((op) => op()))
+
+      // Reload tasks from database to get accurate state
+      const updatedTasks = await taskRepository.findAll()
+      set({ tasks: updatedTasks })
+
+      console.log('Preset tasks updated successfully', {
+        created: tasksToCreate.length,
+        updated: tasksToUpdate.length,
+        deleted: tasksToDelete.length,
+      })
     } catch (error) {
       console.error('Failed to update preset tasks:', error)
       set({
@@ -284,6 +346,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             ? error.message
             : 'Failed to update preset tasks',
       })
+      throw error
     }
   },
 
@@ -377,16 +440,27 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       set({ isLoading: true, error: null })
 
-      // Initialize database and seed default data if needed
-      await Promise.all([
-        categoryRepository.seedDefaultCategories(),
-        taskRepository.seedDefaultTasks(),
-      ])
+      // Check if this is first launch
+      const isFirstLaunch = await presetService.isFirstLaunch()
+
+      // Initialize presets (categories and tasks)
+      const initResult = await get().initializePresets()
 
       // Load all data
       await get().loadData()
 
-      console.log('App initialized successfully')
+      set({
+        isFirstLaunch,
+        suggestedTasks: initResult.suggestedTasks,
+        isLoading: false,
+      })
+
+      console.log('App initialized successfully', {
+        isFirstLaunch,
+        categoriesCreated: initResult.categoriesCreated,
+        tasksCreated: initResult.tasksCreated,
+        suggestedTasksCount: initResult.suggestedTasks.length,
+      })
     } catch (error) {
       console.error('Failed to initialize app:', error)
       set({
@@ -394,6 +468,33 @@ export const useAppStore = create<AppState>((set, get) => ({
           error instanceof Error ? error.message : 'Failed to initialize app',
         isLoading: false,
       })
+    }
+  },
+
+  initializePresets: async () => {
+    try {
+      return await presetService.initializeDefaults()
+    } catch (error) {
+      console.error('Failed to initialize presets:', error)
+      throw error
+    }
+  },
+
+  getSuggestedTasks: async () => {
+    try {
+      return await presetService.getSuggestedTasks()
+    } catch (error) {
+      console.error('Failed to get suggested tasks:', error)
+      throw error
+    }
+  },
+
+  getPresetTasksByCategory: async () => {
+    try {
+      return await presetService.getPresetTasksByCategory()
+    } catch (error) {
+      console.error('Failed to get preset tasks by category:', error)
+      throw error
     }
   },
 

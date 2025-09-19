@@ -14,13 +14,13 @@ alwaysApply: true
 
 ### ⚠️ Process Management
 
+**ALWAYS** follow the [development workflow](mdc:.cursor/rules/development-workflow.mdc) for app development.
+
 **NEVER** run `expo start`, `expo run:ios`, `expo run:android` directly - they block indefinitely.
 
 ```bash
-# Always use tmux for dev servers
-npx kill-port 8081 19000 19001 19002
-tmux new -s expo-dev -d
-tmux send-keys -t expo-dev 'npm run expo start --web' Enter
+# Correct development workflow
+npm run ios  # Uses tmux internally for React Native iOS development
 ```
 
 ### Code Standards
@@ -46,6 +46,7 @@ tmux send-keys -t expo-dev 'npm run expo start --web' Enter
 
 ### Testing Strategy
 
-- **E2E**: Maestro tests in `maestro/` directory
-- **Command**: `npm run test:e2e`
+- **E2E**: Maestro tests in `maestro/` directory - see [Maestro testing workflow](mdc:.cursor/rules/maestro-testing.mdc)
+- **Prerequisites**: Must run `npm run ios` first (see [development workflow](mdc:.cursor/rules/development-workflow.mdc))
+- **Command**: `npm run test:e2e:ios`
 - **Focus**: Core user flows (task completion, navigation, stats)

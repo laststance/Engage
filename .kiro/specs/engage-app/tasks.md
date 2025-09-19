@@ -152,16 +152,16 @@
       - Document any remaining visual discrepancies for final polish
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 9.1, 9.2, 9.3, 9.4, 9.5_
 
-- [ ] 5. Preset Task Management System
+- [x] 5. Preset Task Management System
 
-  - [ ] 5.1 Implement default preset tasks initialization
+  - [x] 5.1 Implement default preset tasks initialization
 
     - Create initial task seeding with default preset categories ("事業" and "生活") and their associated tasks
     - Add default tasks with proper titles and time durations
     - Implement first-launch task suggestion (3 recommended tasks)
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-  - [ ] 5.2 Build Preset Task Editor interface
+  - [x] 5.2 Build Preset Task Editor interface
 
     - Create CRUD interface for managing preset tasks
     - Implement task title and duration editing
@@ -169,14 +169,14 @@
     - Create task deletion with confirmation
     - _Requirements: 2.6, 2.7, 7.5, 7.6_
 
-  - [ ] 5.3 Integrate preset management with task selection
+  - [x] 5.3 Integrate preset management with task selection
 
     - Connect preset editor to task picker modal
     - Ensure real-time updates when presets are modified
     - Implement proper state synchronization
     - _Requirements: 2.6, 2.7, 7.5, 7.6_
 
-  - [ ] 5.4 Create E2E test for preset task management
+  - [x] 5.4 Create E2E test for preset task management
     - Write Maestro test for preset task CRUD operations
     - Test integration between preset editor and task picker
     - Verify default task initialization and suggestions

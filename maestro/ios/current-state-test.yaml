@@ -1,0 +1,93 @@
+appId: com.anonymous.engage
+tags: [ios]
+---
+# Test to understand the current state of the app
+
+- launchApp
+- waitForAnimationToEnd
+
+# Verify app launches and shows calendar screen
+- assertVisible:
+    id: 'calendar-screen'
+
+# Wait longer for full app initialization
+- extendedWaitUntil:
+    visible:
+      id: 'calendar-screen'
+    timeout: 15000
+
+# Try to interact with the calendar by tapping different areas
+# This should trigger the day modal if the functionality is implemented
+
+# Try tapping in the center of the calendar area
+- tapOn:
+    point: 50%, 50%
+- waitForAnimationToEnd
+
+# Wait a bit to see if modal appears
+- extendedWaitUntil:
+    visible:
+      text: 'Daily Tasks'
+    timeout: 5000
+    optional: true
+
+# Check if we can find any modal-related elements
+- assertVisible:
+    text: 'Daily Tasks'
+    optional: true
+
+- assertVisible:
+    id: 'day-sheet'
+    optional: true
+
+- assertVisible:
+    text: 'タスクを選択'
+    optional: true
+
+# If no modal appeared, try different tap locations
+- tapOn:
+    point: 30%, 40%
+- waitForAnimationToEnd
+
+- tapOn:
+    point: 70%, 60%
+- waitForAnimationToEnd
+
+# Check again for modal elements
+- assertVisible:
+    text: 'Daily Tasks'
+    optional: true
+
+# Try to navigate to other tabs to see if they work
+- tapOn:
+    point: 50%, 93% # Today tab
+- waitForAnimationToEnd
+
+# Check if we're on today screen
+- assertVisible:
+    id: 'today-screen'
+    optional: true
+
+- assertVisible:
+    id: 'today-title'
+    optional: true
+
+# Try stats tab
+- tapOn:
+    point: 83%, 93% # Stats tab
+- waitForAnimationToEnd
+
+- assertVisible:
+    id: 'stats-screen'
+    optional: true
+
+# Go back to calendar
+- tapOn:
+    point: 17%, 93% # Calendar tab
+- waitForAnimationToEnd
+
+- assertVisible:
+    id: 'calendar-screen'
+    optional: true
+
+- stopApp

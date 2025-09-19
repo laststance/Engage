@@ -1,0 +1,115 @@
+---
+alwaysApply: true
+description: React Native/Expo development workflow
+---
+
+# 📱 React Native/Expo 開発ワークフロー
+
+## 🚨 CRITICAL: 開発作業開始時の必須手順
+
+**すべての開発作業開始時に必ず実行:**
+
+```bash
+# 1. iOSシミュレーターでアプリを起動
+npm run ios
+```
+
+## 🔧 適用場面
+
+この手順は以下のすべての作業で必要です：
+
+### ✅ 機能実装・開発
+- 新機能の実装
+- UI/UXの改善
+- バグ修正
+- コンポーネント開発
+
+### ✅ テスト・検証
+- E2Eテスト実行 (`npm run test:e2e:ios`)
+- 手動テスト
+- デザイン検証
+- 動作確認
+
+### ✅ デバッグ・トラブルシューティング
+- ログ確認
+- パフォーマンス検証
+- エラー調査
+
+## ⚠️ **NEVER** 実行禁止コマンド
+
+直接実行すると無限にブロックされるため、**絶対に実行しないでください:**
+
+```bash
+# ❌ 禁止 - 無限ブロック
+expo start
+expo run:ios
+expo run:android
+```
+
+## 🔧 正しい開発環境セットアップ
+
+### 1. 開発サーバー起動（tmux使用）
+
+```bash
+# ポート解放
+npx kill-port 8081 19000 19001 19002
+
+# tmuxセッションで開発サーバー起動
+tmux new -s expo-dev -d
+tmux send-keys -t expo-dev 'npm run ios' Enter
+
+# セッション確認
+tmux list-sessions
+```
+
+### 2. 初期化完了の確認
+
+アプリが完全に起動するまで待機し、以下のログを確認：
+
+```
+✅ Database initialized successfully
+✅ Preset initialization complete
+✅ App initialization completed successfully
+```
+
+### 3. 開発作業開始
+
+上記のログが確認できたら、安全に開発作業を開始できます。
+
+## 📱 プラットフォーム優先順位
+
+1. **iOS First** - 主要開発ターゲット
+   - iPhone 16 Pro Simulator推奨
+   - iOS 18.6+ 最適化済み
+
+2. **Android Compatible** - クロスプラットフォーム対応
+   - 現在は未実装 (`npm run android` 未対応)
+
+## 🔄 セッション管理
+
+### 開発セッション終了時
+
+```bash
+# 開発完了後はクリーンアップ
+tmux kill-session -t expo-dev
+
+# 必要に応じて他のセッションもクリーンアップ
+tmux list-sessions
+tmux kill-session -t <session-name>
+```
+
+## 🎯 成功指標
+
+- ✅ アプリがシミュレーターで正常起動
+- ✅ Metro bundlerが動作
+- ✅ ホットリロードが機能
+- ✅ デバッグログが表示
+
+## 💡 開発効率化のヒント
+
+1. **tmux使用**: ターミナルがブロックされない
+2. **ログ監視**: `tmux capture-pane -t expo-dev -p` でログ確認
+3. **ポート管理**: 問題時は `npx kill-port` でポート解放
+4. **セッション管理**: 作業終了時は必ずクリーンアップ
+
+**Remember: すべての開発作業は `npm run ios` から始まります！** 🚀

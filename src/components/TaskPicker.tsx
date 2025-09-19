@@ -7,6 +7,7 @@ import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
 import { Task, Category } from '@/src/types'
+import { PresetTaskEditor } from './PresetTaskEditor'
 
 interface TaskPickerProps {
   isVisible: boolean
@@ -16,6 +17,8 @@ interface TaskPickerProps {
   onTaskSelect: (taskIds: string[]) => void
   onClose: () => void
   onEditPresets: () => void
+  onUpdatePresets: (tasks: Task[]) => Promise<void>
+  onCreateCategory: (name: string) => Promise<void>
 }
 
 export const TaskPicker: React.FC<TaskPickerProps> = ({
@@ -26,9 +29,12 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
   onTaskSelect,
   onClose,
   onEditPresets,
+  onUpdatePresets,
+  onCreateCategory,
 }) => {
   const [localSelectedTasks, setLocalSelectedTasks] =
     useState<string[]>(selectedTasks)
+  const [isPresetEditorVisible, setIsPresetEditorVisible] = useState(false)
 
   // Group tasks by category
   const tasksByCategory = presetTasks.reduce((acc, task) => {
@@ -80,6 +86,20 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
     onClose()
   }
 
+  const handleEditPresets = () => {
+    setIsPresetEditorVisible(true)
+    onEditPresets()
+  }
+
+  const handlePresetEditorSave = async (tasks: Task[]) => {
+    await onUpdatePresets(tasks)
+    setIsPresetEditorVisible(false)
+  }
+
+  const handlePresetEditorCancel = () => {
+    setIsPresetEditorVisible(false)
+  }
+
   return (
     <Modal
       visible={isVisible}
@@ -105,7 +125,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
 
           {/* Edit Presets Button */}
           <Pressable
-            onPress={onEditPresets}
+            onPress={handleEditPresets}
             className="bg-gray-100 rounded-lg p-3"
             testID="edit-presets-button"
           >
@@ -213,7 +233,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
                   プリセットタスクがありません
                 </Text>
                 <Pressable
-                  onPress={onEditPresets}
+                  onPress={handleEditPresets}
                   className="bg-blue-500 rounded-lg px-6 py-3"
                 >
                   <Text className="text-white font-medium">タスクを追加</Text>
@@ -247,6 +267,16 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
             </Pressable>
           </HStack>
         </Box>
+
+        {/* Preset Task Editor Modal */}
+        <PresetTaskEditor
+          isVisible={isPresetEditorVisible}
+          tasks={presetTasks}
+          categories={categories}
+          onSave={handlePresetEditorSave}
+          onCancel={handlePresetEditorCancel}
+          onCreateCategory={onCreateCategory}
+        />
       </SafeAreaView>
     </Modal>
   )
