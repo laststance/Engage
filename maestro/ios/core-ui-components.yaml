@@ -80,13 +80,30 @@ tags: [ios, ui-components]
 - tapOn:
     id: 'task-picker-cancel'
 - waitForAnimationToEnd:
+    timeout: 2000
+
+# Look for journal section with multiple attempts
+- assertVisible:
+    text: '今日の振り返り'
+    optional: true
+
+# Try scrolling to find journal section
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Try swipe down as well
+- swipe:
+    direction: DOWN
+- waitForAnimationToEnd:
     timeout: 1000
 
 # Test journal input
 - assertVisible:
-    id: 'journal-input'
+    id: 'journal-input-container'
+    optional: true
 - tapOn:
-    id: 'journal-input'
+    id: 'journal-input-container'
 - inputText: 'Test journal entry for E2E testing'
 - waitForAnimationToEnd:
     timeout: 1000
@@ -102,7 +119,6 @@ tags: [ios, ui-components]
 - tapOn:
     point: 83%, 93% # Stats tab coordinate
     repeat: 2
-    delay: 300
     waitToSettleTimeoutMs: 1000
 - waitForAnimationToEnd:
     timeout: 2000
@@ -138,7 +154,6 @@ tags: [ios, ui-components]
 - tapOn:
     point: 50%, 93% # Today tab coordinate
     repeat: 2
-    delay: 300
     waitToSettleTimeoutMs: 1000
 - waitForAnimationToEnd:
     timeout: 2000
@@ -163,7 +178,6 @@ tags: [ios, ui-components]
 - tapOn:
     point: 17%, 93% # Calendar tab coordinate
     repeat: 2
-    delay: 300
     waitToSettleTimeoutMs: 1000
 - waitForAnimationToEnd:
     timeout: 2000

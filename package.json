@@ -13,11 +13,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e:ios": "maestro test maestro/ios/",
-    "test:e2e:android": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios'",
-    "test:e2e:journal": "maestro test maestro/ios/journal-functionality.yaml maestro/ios/journal-auto-save.yaml maestro/ios/journal-placeholder-text.yaml",
-    "test:e2e:journal:basic": "maestro test maestro/ios/journal-functionality.yaml",
-    "test:e2e:journal:autosave": "maestro test maestro/ios/journal-auto-save.yaml",
-    "test:e2e:journal:placeholder": "maestro test maestro/ios/journal-placeholder-text.yaml"
+    "test:e2e:android": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios'"
   },
   "dependencies": {
     "@expo/html-elements": "^0.10.1",
@@ -32,10 +28,12 @@
     "babel-plugin-module-resolver": "^5.0.2",
     "expo": "~54.0.7",
     "expo-constants": "~18.0.8",
+    "expo-device": "~8.0.8",
     "expo-font": "~14.0.8",
     "expo-haptics": "~15.0.7",
     "expo-image": "~3.0.8",
     "expo-linking": "~8.0.8",
+    "expo-notifications": "~0.32.11",
     "expo-router": "~6.0.4",
     "expo-splash-screen": "~31.0.10",
     "expo-sqlite": "~16.0.8",
@@ -61,6 +59,9 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.28.3",
+    "@babel/preset-react": "^7.27.1",
+    "@babel/preset-typescript": "^7.27.1",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^30.0.0",
@@ -70,9 +71,11 @@
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "jest": "^30.1.3",
+    "jest-environment-jsdom": "^30.1.2",
+    "jest-transform-stub": "^2.0.0",
     "jsdom": "^27.0.0",
     "react-native-testing-library": "^2.2.0",
-    "react-test-renderer": "^19.1.1",
+    "react-test-renderer": "^19.1.0",
     "ts-jest": "^29.4.1",
     "typescript": "~5.9.2"
   },

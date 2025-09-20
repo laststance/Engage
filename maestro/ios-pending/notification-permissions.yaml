@@ -1,0 +1,49 @@
+appId: com.anonymous.engage
+---
+# Test notification permission flow
+- launchApp:
+    clearState: true
+- assertVisible: 'Calendar'
+
+# Navigate to Stats screen to access settings
+- tapOn:
+    point: 90%, 93% # Stats tab
+    repeat: 2
+    delay: 300
+- assertVisible: 'Stats'
+
+# Tap settings button
+- tapOn:
+    id: 'settings-button'
+- delay: 1000
+
+# Should show notification settings modal
+- assertVisible: '通知設定'
+- assertVisible: 'デイリーリマインダー'
+
+# Test enabling notifications (this will show system permission dialog)
+- tapOn: 'デイリーリマインダー'
+- delay: 2000
+
+# Note: System permission dialog cannot be automated in Maestro
+# This test verifies the UI flow up to the permission request
+
+# Test time selection when notifications are enabled
+- assertVisible: 'リマインダー時間を選択'
+- tapOn: '朝 9:00'
+- delay: 500
+
+# Test settings status display
+- assertVisible: '通知ステータス'
+- assertVisible: '許可状態'
+
+# Test refresh settings button
+- tapOn: '設定を更新'
+- delay: 1000
+
+# Close settings modal
+- tapOn: '完了'
+- delay: 500
+
+# Should return to Stats screen
+- assertVisible: 'Stats'

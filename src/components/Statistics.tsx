@@ -59,7 +59,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
       <VStack space="sm">
         <HStack className="items-center justify-between">
           <Text className="text-sm font-medium text-gray-600">{title}</Text>
-          <IconSymbol name={icon} size={20} color="#666" />
+          <Text className="text-gray-400">📊</Text>
         </HStack>
         <Text className={`text-2xl font-bold ${color}`}>{value}</Text>
         {subtitle && <Text className="text-xs text-gray-500">{subtitle}</Text>}

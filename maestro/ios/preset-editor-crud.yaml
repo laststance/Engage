@@ -4,24 +4,59 @@ tags: [ios]
 # Preset Task Editor CRUD Operations E2E Test
 # Tests Create, Read, Update, Delete operations for preset tasks and categories
 
-- launchApp
-- clearState
+- launchApp:
+    clearState: true
 - waitForAnimationToEnd
 
 # Navigate to preset editor
+# Ensure calendar is fully loaded
+- extendedWaitUntil:
+    visible:
+      id: 'calendar-screen'
+    timeout: 10000
+
+# Wait longer for full initialization
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Tap on calendar date with fallback coordinates
 - tapOn:
-    point: 50%, 50% # Open a day
+    point: 50%, 45% # Open a day
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# If modal didn't open, try different coordinates
+- runFlow:
+    when:
+      notVisible:
+        text: 'Daily Tasks'
+    commands:
+      - tapOn:
+          point: 40%, 50%
+          waitToSettleTimeoutMs: 1000
+      - waitForAnimationToEnd:
+          timeout: 2000
+
+# Verify day modal opened
+- extendedWaitUntil:
+    visible:
+      text: 'Daily Tasks'
+    timeout: 10000
+
+- tapOn:
+    id: 'task-selection-button'
 - waitForAnimationToEnd
-- tapOn: 'タスクを選択'
-- waitForAnimationToEnd
-- tapOn: 'プリセットを編集'
+- tapOn:
+    id: 'edit-presets-button'
 - waitForAnimationToEnd
 
 # Verify preset editor is open
 - assertVisible: 'プリセットタスク編集'
 
 # Test 1: CREATE - Add a new task
-- tapOn: '新しいタスクを追加'
+- tapOn:
+    id: 'add-task-button'
 - waitForAnimationToEnd
 
 # Scroll to find the new task input
@@ -39,7 +74,11 @@ tags: [ios]
 - inputText: '45'
 
 # Test 2: CREATE - Add a new category
-- tapOn: 'カテゴリー追加'
+# Scroll down to find category management section
+- scroll
+- waitForAnimationToEnd
+- tapOn:
+    id: 'add-category-button'
 - waitForAnimationToEnd
 
 - tapOn:
@@ -108,7 +147,8 @@ tags: [ios]
 - waitForAnimationToEnd
 
 # Test 6: Validation - Try to save with empty task title
-- tapOn: '新しいタスクを追加'
+- tapOn:
+    id: 'add-task-button'
 - waitForAnimationToEnd
 
 # Leave task title empty and try to save
@@ -128,7 +168,8 @@ tags: [ios]
 - inputText: '有効なタスク'
 
 # Test 7: Validation - Try to create duplicate task names in same category
-- tapOn: '新しいタスクを追加'
+- tapOn:
+    id: 'add-task-button'
 - waitForAnimationToEnd
 
 - scroll
@@ -191,7 +232,8 @@ tags: [ios]
 - assertVisible: '45' # Duration for テストタスク
 
 # Test 10: Cancel changes without saving
-- tapOn: '新しいタスクを追加'
+- tapOn:
+    id: 'add-task-button'
 - waitForAnimationToEnd
 
 - scroll
@@ -221,7 +263,8 @@ tags: [ios]
 - assertVisible: 'テストカテゴリー'
 
 # Test creating another category
-- tapOn: 'カテゴリー追加'
+- tapOn:
+    id: 'add-category-button'
 - waitForAnimationToEnd
 
 - tapOn:
@@ -256,7 +299,8 @@ tags: [ios]
 - tapOn: 'プリセットを編集'
 - waitForAnimationToEnd
 
-- tapOn: 'カテゴリー追加'
+- tapOn:
+    id: 'add-category-button'
 - waitForAnimationToEnd
 
 # Try to create category with empty name
@@ -277,9 +321,12 @@ tags: [ios]
 
 # Test 14: Verify task count limits and performance
 # Add multiple tasks to test performance
-- tapOn: '新しいタスクを追加'
-- tapOn: '新しいタスクを追加'
-- tapOn: '新しいタスクを追加'
+- tapOn:
+    id: 'add-task-button'
+- tapOn:
+    id: 'add-task-button'
+- tapOn:
+    id: 'add-task-button'
 
 # Fill in multiple tasks quickly
 - scroll

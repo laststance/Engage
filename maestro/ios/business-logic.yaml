@@ -32,7 +32,7 @@ tags: [ios, business-logic]
 # Wait for stats screen to load
 - extendedWaitUntil:
     visible:
-      id: 'statistics-screen'
+      id: 'stats-screen'
     timeout: 10000
 
 # Test 3: Calendar heatmap initialization

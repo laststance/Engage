@@ -32,7 +32,7 @@ tags: [ios, state-management]
 # Wait for stats screen to load
 - extendedWaitUntil:
     visible:
-      id: 'statistics-screen'
+      id: 'stats-screen'
     timeout: 10000
 
 # Test weekly/monthly toggle
@@ -75,10 +75,10 @@ tags: [ios, state-management]
 - runFlow:
     when:
       visible:
-        id: 'journal-input'
+        id: 'journal-input-container'
     commands:
       - tapOn:
-          id: 'journal-input'
+          id: 'journal-input-container'
       - inputText: '今日はネットワーキングと運動ができて良かった。明日も続けたい。'
       - waitForAnimationToEnd:
           timeout: 1000
@@ -106,5 +106,5 @@ tags: [ios, state-management]
 # Final verification
 - extendedWaitUntil:
     visible:
-      id: 'statistics-screen'
+      id: 'stats-screen'
     timeout: 10000

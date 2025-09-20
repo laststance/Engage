@@ -30,7 +30,7 @@ tags: [ios, database]
     timeout: 2000
 - extendedWaitUntil:
     visible:
-      id: 'statistics-screen'
+      id: 'stats-screen'
     timeout: 10000
 
 # Test 4: Navigate to Calendar to verify heatmap data
@@ -56,10 +56,10 @@ tags: [ios, database]
 - runFlow:
     when:
       visible:
-        id: 'journal-input'
+        id: 'journal-input-container'
     commands:
       - tapOn:
-          id: 'journal-input'
+          id: 'journal-input-container'
       - inputText: 'テストエントリー - データベース操作確認'
       - waitForAnimationToEnd:
           timeout: 1000

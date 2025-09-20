@@ -1,0 +1,143 @@
+import { useEffect, useState, useCallback } from 'react'
+import * as Notifications from 'expo-notifications'
+import { notificationService } from '../services/notificationService'
+
+interface NotificationSettings {
+  enabled: boolean
+  dailyReminderTime: { hour: number; minute: number } | null
+  scheduledCount: number
+}
+
+export function useNotifications() {
+  const [settings, setSettings] = useState<NotificationSettings>({
+    enabled: false,
+    dailyReminderTime: null,
+    scheduledCount: 0,
+  })
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Load notification settings
+  const loadSettings = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const notificationSettings =
+        await notificationService.getNotificationSettings()
+      setSettings(notificationSettings)
+    } catch (error) {
+      console.error('Failed to load notification settings:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // Initialize notifications and load settings
+  useEffect(() => {
+    const initializeNotifications = async () => {
+      await notificationService.initialize()
+      await loadSettings()
+    }
+
+    initializeNotifications()
+  }, [loadSettings])
+
+  // Request notification permissions
+  const requestPermissions = useCallback(async (): Promise<boolean> => {
+    try {
+      const granted = await notificationService.requestPermissions()
+      await loadSettings() // Refresh settings after permission change
+      return granted
+    } catch (error) {
+      console.error('Failed to request permissions:', error)
+      return false
+    }
+  }, [loadSettings])
+
+  // Schedule daily reminder
+  const scheduleDailyReminder = useCallback(
+    async (hour: number, minute: number): Promise<boolean> => {
+      try {
+        const identifier = await notificationService.scheduleDailyReminder(
+          hour,
+          minute
+        )
+        if (identifier) {
+          await loadSettings() // Refresh settings after scheduling
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('Failed to schedule daily reminder:', error)
+        return false
+      }
+    },
+    [loadSettings]
+  )
+
+  // Cancel daily reminder
+  const cancelDailyReminder = useCallback(async (): Promise<void> => {
+    try {
+      await notificationService.cancelDailyReminder()
+      await loadSettings() // Refresh settings after cancellation
+    } catch (error) {
+      console.error('Failed to cancel daily reminder:', error)
+    }
+  }, [loadSettings])
+
+  // Cancel all notifications
+  const cancelAllNotifications = useCallback(async (): Promise<void> => {
+    try {
+      await notificationService.cancelAllNotifications()
+      await loadSettings() // Refresh settings after cancellation
+    } catch (error) {
+      console.error('Failed to cancel all notifications:', error)
+    }
+  }, [loadSettings])
+
+  return {
+    settings,
+    isLoading,
+    requestPermissions,
+    scheduleDailyReminder,
+    cancelDailyReminder,
+    cancelAllNotifications,
+    refreshSettings: loadSettings,
+  }
+}
+
+// Hook for handling notification responses (when user taps on notification)
+export function useNotificationResponse() {
+  const [lastResponse, setLastResponse] =
+    useState<Notifications.NotificationResponse | null>(null)
+
+  useEffect(() => {
+    // Get the last notification response when app starts
+    const getLastResponse = async () => {
+      const response = await Notifications.getLastNotificationResponseAsync()
+      if (response) {
+        setLastResponse(response)
+      }
+    }
+
+    getLastResponse()
+
+    // Listen for new notification responses
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        setLastResponse(response)
+      }
+    )
+
+    return () => subscription.remove()
+  }, [])
+
+  // Clear the last response (useful after handling it)
+  const clearLastResponse = useCallback(() => {
+    setLastResponse(null)
+    Notifications.clearLastNotificationResponseAsync()
+  }, [])
+
+  return {
+    lastResponse,
+    clearLastResponse,
+  }
+}

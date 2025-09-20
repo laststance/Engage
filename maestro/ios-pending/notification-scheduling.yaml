@@ -1,0 +1,54 @@
+appId: com.anonymous.engage
+---
+# Test notification scheduling functionality
+- launchApp:
+    clearState: true
+- assertVisible: 'Calendar'
+
+# Navigate to Stats screen to access settings
+- tapOn:
+    point: 90%, 93% # Stats tab
+    repeat: 2
+    delay: 300
+- assertVisible: 'Stats'
+
+# Open notification settings
+- tapOn:
+    id: 'settings-button'
+- delay: 1000
+- assertVisible: '通知設定'
+
+# Test different time selections
+- tapOn: '朝 8:00'
+- delay: 500
+- assertVisible: '朝 8:00'
+
+- tapOn: '昼 12:00'
+- delay: 500
+- assertVisible: '昼 12:00'
+
+- tapOn: '夕方 6:00'
+- delay: 500
+- assertVisible: '夕方 6:00'
+
+- tapOn: '夜 8:00'
+- delay: 500
+- assertVisible: '夜 8:00'
+
+# Return to default time
+- tapOn: '朝 9:00'
+- delay: 500
+- assertVisible: '朝 9:00'
+
+# Verify notification status information is displayed
+- assertVisible: '予定された通知'
+- assertVisible: '件'
+
+# Test help section
+- assertVisible: '💡 ヒント'
+- assertVisible: '通知をタップすると、今日のタスク画面に直接移動できます'
+
+# Close settings
+- tapOn: '完了'
+- delay: 500
+- assertVisible: 'Stats'

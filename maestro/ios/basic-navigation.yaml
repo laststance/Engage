@@ -20,7 +20,6 @@ tags: [ios]
 - tapOn:
     point: 50%, 93%
     repeat: 2
-    delay: 300
     waitToSettleTimeoutMs: 1000
 - waitForAnimationToEnd:
     timeout: 1000
@@ -73,7 +72,6 @@ tags: [ios]
       - tapOn:
           point: 83%, 93%
           repeat: 2
-          delay: 300
           waitToSettleTimeoutMs: 1000
       - waitForAnimationToEnd:
           timeout: 2000
@@ -86,7 +84,6 @@ tags: [ios]
       - tapOn:
           point: 17%, 93%
           repeat: 2
-          delay: 300
           waitToSettleTimeoutMs: 1000
       - waitForAnimationToEnd:
           timeout: 2000

@@ -1,0 +1,101 @@
+appId: com.anonymous.engage
+---
+# Comprehensive notification system test
+- launchApp:
+    clearState: true
+- assertVisible: 'Calendar'
+
+# Test 1: Access notification settings
+- tapOn:
+    point: 90%, 93% # Stats tab
+    repeat: 2
+    delay: 300
+- assertVisible: 'Stats'
+
+- tapOn:
+    id: 'settings-button'
+- delay: 1000
+- assertVisible: '通知設定'
+
+# Test 2: Verify notification settings UI components
+- assertVisible: 'デイリーリマインダー'
+- assertVisible: '毎日決まった時間に習慣チェックのリマインダーを受け取る'
+- assertVisible: '通知ステータス'
+- assertVisible: '許可状態'
+- assertVisible: '予定された通知'
+
+# Test 3: Test time selection functionality
+- assertVisible: 'リマインダー時間を選択'
+- tapOn: '朝 8:00'
+- delay: 500
+- tapOn: '昼 12:00'
+- delay: 500
+- tapOn: '夕方 6:00'
+- delay: 500
+- tapOn: '朝 9:00' # Return to default
+- delay: 500
+
+# Test 4: Test settings refresh
+- tapOn: '設定を更新'
+- delay: 1000
+
+# Test 5: Verify help information
+- assertVisible: '💡 ヒント'
+- assertVisible: '通知をタップすると、今日のタスク画面に直接移動できます'
+
+# Test 6: Close settings and verify navigation
+- tapOn: '完了'
+- delay: 500
+- assertVisible: 'Stats'
+
+# Test 7: Simulate notification deep link behavior
+# Navigate to Today screen (where notifications would redirect)
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    delay: 300
+- assertVisible: 'Today'
+- assertVisible: '今日のタスク'
+
+# Test 8: Verify Today screen functionality after "notification navigation"
+- tapOn: 'タスクを選択'
+- delay: 1000
+- assertVisible: '事業'
+- assertVisible: '生活'
+
+# Close task picker
+- tapOn:
+    point: 50%, 10% # Top area to close modal
+- delay: 500
+
+# Test 9: Return to Calendar (another deep link simulation)
+- tapOn:
+    point: 10%, 93% # Calendar tab
+    repeat: 2
+    delay: 300
+- assertVisible: 'Calendar'
+
+# Test 10: Verify app state is maintained after navigation
+- assertVisible:
+    id: 'calendar-grid'
+- assertVisible:
+    id: 'month-year-header'
+
+# Test 11: Re-access settings to verify persistence
+- tapOn:
+    point: 90%, 93% # Stats tab
+    repeat: 2
+    delay: 300
+- tapOn:
+    id: 'settings-button'
+- delay: 1000
+- assertVisible: '通知設定'
+
+# Verify settings are still accessible
+- assertVisible: 'デイリーリマインダー'
+- assertVisible: '通知ステータス'
+
+# Final cleanup
+- tapOn: '完了'
+- delay: 500
+- assertVisible: 'Stats'

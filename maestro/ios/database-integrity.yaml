@@ -32,7 +32,7 @@ tags: [ios, database, integrity]
 # Wait for stats screen to load
 - extendedWaitUntil:
     visible:
-      id: 'statistics-screen'
+      id: 'stats-screen'
     timeout: 10000
 
 # Test 3: Calendar navigation and data consistency
@@ -60,10 +60,10 @@ tags: [ios, database, integrity]
 - runFlow:
     when:
       visible:
-        id: 'journal-input'
+        id: 'journal-input-container'
     commands:
       - tapOn:
-          id: 'journal-input'
+          id: 'journal-input-container'
       - inputText: 'データ整合性テスト - 特殊文字: !@#$%^&*()_+-=[]{}|'
       - waitForAnimationToEnd:
           timeout: 1000

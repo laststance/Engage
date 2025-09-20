@@ -5,6 +5,7 @@ import {
   completionRepository,
   categoryRepository,
 } from '../../services/repositories'
+import { journalService } from '../../services/journalService'
 
 // Mock the repositories
 jest.mock('../../services/repositories', () => ({
@@ -27,6 +28,13 @@ jest.mock('../../services/repositories', () => ({
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
+  },
+}))
+
+// Mock the journal service
+jest.mock('../../services/journalService', () => ({
+  journalService: {
+    saveEntry: jest.fn(),
   },
 }))
 
@@ -173,7 +181,11 @@ describe('useAppStore', () => {
         updatedAt: Date.now(),
       }
 
-      ;(entryRepository.upsert as jest.Mock).mockResolvedValue(updatedEntry)
+      ;(journalService.saveEntry as jest.Mock).mockResolvedValue({
+        success: true,
+        entry: updatedEntry,
+        errors: [],
+      })
 
       const store = useAppStore.getState()
       await store.updateJournalEntry('2025-01-15', 'Updated note')
@@ -252,12 +264,18 @@ describe('useAppStore', () => {
     })
 
     it('should validate and update journal', async () => {
-      ;(entryRepository.upsert as jest.Mock).mockResolvedValue({
+      const journalEntry = {
         id: 'entry1',
         date: '2025-01-15',
         note: 'Valid entry',
         createdAt: Date.now(),
         updatedAt: Date.now(),
+      }
+
+      ;(journalService.saveEntry as jest.Mock).mockResolvedValue({
+        success: true,
+        entry: journalEntry,
+        errors: [],
       })
 
       const store = useAppStore.getState()
@@ -271,6 +289,12 @@ describe('useAppStore', () => {
     })
 
     it('should reject invalid journal entries', async () => {
+      ;(journalService.saveEntry as jest.Mock).mockResolvedValue({
+        success: false,
+        entry: null,
+        errors: ['Journal entry is too long (maximum 1000 characters)'],
+      })
+
       const store = useAppStore.getState()
       const longEntry = 'a'.repeat(1001)
       const result = await store.validateAndUpdateJournal(

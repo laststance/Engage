@@ -9,7 +9,15 @@ tags: [ios, statistics]
 - waitForAnimationToEnd:
     timeout: 3000
 
-# Navigate to Stats tab to check initial state
+# First navigate to Today tab (following basic-navigation pattern)
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Then navigate to Stats tab from Today
 - tapOn:
     point: 83%, 93% # Stats tab
     repeat: 2
@@ -20,7 +28,7 @@ tags: [ios, statistics]
 # Wait for stats screen to load
 - extendedWaitUntil:
     visible:
-      id: 'statistics-screen'
+      id: 'stats-screen'
     timeout: 10000
 
 # Test weekly/monthly toggle functionality
@@ -57,5 +65,5 @@ tags: [ios, statistics]
 # Final verification
 - extendedWaitUntil:
     visible:
-      id: 'statistics-screen'
+      id: 'stats-screen'
     timeout: 10000

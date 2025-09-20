@@ -28,7 +28,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [characterCount, setCharacterCount] = useState(entry?.note?.length || 0)
 
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const textInputRef = useRef<TextInput>(null)
 
   // Update local state when entry prop changes (e.g., date change)

@@ -21,7 +21,10 @@
     },
     "ios": {
       "bundleIdentifier": "com.anonymous.engage",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "この アプリは毎日の習慣を継続するためのリマインダー通知を送信します。通知は設定から無効にできます。"
+      }
     },
     "web": {
       "output": "static",
@@ -41,7 +44,16 @@
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#007AFF",
+          "defaultChannel": "daily-reminders",
+          "enableBackgroundRemoteNotifications": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

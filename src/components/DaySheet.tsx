@@ -16,7 +16,7 @@ interface DaySheetProps {
   journalEntry: Entry | null
   categories: Category[]
   onTaskToggle: (taskId: string) => void
-  onJournalUpdate: (content: string) => void
+  onJournalUpdate: (content: string) => Promise<void>
   onTaskSelectionPress: () => void
 }
 
@@ -30,7 +30,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
   onJournalUpdate,
   onTaskSelectionPress,
 }) => {
-  const { getJournalPlaceholder } = useAppStore()
+  // const { getJournalPlaceholder } = useAppStore()
 
   // Create a map of completed task IDs for quick lookup
   const completedTaskIds = new Set(completions.map((c) => c.taskId))
@@ -87,7 +87,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
 
   // Get dynamic placeholder text based on completion status
   const hasCompletions = completions.length > 0
-  const placeholder = getJournalPlaceholder(date)
+  // const placeholder = getJournalPlaceholder(date)
 
   return (
     <Box className="flex-1 bg-white" testID="day-sheet">
@@ -208,7 +208,6 @@ export const DaySheet: React.FC<DaySheetProps> = ({
           date={date}
           entry={journalEntry}
           onUpdate={onJournalUpdate}
-          placeholder={placeholder}
         />
       </VStack>
     </Box>

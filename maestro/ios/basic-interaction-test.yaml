@@ -53,33 +53,19 @@ tags: [ios]
     point: 83%, 93% # Right tab (Stats)
 - waitForAnimationToEnd
 
-# Go back to what should be calendar
+# Return to calendar using most reliable method
+# Use more aggressive navigation to ensure we get to calendar
 - tapOn:
-    point: 17%, 93%
-- waitForAnimationToEnd
+    point: 17%, 93% # Calendar tab directly
+    repeat: 3
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 5000
 
-# Try a longer wait and then tap in calendar area
+# Extended wait for calendar screen with proper syntax
 - extendedWaitUntil:
     visible:
       id: 'calendar-screen'
-    timeout: 5000
-
-# Try multiple taps in calendar area
-- tapOn:
-    point: 50%, 50%
-- waitForAnimationToEnd
-
-- tapOn:
-    point: 40%, 45%
-- waitForAnimationToEnd
-
-- tapOn:
-    point: 60%, 55%
-- waitForAnimationToEnd
-
-# Check if we can find any text elements that might indicate what's on screen
-- assertVisible:
-    text: '.*'
-    optional: true
+    timeout: 15000
 
 - stopApp

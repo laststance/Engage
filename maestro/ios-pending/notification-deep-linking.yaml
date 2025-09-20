@@ -1,0 +1,48 @@
+appId: com.anonymous.engage
+---
+# Test notification deep linking functionality
+# Note: This test simulates the deep linking behavior since actual notification tapping cannot be automated
+
+- launchApp:
+    clearState: true
+- assertVisible: 'Calendar'
+
+# Test navigation to Today screen (simulates notification tap behavior)
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    delay: 300
+- assertVisible: 'Today'
+
+# Verify Today screen elements are present (this is where notification would navigate)
+- assertVisible: '今日のタスク'
+- assertVisible: 'タスクを選択'
+
+# Test that the Today screen is functional after navigation
+- tapOn: 'タスクを選択'
+- delay: 1000
+
+# Should show task picker modal
+- assertVisible: '事業'
+- assertVisible: '生活'
+
+# Close task picker
+- tapOn:
+    point: 50%, 10% # Top area to close modal
+- delay: 500
+
+# Verify we're back on Today screen
+- assertVisible: 'Today'
+
+# Test navigation back to Calendar (simulates another deep link)
+- tapOn:
+    point: 10%, 93% # Calendar tab
+    repeat: 2
+    delay: 300
+- assertVisible: 'Calendar'
+
+# Verify calendar functionality after navigation
+- assertVisible:
+    id: 'calendar-grid'
+- assertVisible:
+    id: 'month-year-header'
