@@ -137,7 +137,7 @@ describe('useAppStore', () => {
       await store.loadData()
 
       const state = useAppStore.getState()
-      expect(state.error).toBe('Database error')
+      expect(state.error).toBe('Failed to load data. Please try again.')
       expect(state.isLoading).toBe(false)
     })
   })

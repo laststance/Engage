@@ -32,7 +32,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <VStack className="items-center max-w-sm" space="lg">
         {/* Icon */}
         <Box className="w-16 h-16 items-center justify-center bg-system-gray-6 rounded-full">
-          <IconSymbol name={icon} size={32} color="#8E8E93" />
+          <IconSymbol name={icon as any} size={32} color="#8E8E93" />
         </Box>
 
         {/* Content */}

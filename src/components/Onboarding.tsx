@@ -32,7 +32,7 @@ const OnboardingStep: React.FC<{
     <Box
       className={`w-12 h-12 rounded-full ${color} items-center justify-center`}
     >
-      <IconSymbol name={icon} size={24} color="white" />
+      <IconSymbol name={icon as any} size={24} color="white" />
     </Box>
     <VStack className="flex-1" space="xs">
       <Text className="text-headline font-semibold text-label">{title}</Text>

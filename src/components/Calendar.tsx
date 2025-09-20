@@ -136,16 +136,19 @@ export const Calendar: React.FC<CalendarProps> = ({
       <HStack className="items-center justify-between mb-6">
         <Pressable
           onPress={() => navigateMonth('prev')}
-          className={({ pressed }) => `
-            p-2 rounded-full touch-target-minimum
-            ${
-              pressed ? 'bg-system-gray-6 scale-95' : 'bg-transparent scale-100'
-            }
-            transition-all duration-150
-          `}
           testID="calendar-prev-month"
         >
-          <IconSymbol name="chevron.left" size={24} color="#666" />
+          {({ pressed }) => (
+            <Box
+              className={`
+                p-2 rounded-full touch-target-minimum
+                ${pressed ? 'bg-system-gray-6 scale-95' : 'bg-transparent scale-100'}
+                transition-all duration-150
+              `}
+            >
+              <IconSymbol name="chevron.left" size={24} color="#666" />
+            </Box>
+          )}
         </Pressable>
 
         <Text className="text-title-2 text-label" testID="calendar-title">
@@ -154,16 +157,19 @@ export const Calendar: React.FC<CalendarProps> = ({
 
         <Pressable
           onPress={() => navigateMonth('next')}
-          className={({ pressed }) => `
-            p-2 rounded-full touch-target-minimum
-            ${
-              pressed ? 'bg-system-gray-6 scale-95' : 'bg-transparent scale-100'
-            }
-            transition-all duration-150
-          `}
           testID="calendar-next-month"
         >
-          <IconSymbol name="chevron.right" size={24} color="#666" />
+          {({ pressed }) => (
+            <Box
+              className={`
+                p-2 rounded-full touch-target-minimum
+                ${pressed ? 'bg-system-gray-6 scale-95' : 'bg-transparent scale-100'}
+                transition-all duration-150
+              `}
+            >
+              <IconSymbol name="chevron.right" size={24} color="#666" />
+            </Box>
+          )}
         </Pressable>
       </HStack>
 
@@ -198,13 +204,16 @@ export const Calendar: React.FC<CalendarProps> = ({
                 <Pressable
                   key={`${weekIndex}-${dayIndex}`}
                   onPress={() => onDateSelect(dayData.dateString)}
-                  className={({ pressed }) => `
-                    flex-1 h-12 items-center justify-center rounded-lg
-                    ${pressed ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
-                    transition-all duration-150
-                  `}
                   testID={`calendar-date-${dayData.dateString}`}
                 >
+                  {({ pressed }) => (
+                    <Box
+                      className={`
+                        flex-1 h-12 items-center justify-center rounded-lg
+                        ${pressed ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
+                        transition-all duration-150
+                      `}
+                    >
                   <Box
                     className={`
                       w-full h-full items-center justify-center rounded-lg
@@ -241,9 +250,11 @@ export const Calendar: React.FC<CalendarProps> = ({
                         }
                       `}
                     >
-                      {dayData.date}
-                    </Text>
-                  </Box>
+                          {dayData.date}
+                        </Text>
+                      </Box>
+                    </Box>
+                  )}
                 </Pressable>
               )
             })}

@@ -130,7 +130,7 @@ export const LowEffortMode: React.FC<LowEffortModeProps> = ({
             <HStack className="items-center" space="md">
               <Box className="w-12 h-12 bg-system-blue/10 rounded-full items-center justify-center">
                 <IconSymbol
-                  name={todayQuickWin.icon}
+                  name={todayQuickWin.icon as any}
                   size={24}
                   color="#007AFF"
                 />

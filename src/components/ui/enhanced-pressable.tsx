@@ -9,6 +9,7 @@ import {
   PressableProps,
   ViewStyle,
   Platform,
+  View,
 } from 'react-native'
 import { DesignSystemUtils } from '@/src/utils/designSystem'
 
@@ -84,14 +85,19 @@ export const EnhancedPressable: React.FC<EnhancedPressableProps> = ({
       {...props}
       onPress={handlePress}
       disabled={isDisabled || isLoading}
-      className={({ pressed }) => `${getVariantStyles(pressed)} ${className}`}
       accessibilityRole="button"
       accessibilityState={{
         disabled: isDisabled || isLoading,
         busy: isLoading,
       }}
     >
-      {children}
+      {({ pressed }) => (
+        <View
+          className={`${getVariantStyles(pressed)} ${className}`}
+        >
+          {children}
+        </View>
+      )}
     </RNPressable>
   )
 }

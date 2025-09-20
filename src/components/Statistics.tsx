@@ -83,56 +83,66 @@ export const Statistics: React.FC<StatisticsProps> = ({
             <HStack className="bg-secondary-system-background rounded-lg p-1">
               <Pressable
                 onPress={() => setSelectedPeriod('week')}
-                className={({ pressed }) => `
-                  flex-1 py-2 px-4 rounded-md touch-target-minimum transition-all duration-150
-                  ${
-                    selectedPeriod === 'week'
-                      ? 'bg-system-background shadow-ios-small'
-                      : ''
-                  }
-                  ${pressed ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
-                `}
                 testID="stats-week-toggle"
               >
-                <Text
-                  className={`
-                    text-center font-medium text-callout
-                    ${
-                      selectedPeriod === 'week'
-                        ? 'text-label'
-                        : 'text-tertiary-label'
-                    }
-                  `}
-                >
-                  今週
-                </Text>
+                {({ pressed }) => (
+                  <Box
+                    className={`
+                      flex-1 py-2 px-4 rounded-md touch-target-minimum transition-all duration-150
+                      ${
+                        selectedPeriod === 'week'
+                          ? 'bg-system-background shadow-ios-small'
+                          : ''
+                      }
+                      ${pressed ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
+                    `}
+                  >
+                    <Text
+                      className={`
+                        text-center font-medium text-callout
+                        ${
+                          selectedPeriod === 'week'
+                            ? 'text-label'
+                            : 'text-tertiary-label'
+                        }
+                      `}
+                    >
+                      今週
+                    </Text>
+                  </Box>
+                )}
               </Pressable>
 
               <Pressable
                 onPress={() => setSelectedPeriod('month')}
-                className={({ pressed }) => `
-                  flex-1 py-2 px-4 rounded-md touch-target-minimum transition-all duration-150
-                  ${
-                    selectedPeriod === 'month'
-                      ? 'bg-system-background shadow-ios-small'
-                      : ''
-                  }
-                  ${pressed ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
-                `}
                 testID="stats-month-toggle"
               >
-                <Text
-                  className={`
-                    text-center font-medium text-callout
-                    ${
-                      selectedPeriod === 'month'
-                        ? 'text-label'
-                        : 'text-tertiary-label'
-                    }
-                  `}
-                >
-                  今月
-                </Text>
+                {({ pressed }) => (
+                  <Box
+                    className={`
+                      flex-1 py-2 px-4 rounded-md touch-target-minimum transition-all duration-150
+                      ${
+                        selectedPeriod === 'month'
+                          ? 'bg-system-background shadow-ios-small'
+                          : ''
+                      }
+                      ${pressed ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
+                    `}
+                  >
+                    <Text
+                      className={`
+                        text-center font-medium text-callout
+                        ${
+                          selectedPeriod === 'month'
+                            ? 'text-label'
+                            : 'text-tertiary-label'
+                        }
+                      `}
+                    >
+                      今月
+                    </Text>
+                  </Box>
+                )}
               </Pressable>
             </HStack>
           </VStack>

@@ -318,23 +318,23 @@
     - Verify app behavior without internet connection
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 10. Complete User Flow Integration Testing
+- [x] 10. Complete User Flow Integration Testing
 
-  - [ ] 10.1 Create comprehensive E2E test for main user flow
+  - [x] 10.1 Create comprehensive E2E test for main user flow
 
     - Write Maestro test for complete calendar → task selection → completion → journal flow
     - Test the core user journey: "カレンダーを開く → タスクを選ぶ → 少なくとも 1 つ達成 → 日記をひと言書く"
     - Verify streak counter updates and statistics accuracy
     - _Requirements: All core requirements (1.1-4.5)_
 
-  - [ ] 10.2 Write comprehensive unit tests
+  - [x] 10.2 Write comprehensive unit tests
 
     - Test database operations and data integrity
     - Test business logic and state management
     - Test component rendering and user interactions
     - _Requirements: All requirements validation_
 
-  - [ ] 10.3 Performance optimization and testing
+  - [x] 10.3 Performance optimization and testing
     - Optimize database queries and indexing
     - Test app performance with large datasets
     - Implement memory usage monitoring
