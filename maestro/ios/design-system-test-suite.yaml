@@ -8,13 +8,28 @@ appId: com.anonymous.engage
 - waitForAnimationToEnd:
     timeout: 3000
 
-# Test Suite 1: Typography Validation
+# Test Suite 1: Typography Validation - Check main screens are accessible
 - assertVisible:
-    text: 'カレンダー'
+    id: 'calendar-screen'
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 - assertVisible:
-    text: '今日'
+    id: 'today-screen'
+- tapOn:
+    point: 83%, 93% # Stats tab  
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 - assertVisible:
-    text: '実績'
+    id: 'stats-screen'
+- tapOn:
+    point: 17%, 93% # Back to Calendar tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
 
 # Verify typography hierarchy is consistent
 - takeScreenshot: 'typography-validation-tabs'

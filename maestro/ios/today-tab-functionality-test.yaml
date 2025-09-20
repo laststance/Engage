@@ -1,0 +1,79 @@
+appId: com.anonymous.engage
+---
+# Today Tab Functionality Test
+# Verify that the Today tab shows proper task management interface
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Navigate to Today tab (should be default, but ensure we're there)
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Verify Today screen is displayed with proper content
+- assertVisible:
+    id: 'today-screen'
+- assertVisible:
+    id: 'day-sheet'
+
+# Check if task selection button is available
+- assertVisible:
+    text: 'タスクを選択'
+    optional: true
+- assertVisible:
+    id: 'task-selection-button'
+    optional: true
+
+# Try to open task selection
+- tapOn:
+    text: 'タスクを選択'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# If task picker opened, select some tasks
+- tapOn:
+    text: '運動'
+    optional: true
+- tapOn:
+    text: 'ネットワーキング'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Confirm selection if available
+- tapOn:
+    text: '確定'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Verify we're back to Today screen with tasks
+- assertVisible:
+    id: 'today-screen'
+- assertVisible:
+    id: 'day-sheet'
+
+# Try to complete a task if available
+- tapOn:
+    id: 'task-checkbox-0'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Try journal input if available
+- tapOn:
+    id: 'journal-input'
+    optional: true
+- inputText: 'Today tab test successful'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Verify Today tab still works after interactions
+- assertVisible:
+    id: 'today-screen'

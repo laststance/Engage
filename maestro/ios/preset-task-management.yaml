@@ -18,10 +18,14 @@ tags: [ios]
 # Open a day by tapping on a date
 - tapOn:
     point: 50%, 50% # Tap on middle of calendar (approximate date)
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# Verify Day Sheet is visible
-- assertVisible: 'Daily Tasks'
+# Verify Day Modal and Sheet are visible
+- extendedWaitUntil:
+    visible:
+      text: 'Daily Tasks'
+    timeout: 5000
 
 # Test 1: Open Task Picker
 - tapOn:

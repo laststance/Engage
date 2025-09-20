@@ -36,8 +36,11 @@ tags: [ios, visual-validation, figma]
 - waitForAnimationToEnd:
     timeout: 2000
 
-- assertVisible:
-    id: 'day-sheet'
+# Wait for modal to open and day-sheet to be visible
+- extendedWaitUntil:
+    visible:
+      id: 'day-sheet'
+    timeout: 5000
 - takeScreenshot: 'day-sheet-main-view.png'
 
 # === TASK SELECTION MODAL VALIDATION ===

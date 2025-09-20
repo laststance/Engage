@@ -24,6 +24,6 @@ tags: [ios]
 - assertVisible:
     id: 'calendar-description'
 
-# Quick smoke test - verify Calendar title text is also visible
+# Quick smoke test - verify Calendar description text is visible 
 - assertVisible:
-    text: 'Calendar'
+    text: '日付を選択してタスクや振り返りを管理しましょう'

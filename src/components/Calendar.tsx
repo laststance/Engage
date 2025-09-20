@@ -102,11 +102,11 @@ export const Calendar: React.FC<CalendarProps> = ({
   }, [currentMonth])
 
   const getHeatmapColor = (completionCount: number): string => {
-    if (completionCount === 0) return 'bg-heatmap-none'
-    if (completionCount === 1) return 'bg-heatmap-low'
-    if (completionCount === 2) return 'bg-heatmap-medium'
-    if (completionCount === 3) return 'bg-heatmap-high'
-    return 'bg-heatmap-highest' // 4+ completions
+    if (completionCount === 0) return 'bg-gray-100'
+    if (completionCount === 1) return 'bg-green-200'
+    if (completionCount === 2) return 'bg-green-400'
+    if (completionCount === 3) return 'bg-green-600'
+    return 'bg-green-700' // 4+ completions
   }
 
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -131,59 +131,44 @@ export const Calendar: React.FC<CalendarProps> = ({
   }
 
   return (
-    <Box className="flex-1 bg-white p-4" testID="calendar-component">
-      {/* Header with month navigation */}
-      <HStack className="items-center justify-between mb-6">
+    <Box className="flex-1 bg-white" testID="calendar-component">
+      {/* Header with month navigation - matching Figma design */}
+      <HStack className="items-center justify-between px-6 py-4 mb-4">
         <Pressable
           onPress={() => navigateMonth('prev')}
           testID="calendar-prev-month"
+          className="p-2"
         >
-          {({ pressed }) => (
-            <Box
-              className={`
-                p-2 rounded-full touch-target-minimum
-                ${pressed ? 'bg-system-gray-6 scale-95' : 'bg-transparent scale-100'}
-                transition-all duration-150
-              `}
-            >
-              <IconSymbol name="chevron.left" size={24} color="#666" />
-            </Box>
-          )}
+          <IconSymbol name="chevron.left" size={20} color="#666" />
         </Pressable>
 
-        <Text className="text-title-2 text-label" testID="calendar-title">
-          {currentMonth.getFullYear()}年{MONTHS[currentMonth.getMonth()]}
+        <Text
+          className="text-lg font-semibold text-gray-800"
+          testID="calendar-title"
+        >
+          {currentMonth.getFullYear()}年{currentMonth.getMonth() + 1}月
         </Text>
 
         <Pressable
           onPress={() => navigateMonth('next')}
           testID="calendar-next-month"
+          className="p-2"
         >
-          {({ pressed }) => (
-            <Box
-              className={`
-                p-2 rounded-full touch-target-minimum
-                ${pressed ? 'bg-system-gray-6 scale-95' : 'bg-transparent scale-100'}
-                transition-all duration-150
-              `}
-            >
-              <IconSymbol name="chevron.right" size={24} color="#666" />
-            </Box>
-          )}
+          <IconSymbol name="chevron.right" size={20} color="#666" />
         </Pressable>
       </HStack>
 
-      {/* Days of week header */}
-      <HStack className="mb-2">
+      {/* Days of week header - matching Figma spacing */}
+      <HStack className="px-4 mb-3">
         {DAYS_OF_WEEK.map((day, index) => (
-          <Box key={day} className="flex-1 items-center py-2">
+          <Box key={day} className="flex-1 items-center">
             <Text
-              className={`text-footnote font-medium ${
+              className={`text-sm font-medium ${
                 index === 0
-                  ? 'text-system-red'
+                  ? 'text-red-500'
                   : index === 6
-                  ? 'text-system-blue'
-                  : 'text-secondary-label'
+                  ? 'text-blue-500'
+                  : 'text-gray-600'
               }`}
             >
               {day}
@@ -192,8 +177,8 @@ export const Calendar: React.FC<CalendarProps> = ({
         ))}
       </HStack>
 
-      {/* Calendar grid */}
-      <VStack space="xs">
+      {/* Calendar grid - more compact design matching Figma */}
+      <VStack className="px-4" space="xs">
         {calendarData.map((week, weekIndex) => (
           <HStack key={weekIndex} space="xs">
             {week.map((dayData, dayIndex) => {
@@ -205,56 +190,39 @@ export const Calendar: React.FC<CalendarProps> = ({
                   key={`${weekIndex}-${dayIndex}`}
                   onPress={() => onDateSelect(dayData.dateString)}
                   testID={`calendar-date-${dayData.dateString}`}
+                  className="flex-1"
                 >
-                  {({ pressed }) => (
-                    <Box
-                      className={`
-                        flex-1 h-12 items-center justify-center rounded-lg
-                        ${pressed ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
-                        transition-all duration-150
-                      `}
-                    >
                   <Box
                     className={`
-                      w-full h-full items-center justify-center rounded-lg
+                      h-10 items-center justify-center rounded-md
                       ${dayData.isCurrentMonth ? heatmapColor : 'bg-gray-50'}
                       ${
                         isSelected(dayData.dateString)
-                          ? 'border-2 border-system-blue'
+                          ? 'border-2 border-blue-500'
                           : ''
                       }
                       ${
                         isToday(dayData.dateString)
-                          ? 'border-2 border-system-orange'
+                          ? 'border-2 border-orange-500'
                           : ''
                       }
                     `}
                   >
                     <Text
                       className={`
-                        text-footnote font-medium
+                        text-sm font-medium
                         ${
                           dayData.isCurrentMonth
-                            ? 'text-label'
-                            : 'text-quaternary-label'
+                            ? 'text-gray-800'
+                            : 'text-gray-300'
                         }
-                        ${
-                          isSelected(dayData.dateString)
-                            ? 'text-system-blue'
-                            : ''
-                        }
-                        ${
-                          isToday(dayData.dateString)
-                            ? 'text-system-orange'
-                            : ''
-                        }
+                        ${isSelected(dayData.dateString) ? 'text-blue-600' : ''}
+                        ${isToday(dayData.dateString) ? 'text-orange-600' : ''}
                       `}
                     >
-                          {dayData.date}
-                        </Text>
-                      </Box>
-                    </Box>
-                  )}
+                      {dayData.date}
+                    </Text>
+                  </Box>
                 </Pressable>
               )
             })}
@@ -262,15 +230,14 @@ export const Calendar: React.FC<CalendarProps> = ({
         ))}
       </VStack>
 
-      {/* Legend */}
-      <HStack className="items-center justify-center mt-4 space-x-2">
-        <Text className="text-caption-2 text-tertiary-label mr-2">少ない</Text>
-        <Box className="w-3 h-3 bg-heatmap-none rounded-sm" />
-        <Box className="w-3 h-3 bg-heatmap-low rounded-sm" />
-        <Box className="w-3 h-3 bg-heatmap-medium rounded-sm" />
-        <Box className="w-3 h-3 bg-heatmap-high rounded-sm" />
-        <Box className="w-3 h-3 bg-heatmap-highest rounded-sm" />
-        <Text className="text-caption-2 text-tertiary-label ml-2">多い</Text>
+      {/* Legend - matching Figma design with proper spacing */}
+      <HStack className="items-center justify-center mt-8 px-4">
+        <Text className="text-xs text-gray-500 mr-3">少ない</Text>
+        <Box className="w-3 h-3 bg-gray-100 rounded-sm mx-1" />
+        <Box className="w-3 h-3 bg-green-200 rounded-sm mx-1" />
+        <Box className="w-3 h-3 bg-green-400 rounded-sm mx-1" />
+        <Box className="w-3 h-3 bg-green-600 rounded-sm mx-1" />
+        <Text className="text-xs text-gray-500 ml-3">多い</Text>
       </HStack>
     </Box>
   )

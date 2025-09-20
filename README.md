@@ -35,28 +35,80 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Testing
+## Available Scripts
 
-This project includes E2E tests using [Maestro](https://maestro.mobile.dev/).
+### 🚀 Development Scripts
 
-### Prerequisites
+```bash
+# Start development server
+npm start                    # Start Expo dev server
+npm run ios                  # Start iOS development build
+npm run android             # Start Android development build
+npm run web                 # Start web development build
+
+# Code quality
+npm run lint                # Run ESLint
+npm run typecheck          # Run TypeScript type checking
+npm test                   # Run Jest unit tests
+npm run test:watch         # Run Jest in watch mode
+npm run test:coverage      # Run Jest with coverage report
+```
+
+### 🧪 E2E Testing Scripts
+
+This project includes E2E tests using [Maestro](https://maestro.mobile.dev/) with **DevTools-free Production Builds** for stable testing.
+
+#### Prerequisites
 
 1. Install Java 17 or higher
 2. Install Maestro: `curl -Ls "https://get.maestro.mobile.dev" | bash`
 
-### Running Tests
+#### Production Build E2E Testing (Recommended)
+
+**🎯 DevTools-Free Environment** - Uses Release configuration without React Native DevTools interference.
 
 ```bash
-# Run all E2E tests
-npm run test:e2e
+# Step 1: Start Production Build (DevTools disabled)
+npm run build:e2e           # Start E2E production build
+npm run build:e2e:restart   # Clean restart production build
 
-# Run specific test suites
-npm run test:e2e:app-launch    # Test app launch
-npm run test:e2e:navigation    # Test tab navigation
-npm run test:e2e:ui           # Test UI elements
+# Step 2: Run E2E Tests (after build completes ~3-5 minutes)
+npm run test:e2e:production              # Run all E2E tests
+npm run test:e2e:production:single       # Run single test file
+
+# Clean up processes if needed
+npm run build:e2e:clean     # Stop production build processes
+npm run test:e2e:clean      # Kill DevTools processes
 ```
 
-**Note**: Make sure your app is running (`npm start`) and accessible on a device/simulator before running E2E tests.
+#### Development Build E2E Testing
+
+```bash
+# Quick testing with development build (may show DevTools)
+npm run test:e2e:ios        # Run all E2E tests
+```
+
+#### Example Workflow
+
+```bash
+# 1. Start DevTools-free production build
+npm run build:e2e
+
+# 2. Wait for build completion (watch terminal output)
+#    Look for: "Build Succeeded" and "Opening on iPhone 16 Pro"
+
+# 3. Run specific test
+npm run test:e2e:production:single maestro/ios/app-launch.yaml
+
+# 4. Run all tests
+npm run test:e2e:production
+```
+
+**✨ Benefits of Production Build Testing:**
+- ✅ No React Native DevTools interference
+- ✅ Stable and consistent test execution
+- ✅ Production-like performance testing
+- ✅ Clean Mac desktop during testing
 
 ## Learn more
 

@@ -9,7 +9,7 @@ appId: com.anonymous.engage
 # Wait for app initialization
 - extendedWaitUntil:
     visible:
-      text: 'Calendar'
+      id: 'calendar-screen'
     timeout: 15000
 
 # Test 1: Verify app works without internet (simulated by testing core functionality)
@@ -22,7 +22,7 @@ appId: com.anonymous.engage
 
 # Verify Today tab loads correctly (offline capability)
 - assertVisible:
-    text: '今日'
+    id: 'today-screen'
 
 # Test 2: Create tasks offline (data persistence test)
 - tapOn:
@@ -85,7 +85,7 @@ appId: com.anonymous.engage
 
 # Verify calendar loads offline
 - assertVisible:
-    text: 'Calendar'
+    id: 'calendar-screen'
 
 # Navigate to Stats tab
 - tapOn:
@@ -111,7 +111,7 @@ appId: com.anonymous.engage
 # Wait for app to reload
 - extendedWaitUntil:
     visible:
-      text: 'Calendar'
+      id: 'calendar-screen'
     timeout: 15000
 
 # Navigate to Today tab to verify data persisted
@@ -124,7 +124,7 @@ appId: com.anonymous.engage
 
 # Verify data persisted after app restart
 - assertVisible:
-    text: '今日'
+    id: 'today-screen'
 
 # Check if journal entry persisted
 - assertVisible:
@@ -141,8 +141,8 @@ appId: com.anonymous.engage
 
 # Verify calendar still works after restart
 - assertVisible:
-    text: 'Calendar'
+    id: 'calendar-screen'
 
 # Test completed successfully
 - assertVisible:
-    text: 'Calendar'
+    id: 'calendar-screen'

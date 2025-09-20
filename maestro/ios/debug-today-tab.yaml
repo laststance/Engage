@@ -1,0 +1,19 @@
+appId: com.anonymous.engage
+---
+# Debug Today Tab - Just navigate and wait
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Navigate to Today tab
+- tapOn:
+    point: 50%, 93%
+    waitToSettleTimeoutMs: 3000
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Just wait to see logs
+- waitForAnimationToEnd:
+    timeout: 5000

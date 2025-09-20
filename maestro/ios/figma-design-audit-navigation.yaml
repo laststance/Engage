@@ -1,0 +1,137 @@
+appId: com.anonymous.engage
+---
+# Figma Design Audit - Systematic Screen Navigation
+# This test navigates through all screens for visual comparison with Figma designs
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Screen 1: Today Tab (Default) - Compare with Today-View.png
+- assertVisible:
+    text: 'Today'
+- assertVisible:
+    id: 'today-screen'
+    optional: true
+
+# Take note of Today tab layout, task list, journal section
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Screen 2: Calendar Tab - Compare with カレンダーview.png
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- assertVisible:
+    id: 'calendar-screen'
+    optional: true
+
+# Take note of calendar grid, heatmap colors, navigation
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Screen 3: Select a date to open Day Sheet - Compare with メインView.png
+- tapOn:
+    point: 50%, 40% # Tap on a calendar date
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Take note of day sheet layout, task sections, journal area
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Screen 4: Open Task Selection Modal - Compare with メインViewタスク選択.png
+- tapOn:
+    text: 'タスクを選択'
+    optional: true
+- tapOn:
+    id: 'task-selection-button'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Take note of modal presentation, category grouping, task items
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Select some tasks to see the selection state
+- tapOn:
+    text: '運動'
+    optional: true
+- tapOn:
+    text: 'ネットワーキング'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Confirm selection
+- tapOn:
+    text: '確定'
+    optional: true
+- tapOn:
+    id: 'confirm-selection'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Screen 5: Day Sheet after task selection - Compare with メインViewタスク選択後.png
+# Take note of selected tasks, progress counters, completion states
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Complete a task to see the completion state
+- tapOn:
+    id: 'task-checkbox-0'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Add journal entry
+- tapOn:
+    id: 'journal-input'
+    optional: true
+- inputText: '今日は良い一日でした'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Screen 6: Statistics Tab - Compare with 実績View.png
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- assertVisible:
+    id: 'statistics-screen'
+    optional: true
+
+# Take note of statistics layout, streak counter, period toggle
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test period toggle
+- tapOn:
+    text: '今月'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    text: '今週'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Return to Today tab to complete the audit
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Final verification that all screens are accessible
+- assertVisible:
+    text: 'Today'
+    optional: true

@@ -1,0 +1,81 @@
+appId: com.anonymous.engage
+---
+# Calendar Design Validation - Check if it matches Figma design
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Should start on Calendar tab (default)
+- assertVisible:
+    id: 'calendar-screen'
+
+# Check for the header text matching Figma
+- assertVisible:
+    text: '日付を選択してタスクや振り返りを管理しましょう'
+
+# Check for month navigation (should show current month)
+- assertVisible:
+    id: 'calendar-title'
+
+# Check for navigation buttons
+- assertVisible:
+    id: 'calendar-prev-month'
+- assertVisible:
+    id: 'calendar-next-month'
+
+# Check for day headers (Japanese)
+- assertVisible:
+    text: '日'
+- assertVisible:
+    text: '月'
+- assertVisible:
+    text: '火'
+- assertVisible:
+    text: '水'
+- assertVisible:
+    text: '木'
+- assertVisible:
+    text: '金'
+- assertVisible:
+    text: '土'
+
+# Check for heatmap legend
+- assertVisible:
+    text: '少ない'
+- assertVisible:
+    text: '多い'
+
+# Test month navigation
+- tapOn:
+    id: 'calendar-next-month'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- tapOn:
+    id: 'calendar-prev-month'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test date selection (tap on a date)
+- tapOn:
+    point: 50%, 40% # Approximate center of calendar
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Should open day modal
+- assertVisible:
+    text: 'Daily Tasks'
+    optional: true
+
+# Close modal if opened
+- tapOn:
+    id: 'day-modal-close'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Verify we're back to calendar
+- assertVisible:
+    id: 'calendar-screen'

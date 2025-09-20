@@ -9,13 +9,13 @@ appId: com.anonymous.engage
 # Wait for app initialization
 - extendedWaitUntil:
     visible:
-      text: 'Calendar'
+      id: 'calendar-screen'
     timeout: 15000
 
 # Test 1: Verify app handles startup without network gracefully
 # (App should start normally even if offline)
 - assertVisible:
-    text: 'Calendar'
+    id: 'calendar-screen'
 
 # Test 2: Test task operations work offline
 - tapOn:
@@ -27,7 +27,7 @@ appId: com.anonymous.engage
 
 # Verify Today tab loads without errors
 - assertVisible:
-    text: '今日'
+    id: 'today-screen'
 
 # Test 3: Test task selection works offline
 - tapOn:
@@ -82,7 +82,7 @@ appId: com.anonymous.engage
 
 # Calendar should load without network errors
 - assertVisible:
-    text: 'Calendar'
+    id: 'calendar-screen'
 
 # Test 7: Test statistics calculation works offline
 - tapOn:
@@ -113,7 +113,7 @@ appId: com.anonymous.engage
 
 # Should be able to navigate to different dates offline
 - assertVisible:
-    text: 'Calendar'
+    id: 'calendar-screen'
 
 # Test 9: Test app stability under offline conditions
 # Perform multiple operations to stress test offline handling
@@ -141,7 +141,7 @@ appId: com.anonymous.engage
 # Test 10: Verify no error states are visible
 # App should not show network error messages for offline-capable features
 - assertVisible:
-    text: 'Calendar'
+    id: 'calendar-screen'
 
 # Test 11: Test data persistence under offline conditions
 - stopApp
@@ -155,7 +155,7 @@ appId: com.anonymous.engage
 # Wait for offline app restart
 - extendedWaitUntil:
     visible:
-      text: 'Calendar'
+      id: 'calendar-screen'
     timeout: 15000
 
 # Test 12: Verify offline data persisted correctly
@@ -200,5 +200,5 @@ appId: com.anonymous.engage
 
 # Final verification - app should be fully functional offline
 - assertVisible:
-    text: '今日'
+    id: 'today-screen'
 # Offline error handling test completed successfully

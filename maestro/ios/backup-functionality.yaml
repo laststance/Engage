@@ -9,7 +9,7 @@ appId: com.anonymous.engage
 # Wait for app initialization
 - extendedWaitUntil:
     visible:
-      text: 'Calendar'
+      id: 'calendar-screen'
     timeout: 15000
 
 # Test 1: Create some test data first
@@ -118,7 +118,7 @@ appId: com.anonymous.engage
 
 # Calendar should show completion indicators
 - assertVisible:
-    text: 'Calendar'
+      id: 'calendar-screen'
 
 # Test 7: Verify statistics data integrity
 - tapOn:
@@ -187,7 +187,7 @@ appId: com.anonymous.engage
     timeout: 3000
 
 - assertVisible:
-    text: 'Calendar'
+      id: 'calendar-screen'
 # Backup functionality test completed successfully
 # Note: This test verifies the underlying data persistence mechanisms
 # that backup/restore functionality depends on

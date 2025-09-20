@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 6.0.0"
+  },
+  "build": {
+    "e2e-production": {
+      "developmentClient": false,
+      "distribution": "internal",
+      "env": {
+        "E2E_TEST": "true",
+        "NODE_ENV": "production",
+        "REACT_NATIVE_NO_DEVTOOLS": "1"
+      },
+      "ios": {
+        "simulator": true,
+        "buildConfiguration": "Release",
+        "scheme": "engage"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {}
+  },
+  "submit": {
+    "production": {}
+  }
+}

@@ -127,20 +127,23 @@ appId: com.anonymous.engage
             visible:
               text: '運動'
           commands:
-            - tapOn: '運動'
-            - waitToSettleTimeoutMs: 300
+            - tapOn:
+                text: '運動'
+                waitToSettleTimeoutMs: 300
             - waitForAnimationToEnd:
                 timeout: 500
 
             # Deselect to test feedback
-            - tapOn: '運動'
-            - waitToSettleTimeoutMs: 300
+            - tapOn:
+                text: '運動'
+                waitToSettleTimeoutMs: 300
             - waitForAnimationToEnd:
                 timeout: 500
 
             # Select again
-            - tapOn: '運動'
-            - waitToSettleTimeoutMs: 300
+            - tapOn:
+                text: '運動'
+                waitToSettleTimeoutMs: 300
 
       # Test confirm button feedback
       - runFlow:

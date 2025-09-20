@@ -25,18 +25,15 @@ export default function CalendarScreen() {
   return (
     <Box className="flex-1 bg-white" testID="calendar-screen">
       <VStack className="flex-1">
-        <Box className="px-4 pt-4 pb-2">
-          <Text className="text-2xl font-bold text-gray-800 text-center mb-2">
-            Calendar
-          </Text>
+        <Box className="px-4 pt-6 pb-2">
           <Text
-            className="text-gray-600 text-center text-sm"
+            className="text-gray-600 text-center text-base"
             testID="calendar-description"
           >
             日付を選択してタスクや振り返りを管理しましょう
           </Text>
         </Box>
-        
+
         <Calendar
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}

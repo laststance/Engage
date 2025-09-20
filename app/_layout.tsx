@@ -21,6 +21,19 @@ import { initializeBackupService } from '@/src/services/backupService'
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider'
 import '@/global.css'
 
+// React Native DevTools types for E2E testing
+declare global {
+  interface Console {
+    disableYellowBox?: boolean
+  }
+  interface Window {
+    __REACT_DEVTOOLS_GLOBAL_HOOK__?: {
+      onCommitFiberRoot?: any
+      onCommitFiberUnmount?: any
+    }
+  }
+}
+
 export const unstable_settings = {
   anchor: '(tabs)',
 }
@@ -31,6 +44,53 @@ export default function RootLayout() {
   // const { lastResponse, clearLastResponse } = useNotificationResponse()
 
   useEffect(() => {
+    // Disable React Native DevTools for E2E testing
+    if (process.env.EXPO_PUBLIC_E2E_TEST === 'true') {
+      console.log('🧪 E2E Test mode detected - Disabling DevTools')
+      
+      // Disable Yellow Box warnings
+      if (__DEV__ && console.disableYellowBox !== undefined) {
+        console.disableYellowBox = true
+      }
+      
+      // Suppress console warnings and logs that trigger DevTools
+      if (__DEV__) {
+        const originalWarn = console.warn
+        const originalLog = console.log
+        const originalError = console.error
+        
+        console.warn = (...args) => {
+          // Only log critical warnings, suppress DevTools-related warnings
+          const message = args.join(' ')
+          if (!message.includes('DevTools') && !message.includes('Remote debugger')) {
+            originalWarn.apply(console, args)
+          }
+        }
+        
+        console.log = (...args) => {
+          // Allow app-level logs but suppress DevTools connection logs
+          const message = args.join(' ')
+          if (!message.includes('DevTools') && !message.includes('Remote debugger')) {
+            originalLog.apply(console, args)
+          }
+        }
+        
+        console.error = (...args) => {
+          // Allow error logs but suppress DevTools-related errors
+          const message = args.join(' ')
+          if (!message.includes('DevTools') && !message.includes('Remote debugger')) {
+            originalError.apply(console, args)
+          }
+        }
+      }
+
+      // Disable React DevTools if available
+      if (__DEV__ && typeof window !== 'undefined' && window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+        window.__REACT_DEVTOOLS_GLOBAL_HOOK__.onCommitFiberRoot = undefined
+        window.__REACT_DEVTOOLS_GLOBAL_HOOK__.onCommitFiberUnmount = undefined
+      }
+    }
+
     const initApp = async () => {
       try {
         // Initialize database first
