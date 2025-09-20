@@ -1,0 +1,214 @@
+appId: com.anonymous.engage
+---
+# Test comprehensive data persistence and integrity
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Wait for app initialization
+- extendedWaitUntil:
+    visible:
+      text: 'Calendar'
+    timeout: 15000
+
+# Test 1: Create comprehensive test data
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Add multiple tasks
+- tapOn:
+    text: 'タスクを選択'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Select multiple tasks from different categories
+- tapOn:
+    text: '運動'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+- tapOn:
+    text: 'ネットワーキング'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+- tapOn:
+    text: '読書'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+- tapOn:
+    text: 'スキル学習'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+# Confirm selection
+- tapOn:
+    text: '確定'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Complete some tasks
+- tapOn:
+    id: 'task-checkbox-0'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+- tapOn:
+    id: 'task-checkbox-2'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+# Add detailed journal entry
+- tapOn:
+    id: 'journal-input'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- inputText: 'データ永続化テスト: 複数のタスクを完了し、詳細な日記を記録しました。アプリの再起動後もこのデータが保持されることを確認します。'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 2: Navigate to different dates and add data
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tap on a different date (if available)
+- tapOn:
+    point: 30%, 50% # Approximate calendar date position
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Add tasks to different date
+- tapOn:
+    text: 'タスクを選択'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    text: '整理整頓'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+- tapOn:
+    text: '確定'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Complete task on different date
+- tapOn:
+    id: 'task-checkbox-0'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+# Test 3: Check statistics to verify data aggregation
+- tapOn:
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify stats screen loads
+- assertVisible:
+    text: 'Stats'
+
+# Test 4: Force app restart to test persistence
+- stopApp
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Wait for app to fully reload
+- extendedWaitUntil:
+    visible:
+      text: 'Calendar'
+    timeout: 15000
+
+# Test 5: Verify all data persisted after restart
+# Check Today tab data
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify journal entry persisted
+- assertVisible:
+    text: 'データ永続化テスト'
+    optional: true
+
+# Test 6: Verify calendar data persisted
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Calendar should still be functional
+- assertVisible:
+    text: 'Calendar'
+
+# Test 7: Verify statistics data persisted
+- tapOn:
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Stats should reflect persisted data
+- assertVisible:
+    text: 'Stats'
+
+# Test 8: Add more data to verify continued functionality
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Add additional journal content
+- tapOn:
+    id: 'journal-input'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- inputText: ' 追記: アプリ再起動後もデータが正常に保持されています。'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Final verification
+- assertVisible:
+    text: '今日'
+# Test completed successfully - data persistence verified

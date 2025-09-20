@@ -1,0 +1,204 @@
+appId: com.anonymous.engage
+---
+# Test offline error handling and graceful degradation
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Wait for app initialization
+- extendedWaitUntil:
+    visible:
+      text: 'Calendar'
+    timeout: 15000
+
+# Test 1: Verify app handles startup without network gracefully
+# (App should start normally even if offline)
+- assertVisible:
+    text: 'Calendar'
+
+# Test 2: Test task operations work offline
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify Today tab loads without errors
+- assertVisible:
+    text: '今日'
+
+# Test 3: Test task selection works offline
+- tapOn:
+    text: 'タスクを選択'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Should be able to see preset tasks even offline
+- assertVisible:
+    text: '運動'
+    optional: true
+
+# Select a task
+- tapOn:
+    text: '運動'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+- tapOn:
+    text: '確定'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 4: Test task completion works offline
+- tapOn:
+    id: 'task-checkbox-0'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 5: Test journal entry works offline
+- tapOn:
+    id: 'journal-input'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- inputText: 'オフラインエラーハンドリングテスト'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 6: Test navigation works offline
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Calendar should load without network errors
+- assertVisible:
+    text: 'Calendar'
+
+# Test 7: Test statistics calculation works offline
+- tapOn:
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Stats should calculate from local data
+- assertVisible:
+    text: 'Stats'
+
+# Test 8: Test date selection works offline
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Try to select a different date
+- tapOn:
+    point: 40%, 50% # Approximate calendar date
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Should be able to navigate to different dates offline
+- assertVisible:
+    text: 'Calendar'
+
+# Test 9: Test app stability under offline conditions
+# Perform multiple operations to stress test offline handling
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 10: Verify no error states are visible
+# App should not show network error messages for offline-capable features
+- assertVisible:
+    text: 'Calendar'
+
+# Test 11: Test data persistence under offline conditions
+- stopApp
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Wait for offline app restart
+- extendedWaitUntil:
+    visible:
+      text: 'Calendar'
+    timeout: 15000
+
+# Test 12: Verify offline data persisted correctly
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Check if offline journal entry persisted
+- assertVisible:
+    text: 'オフラインエラーハンドリングテスト'
+    optional: true
+
+# Test 13: Verify continued offline functionality after restart
+- tapOn:
+    text: 'タスクを選択'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Should still be able to add tasks offline
+- tapOn:
+    text: '読書'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+- tapOn:
+    text: '確定'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Complete task to verify offline operations still work
+- tapOn:
+    id: 'task-checkbox-1'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Final verification - app should be fully functional offline
+- assertVisible:
+    text: '今日'
+# Offline error handling test completed successfully

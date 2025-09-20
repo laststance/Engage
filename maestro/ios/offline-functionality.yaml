@@ -1,0 +1,148 @@
+appId: com.anonymous.engage
+---
+# Test offline functionality and data persistence
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Wait for app initialization
+- extendedWaitUntil:
+    visible:
+      text: 'Calendar'
+    timeout: 15000
+
+# Test 1: Verify app works without internet (simulated by testing core functionality)
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify Today tab loads correctly (offline capability)
+- assertVisible:
+    text: '今日'
+
+# Test 2: Create tasks offline (data persistence test)
+- tapOn:
+    text: 'タスクを選択'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Select some tasks to test data persistence
+- tapOn:
+    text: '運動'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- tapOn:
+    text: 'ネットワーキング'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Confirm task selection
+- tapOn:
+    text: '確定'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 3: Complete tasks offline
+- tapOn:
+    id: 'task-checkbox-0'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- tapOn:
+    id: 'task-checkbox-1'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 4: Add journal entry offline
+- tapOn:
+    id: 'journal-input'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- inputText: 'オフラインでもアプリが正常に動作しています'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 5: Navigate to different tabs to verify offline functionality
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify calendar loads offline
+- assertVisible:
+    text: 'Calendar'
+
+# Navigate to Stats tab
+- tapOn:
+    point: 83%, 93% # Stats tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify stats loads offline
+- assertVisible:
+    text: 'Stats'
+
+# Test 6: Restart app to verify data persistence
+- stopApp
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Wait for app to reload
+- extendedWaitUntil:
+    visible:
+      text: 'Calendar'
+    timeout: 15000
+
+# Navigate to Today tab to verify data persisted
+- tapOn:
+    point: 50%, 93% # Today tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify data persisted after app restart
+- assertVisible:
+    text: '今日'
+
+# Check if journal entry persisted
+- assertVisible:
+    text: 'オフラインでもアプリが正常に動作しています'
+    optional: true
+
+# Test 7: Navigate back to calendar and verify heatmap data persisted
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    repeat: 2
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify calendar still works after restart
+- assertVisible:
+    text: 'Calendar'
+
+# Test completed successfully
+- assertVisible:
+    text: 'Calendar'

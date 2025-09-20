@@ -44,6 +44,9 @@ import {
   calculateStreakDays,
   calculateProductivityTrends,
 } from '../utils/statisticsEngine'
+import { offlineService, OfflineError } from '../services/offlineService'
+import { networkService } from '../services/networkService'
+import { backupService } from '../services/backupService'
 
 interface AppState {
   // Data
@@ -62,6 +65,11 @@ interface AppState {
   error: string | null
   isFirstLaunch: boolean
   suggestedTasks: Task[]
+
+  // Offline State
+  isOffline: boolean
+  offlineCapabilities: any
+  dataIntegrityStatus: 'unknown' | 'valid' | 'invalid' | 'checking'
 
   // Actions
   loadData: () => Promise<void>
@@ -106,6 +114,19 @@ interface AppState {
     streakDates: string[]
   }
   getProductivityTrends: (startDate: string, endDate: string) => any
+
+  // Offline Actions
+  checkDataIntegrity: () => Promise<void>
+  getOfflineStatus: () => any
+  handleOfflineError: (error: any, operation: string) => string
+
+  // Backup Actions
+  createBackup: () => Promise<any>
+  exportData: () => Promise<any>
+  importBackup: () => Promise<any>
+  listBackups: () => Promise<any[]>
+  deleteBackup: (fileName: string) => Promise<boolean>
+  getBackupStats: () => Promise<any>
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -123,59 +144,79 @@ export const useAppStore = create<AppState>((set, get) => ({
   error: null,
   isFirstLaunch: false,
   suggestedTasks: [],
+  isOffline: false,
+  offlineCapabilities: {},
+  dataIntegrityStatus: 'unknown',
 
   // Actions
   loadData: async () => {
     try {
       set({ isLoading: true, error: null })
 
-      // Load all data from repositories
-      const [categories, tasks, recentEntries, recentCompletions] =
-        await Promise.all([
-          categoryRepository.findAll(),
-          taskRepository.findAll(),
-          entryRepository.findRecentEntries(30), // Load last 30 days of entries
-          completionRepository.findByDateRange(
-            // Load last 30 days of completions
-            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-              .toISOString()
-              .split('T')[0],
-            new Date().toISOString().split('T')[0]
-          ),
-        ])
+      // Use offline service to execute data loading with proper error handling
+      const loadOperation = async () => {
+        // Load all data from repositories
+        const [categories, tasks, recentEntries, recentCompletions] =
+          await Promise.all([
+            categoryRepository.findAll(),
+            taskRepository.findAll(),
+            entryRepository.findRecentEntries(30), // Load last 30 days of entries
+            completionRepository.findByDateRange(
+              // Load last 30 days of completions
+              new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split('T')[0],
+              new Date().toISOString().split('T')[0]
+            ),
+          ])
+
+        return { categories, tasks, recentEntries, recentCompletions }
+      }
+
+      const result = await offlineService.executeOfflineOperation(
+        loadOperation,
+        'load app data'
+      )
 
       // Transform entries and completions into maps
       const entriesMap: Record<string, Entry> = {}
-      recentEntries.forEach((entry) => {
+      result.recentEntries.forEach((entry) => {
         entriesMap[entry.date] = entry
       })
 
       const completionsMap: Record<string, Completion[]> = {}
-      recentCompletions.forEach((completion) => {
+      result.recentCompletions.forEach((completion) => {
         if (!completionsMap[completion.date]) {
           completionsMap[completion.date] = []
         }
         completionsMap[completion.date].push(completion)
       })
 
+      // Update offline status
+      const offlineStatus = offlineService.getOfflineStatus()
+
       set({
-        categories,
-        tasks,
+        categories: result.categories,
+        tasks: result.tasks,
         entries: entriesMap,
         completions: completionsMap,
+        isOffline: offlineStatus.isOffline,
+        offlineCapabilities: offlineStatus.capabilities,
         isLoading: false,
       })
 
       console.log('Data loaded successfully:', {
-        categories: categories.length,
-        tasks: tasks.length,
-        entries: recentEntries.length,
-        completions: recentCompletions.length,
+        categories: result.categories.length,
+        tasks: result.tasks.length,
+        entries: result.recentEntries.length,
+        completions: result.recentCompletions.length,
+        isOffline: offlineStatus.isOffline,
       })
     } catch (error) {
       console.error('Failed to load data:', error)
+      const errorMessage = get().handleOfflineError(error, 'load data')
       set({
-        error: error instanceof Error ? error.message : 'Failed to load data',
+        error: errorMessage,
         isLoading: false,
       })
     }
@@ -189,7 +230,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       set({ error: null })
 
-      const isCompleted = await completionRepository.toggle(date, taskId)
+      const toggleOperation = async () => {
+        return await completionRepository.toggle(date, taskId)
+      }
+
+      const isCompleted = await offlineService.executeOfflineOperation(
+        toggleOperation,
+        'toggle task completion'
+      )
 
       // Update local state
       const state = get()
@@ -228,12 +276,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       )
     } catch (error) {
       console.error('Failed to toggle task completion:', error)
-      set({
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to toggle task completion',
-      })
+      const errorMessage = get().handleOfflineError(
+        error,
+        'toggle task completion'
+      )
+      set({ error: errorMessage })
     }
   },
 
@@ -241,7 +288,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       set({ error: null })
 
-      const result = await journalService.saveEntry(date, content)
+      const journalOperation = async () => {
+        return await journalService.saveEntry(date, content)
+      }
+
+      const result = await offlineService.executeOfflineOperation(
+        journalOperation,
+        'update journal entry'
+      )
 
       if (result.success && result.entry) {
         // Update local state
@@ -259,12 +313,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     } catch (error) {
       console.error('Failed to update journal entry:', error)
-      set({
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to update journal entry',
-      })
+      const errorMessage = get().handleOfflineError(
+        error,
+        'update journal entry'
+      )
+      set({ error: errorMessage })
     }
   },
 
@@ -448,6 +501,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       set({ isLoading: true, error: null })
 
+      // Initialize offline service first
+      await offlineService.initialize()
+
+      // Subscribe to network changes
+      networkService.subscribe((networkState) => {
+        const offlineStatus = offlineService.getOfflineStatus()
+        set({
+          isOffline: offlineStatus.isOffline,
+          offlineCapabilities: offlineStatus.capabilities,
+        })
+      })
+
       // Check if this is first launch
       const isFirstLaunch = await presetService.isFirstLaunch()
 
@@ -456,6 +521,9 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       // Load all data
       await get().loadData()
+
+      // Perform initial data integrity check
+      await get().checkDataIntegrity()
 
       set({
         isFirstLaunch,
@@ -468,12 +536,13 @@ export const useAppStore = create<AppState>((set, get) => ({
         categoriesCreated: initResult.categoriesCreated,
         tasksCreated: initResult.tasksCreated,
         suggestedTasksCount: initResult.suggestedTasks.length,
+        isOffline: get().isOffline,
       })
     } catch (error) {
       console.error('Failed to initialize app:', error)
+      const errorMessage = get().handleOfflineError(error, 'initialize app')
       set({
-        error:
-          error instanceof Error ? error.message : 'Failed to initialize app',
+        error: errorMessage,
         isLoading: false,
       })
     }
@@ -711,3 +780,185 @@ export const useAppStore = create<AppState>((set, get) => ({
     )
   },
 }))
+  // Offline Actions
+  checkDataIntegrity: async () => {
+    try {
+      set({ dataIntegrityStatus: 'checking' })
+
+      const integrityResult = await offlineService.checkDataIntegrity()
+
+      if (integrityResult.isValid) {
+        set({ dataIntegrityStatus: 'valid' })
+        console.log('Data integrity check passed')
+      } else {
+        set({ 
+          dataIntegrityStatus: 'invalid',
+          error: `Data integrity issues detected: ${integrityResult.errors.join(', ')}`
+        })
+        console.warn('Data integrity issues:', integrityResult)
+      }
+    } catch (error) {
+      console.error('Data integrity check failed:', error)
+      set({ 
+        dataIntegrityStatus: 'invalid',
+        error: 'Failed to check data integrity'
+      })
+    }
+  },
+
+  getOfflineStatus: () => {
+    return offlineService.getOfflineStatus()
+  },
+
+  handleOfflineError: (error: any, operation: string) => {
+    if (error instanceof OfflineError) {
+      switch (error.errorType) {
+        case 'network':
+          return `Cannot ${operation} - device is offline. Changes will be saved locally.`
+        case 'database':
+          return `Database error while trying to ${operation}. Please try again.`
+        default:
+          return `Failed to ${operation}. Please check your connection and try again.`
+      }
+    } else if (error instanceof Error) {
+      return error.message
+    } else {
+      return `Failed to ${operation}. Please try again.`
+    }
+  },  
+// Backup Actions
+  createBackup: async () => {
+    try {
+      set({ isLoading: true, error: null })
+
+      const result = await backupService.createBackup()
+
+      if (result.success) {
+        console.log('Backup created successfully:', result.fileName)
+        return result
+      } else {
+        const errorMessage = result.errors.join(', ')
+        set({ error: `Failed to create backup: ${errorMessage}` })
+        return result
+      }
+    } catch (error) {
+      console.error('Failed to create backup:', error)
+      const errorMessage = get().handleOfflineError(error, 'create backup')
+      set({ error: errorMessage })
+      return {
+        success: false,
+        errors: [errorMessage],
+      }
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  exportData: async () => {
+    try {
+      set({ isLoading: true, error: null })
+
+      const result = await backupService.exportAndShare()
+
+      if (result.success) {
+        console.log('Data exported successfully:', result.fileName)
+        return result
+      } else {
+        const errorMessage = result.errors.join(', ')
+        set({ error: `Failed to export data: ${errorMessage}` })
+        return result
+      }
+    } catch (error) {
+      console.error('Failed to export data:', error)
+      const errorMessage = get().handleOfflineError(error, 'export data')
+      set({ error: errorMessage })
+      return {
+        success: false,
+        errors: [errorMessage],
+      }
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  importBackup: async () => {
+    try {
+      set({ isLoading: true, error: null })
+
+      const result = await backupService.importBackup()
+
+      if (result.success) {
+        console.log('Backup imported successfully:', result.recordsImported)
+        
+        // Reload app data after successful import
+        await get().loadData()
+        
+        return result
+      } else {
+        const errorMessage = result.errors.join(', ')
+        set({ error: `Failed to import backup: ${errorMessage}` })
+        return result
+      }
+    } catch (error) {
+      console.error('Failed to import backup:', error)
+      const errorMessage = get().handleOfflineError(error, 'import backup')
+      set({ error: errorMessage })
+      return {
+        success: false,
+        recordsImported: {
+          categories: 0,
+          tasks: 0,
+          entries: 0,
+          completions: 0,
+          settings: 0,
+        },
+        errors: [errorMessage],
+        warnings: [],
+      }
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  listBackups: async () => {
+    try {
+      return await backupService.listBackups()
+    } catch (error) {
+      console.error('Failed to list backups:', error)
+      const errorMessage = get().handleOfflineError(error, 'list backups')
+      set({ error: errorMessage })
+      return []
+    }
+  },
+
+  deleteBackup: async (fileName: string) => {
+    try {
+      const success = await backupService.deleteBackup(fileName)
+      
+      if (!success) {
+        set({ error: `Failed to delete backup: ${fileName}` })
+      }
+      
+      return success
+    } catch (error) {
+      console.error('Failed to delete backup:', error)
+      const errorMessage = get().handleOfflineError(error, 'delete backup')
+      set({ error: errorMessage })
+      return false
+    }
+  },
+
+  getBackupStats: async () => {
+    try {
+      return await backupService.getBackupStats()
+    } catch (error) {
+      console.error('Failed to get backup stats:', error)
+      const errorMessage = get().handleOfflineError(error, 'get backup statistics')
+      set({ error: errorMessage })
+      return {
+        totalBackups: 0,
+        totalSize: 0,
+        validBackups: 0,
+      }
+    }
+  },

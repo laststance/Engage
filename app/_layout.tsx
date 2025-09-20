@@ -12,6 +12,8 @@ import 'react-native-reanimated'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useAppStore } from '@/src/stores/app-store'
 import { databaseService } from '@/src/services/database'
+import { initializeOfflineService } from '@/src/services/offlineService'
+import { initializeBackupService } from '@/src/services/backupService'
 // import { notificationService } from '@/src/services/notificationService'
 // import { useNotificationResponse } from '@/src/hooks/useNotifications'
 // import { router } from 'expo-router'
@@ -33,6 +35,12 @@ export default function RootLayout() {
       try {
         // Initialize database first
         await databaseService.initialize()
+
+        // Initialize offline service with database
+        initializeOfflineService(databaseService)
+
+        // Initialize backup service with database
+        initializeBackupService(databaseService)
 
         // Then initialize app state and presets
         await initializeApp()
