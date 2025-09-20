@@ -2,6 +2,10 @@
 inclusion: always
 ---
 
+# ❗EXECTIVE ORDER❗
+
+**MUST USE** `sequentialthinking`, `todo_write`, `context7` for whole tasks.
+
 # Research & Troubleshooting Guidelines
 
 ## Research Tool Priority

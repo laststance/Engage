@@ -1,3 +1,303 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Apple HIG Design System CSS Variables */
+:root {
+  /* iOS System Colors */
+  --color-system-blue: #007aff;
+  --color-system-green: #34c759;
+  --color-system-indigo: #5856d6;
+  --color-system-orange: #ff9500;
+  --color-system-pink: #ff2d92;
+  --color-system-purple: #af52de;
+  --color-system-red: #ff3b30;
+  --color-system-teal: #5ac8fa;
+  --color-system-yellow: #ffcc00;
+
+  /* System Grays */
+  --color-system-gray: #8e8e93;
+  --color-system-gray-2: #aeaeb2;
+  --color-system-gray-3: #c7c7cc;
+  --color-system-gray-4: #d1d1d6;
+  --color-system-gray-5: #e5e5ea;
+  --color-system-gray-6: #f2f2f7;
+
+  /* Label Colors */
+  --color-label: #000000;
+  --color-secondary-label: #3c3c43;
+  --color-tertiary-label: #3c3c43;
+  --color-quaternary-label: #2c2c2e;
+
+  /* Background Colors */
+  --color-system-background: #ffffff;
+  --color-secondary-system-background: #f2f2f7;
+  --color-tertiary-system-background: #ffffff;
+
+  /* Category Colors */
+  --color-business: #007aff;
+  --color-business-light: #e3f2fd;
+  --color-business-dark: #1565c0;
+  --color-life: #34c759;
+  --color-life-light: #e8f5e8;
+  --color-life-dark: #2e7d32;
+  --color-study: #ff9500;
+  --color-study-light: #fff3e0;
+  --color-study-dark: #f57c00;
+  --color-health: #ff2d92;
+  --color-health-light: #fce4ec;
+  --color-health-dark: #c2185b;
+  --color-finance: #af52de;
+  --color-finance-light: #f3e5f5;
+  --color-finance-dark: #7b1fa2;
+  --color-hobby: #5ac8fa;
+  --color-hobby-light: #e0f2f1;
+  --color-hobby-dark: #00695c;
+  --color-work: #5856d6;
+  --color-work-light: #e8eaf6;
+  --color-work-dark: #303f9f;
+  --color-personal: #ffcc00;
+  --color-personal-light: #fffde7;
+  --color-personal-dark: #f57f17;
+
+  /* Heatmap Colors */
+  --color-heatmap-none: #f2f2f7;
+  --color-heatmap-low: #c8e6c9;
+  --color-heatmap-medium: #81c784;
+  --color-heatmap-high: #4caf50;
+  --color-heatmap-highest: #2e7d32;
+}
+
+/* Apple HIG Base Styles */
+@layer base {
+  html {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-system-background);
+    color: var(--color-label);
+    font-size: 17px;
+    line-height: 1.29;
+    letter-spacing: -0.41px;
+  }
+}
+
+/* Apple HIG Component Utilities */
+@layer utilities {
+  /* Typography Utilities */
+  .text-large-title {
+    font-size: 34px;
+    line-height: 41px;
+    font-weight: 700;
+    letter-spacing: 0.37px;
+  }
+
+  .text-title-1 {
+    font-size: 28px;
+    line-height: 34px;
+    font-weight: 700;
+    letter-spacing: 0.36px;
+  }
+
+  .text-title-2 {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 700;
+    letter-spacing: 0.35px;
+  }
+
+  .text-title-3 {
+    font-size: 20px;
+    line-height: 25px;
+    font-weight: 600;
+    letter-spacing: 0.38px;
+  }
+
+  .text-headline {
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 600;
+    letter-spacing: -0.41px;
+  }
+
+  .text-body {
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 400;
+    letter-spacing: -0.41px;
+  }
+
+  .text-callout {
+    font-size: 16px;
+    line-height: 21px;
+    font-weight: 400;
+    letter-spacing: -0.32px;
+  }
+
+  .text-subhead {
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 400;
+    letter-spacing: -0.24px;
+  }
+
+  .text-footnote {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 400;
+    letter-spacing: -0.08px;
+  }
+
+  .text-caption-1 {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 400;
+    letter-spacing: 0px;
+  }
+
+  .text-caption-2 {
+    font-size: 11px;
+    line-height: 13px;
+    font-weight: 400;
+    letter-spacing: 0.07px;
+  }
+
+  /* Touch Target Utilities */
+  .touch-target-minimum {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .touch-target-comfortable {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .touch-target-large {
+    min-width: 56px;
+    min-height: 56px;
+  }
+
+  /* iOS Shadow Utilities */
+  .shadow-ios-small {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .shadow-ios-medium {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .shadow-ios-large {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .shadow-ios-card {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .shadow-ios-modal {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Category Color Utilities */
+  .bg-category-business {
+    background-color: var(--color-business);
+  }
+  .bg-category-business-light {
+    background-color: var(--color-business-light);
+  }
+  .bg-category-business-dark {
+    background-color: var(--color-business-dark);
+  }
+
+  .bg-category-life {
+    background-color: var(--color-life);
+  }
+  .bg-category-life-light {
+    background-color: var(--color-life-light);
+  }
+  .bg-category-life-dark {
+    background-color: var(--color-life-dark);
+  }
+
+  .bg-category-study {
+    background-color: var(--color-study);
+  }
+  .bg-category-study-light {
+    background-color: var(--color-study-light);
+  }
+  .bg-category-study-dark {
+    background-color: var(--color-study-dark);
+  }
+
+  .bg-category-health {
+    background-color: var(--color-health);
+  }
+  .bg-category-health-light {
+    background-color: var(--color-health-light);
+  }
+  .bg-category-health-dark {
+    background-color: var(--color-health-dark);
+  }
+
+  .bg-category-finance {
+    background-color: var(--color-finance);
+  }
+  .bg-category-finance-light {
+    background-color: var(--color-finance-light);
+  }
+  .bg-category-finance-dark {
+    background-color: var(--color-finance-dark);
+  }
+
+  .bg-category-hobby {
+    background-color: var(--color-hobby);
+  }
+  .bg-category-hobby-light {
+    background-color: var(--color-hobby-light);
+  }
+  .bg-category-hobby-dark {
+    background-color: var(--color-hobby-dark);
+  }
+
+  .bg-category-work {
+    background-color: var(--color-work);
+  }
+  .bg-category-work-light {
+    background-color: var(--color-work-light);
+  }
+  .bg-category-work-dark {
+    background-color: var(--color-work-dark);
+  }
+
+  .bg-category-personal {
+    background-color: var(--color-personal);
+  }
+  .bg-category-personal-light {
+    background-color: var(--color-personal-light);
+  }
+  .bg-category-personal-dark {
+    background-color: var(--color-personal-dark);
+  }
+
+  /* Heatmap Color Utilities */
+  .bg-heatmap-none {
+    background-color: var(--color-heatmap-none);
+  }
+  .bg-heatmap-low {
+    background-color: var(--color-heatmap-low);
+  }
+  .bg-heatmap-medium {
+    background-color: var(--color-heatmap-medium);
+  }
+  .bg-heatmap-high {
+    background-color: var(--color-heatmap-high);
+  }
+  .bg-heatmap-highest {
+    background-color: var(--color-heatmap-highest);
+  }
+}

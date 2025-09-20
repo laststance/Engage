@@ -54,15 +54,19 @@ export const Statistics: React.FC<StatisticsProps> = ({
     subtitle?: string
     icon: string
     color?: string
-  }> = ({ title, value, subtitle, icon, color = 'text-blue-500' }) => (
-    <Box className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+  }> = ({ title, value, subtitle, icon, color = 'text-system-blue' }) => (
+    <Box className="bg-system-background rounded-xl p-4 shadow-ios-card border border-system-gray-5">
       <VStack space="sm">
         <HStack className="items-center justify-between">
-          <Text className="text-sm font-medium text-gray-600">{title}</Text>
-          <Text className="text-gray-400">📊</Text>
+          <Text className="text-footnote font-medium text-secondary-label">
+            {title}
+          </Text>
+          <Text className="text-quaternary-label">📊</Text>
         </HStack>
-        <Text className={`text-2xl font-bold ${color}`}>{value}</Text>
-        {subtitle && <Text className="text-xs text-gray-500">{subtitle}</Text>}
+        <Text className={`text-title-1 font-bold ${color}`}>{value}</Text>
+        {subtitle && (
+          <Text className="text-caption-1 text-tertiary-label">{subtitle}</Text>
+        )}
       </VStack>
     </Box>
   )
@@ -73,25 +77,30 @@ export const Statistics: React.FC<StatisticsProps> = ({
         <VStack space="lg" className="p-4">
           {/* Header */}
           <VStack space="md">
-            <Text className="text-2xl font-bold text-gray-800">実績</Text>
+            <Text className="text-large-title font-bold text-label">実績</Text>
 
             {/* Period Toggle */}
-            <HStack className="bg-gray-200 rounded-lg p-1">
+            <HStack className="bg-secondary-system-background rounded-lg p-1">
               <Pressable
                 onPress={() => setSelectedPeriod('week')}
-                className={`
-                  flex-1 py-2 px-4 rounded-md
-                  ${selectedPeriod === 'week' ? 'bg-white shadow-sm' : ''}
+                className={({ pressed }) => `
+                  flex-1 py-2 px-4 rounded-md touch-target-minimum transition-all duration-150
+                  ${
+                    selectedPeriod === 'week'
+                      ? 'bg-system-background shadow-ios-small'
+                      : ''
+                  }
+                  ${pressed ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
                 `}
                 testID="stats-week-toggle"
               >
                 <Text
                   className={`
-                    text-center font-medium
+                    text-center font-medium text-callout
                     ${
                       selectedPeriod === 'week'
-                        ? 'text-gray-800'
-                        : 'text-gray-500'
+                        ? 'text-label'
+                        : 'text-tertiary-label'
                     }
                   `}
                 >
@@ -101,19 +110,24 @@ export const Statistics: React.FC<StatisticsProps> = ({
 
               <Pressable
                 onPress={() => setSelectedPeriod('month')}
-                className={`
-                  flex-1 py-2 px-4 rounded-md
-                  ${selectedPeriod === 'month' ? 'bg-white shadow-sm' : ''}
+                className={({ pressed }) => `
+                  flex-1 py-2 px-4 rounded-md touch-target-minimum transition-all duration-150
+                  ${
+                    selectedPeriod === 'month'
+                      ? 'bg-system-background shadow-ios-small'
+                      : ''
+                  }
+                  ${pressed ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
                 `}
                 testID="stats-month-toggle"
               >
                 <Text
                   className={`
-                    text-center font-medium
+                    text-center font-medium text-callout
                     ${
                       selectedPeriod === 'month'
-                        ? 'text-gray-800'
-                        : 'text-gray-500'
+                        ? 'text-label'
+                        : 'text-tertiary-label'
                     }
                   `}
                 >
@@ -125,16 +139,16 @@ export const Statistics: React.FC<StatisticsProps> = ({
 
           {/* Today's Achievements */}
           <VStack space="sm">
-            <Text className="text-lg font-semibold text-gray-800">
+            <Text className="text-headline font-semibold text-label">
               今日の成果
             </Text>
-            <Box className="bg-gradient-to-r from-blue-500 to-green-500 rounded-xl p-6">
+            <Box className="bg-gradient-to-r from-system-blue to-system-green rounded-xl p-6 shadow-ios-medium">
               <VStack space="sm" className="items-center">
                 <IconSymbol name="star.fill" size={32} color="white" />
-                <Text className="text-white text-xl font-bold">
+                <Text className="text-white text-title-2 font-bold">
                   {currentStats.streakDays}日連続
                 </Text>
-                <Text className="text-white/80 text-center">
+                <Text className="text-white/80 text-center text-callout">
                   素晴らしい継続力です！
                 </Text>
               </VStack>
@@ -143,7 +157,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
 
           {/* Key Metrics */}
           <VStack space="sm">
-            <Text className="text-lg font-semibold text-gray-800">
+            <Text className="text-headline font-semibold text-label">
               {selectedPeriod === 'week' ? '今週の統計' : '今月の統計'}
             </Text>
 
@@ -155,7 +169,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                     title="完了率"
                     value={formatPercentage(currentStats.completionRate)}
                     icon="chart.pie.fill"
-                    color="text-green-600"
+                    color="text-system-green"
                   />
                 </Box>
                 <Box className="flex-1">
@@ -163,7 +177,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                     title="アクティブ日数"
                     value={`${currentStats.activeDays}日`}
                     icon="calendar"
-                    color="text-blue-600"
+                    color="text-system-blue"
                   />
                 </Box>
               </HStack>
@@ -175,7 +189,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                     title="総タスク数"
                     value={currentStats.totalTasks}
                     icon="list.bullet"
-                    color="text-purple-600"
+                    color="text-system-purple"
                   />
                 </Box>
                 <Box className="flex-1">
@@ -183,7 +197,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                     title="1日平均"
                     value={`${currentStats.dailyAverage.toFixed(1)}個`}
                     icon="chart.bar.fill"
-                    color="text-orange-600"
+                    color="text-system-orange"
                   />
                 </Box>
               </HStack>
@@ -197,14 +211,14 @@ export const Statistics: React.FC<StatisticsProps> = ({
                     Math.max(currentStats.activeDays, 1)
                 )}`}
                 icon="book.fill"
-                color="text-indigo-600"
+                color="text-system-indigo"
               />
             </VStack>
           </VStack>
 
           {/* Category Breakdown */}
           <VStack space="sm">
-            <Text className="text-lg font-semibold text-gray-800">
+            <Text className="text-headline font-semibold text-label">
               カテゴリー別実績
             </Text>
 
@@ -219,7 +233,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                   return (
                     <Box
                       key={categoryId}
-                      className="bg-white rounded-lg p-4 border border-gray-100"
+                      className="bg-system-background rounded-lg p-4 border border-system-gray-5 shadow-ios-small"
                     >
                       <VStack space="sm">
                         <HStack className="items-center justify-between">
@@ -227,24 +241,24 @@ export const Statistics: React.FC<StatisticsProps> = ({
                             <Box
                               className={`w-4 h-4 rounded-full ${categoryColor}`}
                             />
-                            <Text className="font-medium text-gray-800">
+                            <Text className="font-medium text-label text-callout">
                               {category?.name || 'Unknown Category'}
                             </Text>
                           </HStack>
-                          <Text className="text-sm text-gray-600">
+                          <Text className="text-footnote text-secondary-label">
                             {stats.completed}/{stats.total}
                           </Text>
                         </HStack>
 
                         {/* Progress Bar */}
-                        <Box className="bg-gray-200 rounded-full h-2">
+                        <Box className="bg-system-gray-5 rounded-full h-2">
                           <Box
-                            className={`h-2 rounded-full ${categoryColor}`}
+                            className={`h-2 rounded-full ${categoryColor} transition-all duration-300`}
                             style={{ width: `${completionRate * 100}%` }}
                           />
                         </Box>
 
-                        <Text className="text-xs text-gray-500">
+                        <Text className="text-caption-1 text-tertiary-label">
                           完了率: {formatPercentage(completionRate)}
                         </Text>
                       </VStack>
@@ -254,13 +268,13 @@ export const Statistics: React.FC<StatisticsProps> = ({
               )}
 
               {Object.keys(currentStats.categoryBreakdown).length === 0 && (
-                <Box className="bg-white rounded-lg p-8 border border-gray-100">
+                <Box className="bg-system-background rounded-lg p-8 border border-system-gray-5 shadow-ios-small">
                   <VStack className="items-center" space="sm">
-                    <IconSymbol name="chart.bar" size={32} color="#9CA3AF" />
-                    <Text className="text-gray-500 text-center">
+                    <IconSymbol name="chart.bar" size={32} color="#8E8E93" />
+                    <Text className="text-tertiary-label text-center text-callout">
                       まだデータがありません
                     </Text>
-                    <Text className="text-gray-400 text-sm text-center">
+                    <Text className="text-quaternary-label text-footnote text-center">
                       タスクを完了すると統計が表示されます
                     </Text>
                   </VStack>

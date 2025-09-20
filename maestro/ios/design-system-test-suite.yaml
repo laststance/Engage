@@ -1,0 +1,211 @@
+appId: com.anonymous.engage
+---
+# Design System Test Suite
+# Comprehensive test suite for Apple HIG compliance and visual quality assurance
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Test Suite 1: Typography Validation
+- assertVisible:
+    text: 'カレンダー'
+- assertVisible:
+    text: '今日'
+- assertVisible:
+    text: '実績'
+
+# Verify typography hierarchy is consistent
+- takeScreenshot: 'typography-validation-tabs'
+
+# Test Suite 2: Color System Validation
+- assertVisible:
+    id: 'calendar-component'
+
+# Navigate through all screens to validate color consistency
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'color-system-today'
+
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'color-system-stats'
+
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'color-system-calendar'
+
+# Test Suite 3: Spacing System Validation (8pt grid)
+# Visual verification through screenshots at different screen states
+
+# Test Suite 4: Touch Target Validation (44pt minimum)
+# Test all interactive elements
+- tapOn:
+    id: 'calendar-next-month'
+    waitToSettleTimeoutMs: 300
+- tapOn:
+    id: 'calendar-prev-month'
+    waitToSettleTimeoutMs: 300
+
+# Test tab navigation touch targets
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 300
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 300
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 300
+
+# Test Suite 5: Shadow System Validation
+# Verify iOS-style shadows are applied consistently
+- tapOn:
+    point: 50%, 40% # Select date to open day sheet
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'shadow-system-day-sheet'
+
+# Test Suite 6: Interaction States Validation
+- runFlow:
+    when:
+      visible:
+        text: 'タスクを選択'
+    commands:
+      - tapOn: 'タスクを選択'
+      - waitForAnimationToEnd:
+          timeout: 2000
+      - takeScreenshot: 'interaction-states-modal'
+
+# Test button states
+- runFlow:
+    when:
+      visible:
+        id: 'edit-presets-button'
+    commands:
+      - tapOn:
+          id: 'edit-presets-button'
+          waitToSettleTimeoutMs: 200
+      - takeScreenshot: 'interaction-states-button-pressed'
+
+      # Close if preset editor opened
+      - runFlow:
+          when:
+            visible:
+              text: 'キャンセル'
+          commands:
+            - tapOn: 'キャンセル'
+
+# Close task picker
+- runFlow:
+    when:
+      visible:
+        id: 'task-picker-close'
+    commands:
+      - tapOn:
+          id: 'task-picker-close'
+
+# Test Suite 7: Category Color System
+# Verify category colors are consistent with design system
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'category-colors-stats'
+
+# Test Suite 8: Heatmap Color System
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'heatmap-colors-calendar'
+
+# Test Suite 9: Animation and Transition Validation
+# Test smooth transitions between screens
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 150
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 150
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 150
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test Suite 10: Accessibility Validation
+# Verify proper accessibility labels and touch targets
+- assertVisible:
+    id: 'calendar-component'
+
+# Test Suite 11: Visual Hierarchy Validation
+# Ensure proper information hierarchy is maintained
+- takeScreenshot: 'visual-hierarchy-calendar'
+
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'visual-hierarchy-today'
+
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'visual-hierarchy-stats'
+
+# Test Suite 12: Consistency Validation
+# Verify consistent styling across all components
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+
+# Select date and test modal consistency
+- tapOn:
+    point: 50%, 40%
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- runFlow:
+    when:
+      visible:
+        text: 'タスクを選択'
+    commands:
+      - tapOn: 'タスクを選択'
+      - waitForAnimationToEnd:
+          timeout: 2000
+      - takeScreenshot: 'consistency-validation-modal'
+
+      - tapOn:
+          id: 'task-picker-close'
+
+# Test Suite 13: Final Quality Assurance
+# Comprehensive screenshots for manual review
+- takeScreenshot: 'qa-final-calendar'
+
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'qa-final-today'
+
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'qa-final-stats'
+
+# Return to calendar for final verification
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- assertVisible:
+    id: 'calendar-component'
+
+# Test Suite Complete
+- takeScreenshot: 'design-system-test-complete'

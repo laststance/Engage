@@ -1,20 +1,22 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Theme configuration for Engage app
+ * Integrates with the Apple HIG-compliant design system
  */
 
-import { Platform } from 'react-native';
+import { Platform } from 'react-native'
+import { DesignSystem } from './design-system'
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// Legacy color system for backward compatibility
+const tintColorLight = DesignSystem.colors.system.systemBlue
+const tintColorDark = '#fff'
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: DesignSystem.colors.system.label,
+    background: DesignSystem.colors.system.systemBackground,
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: DesignSystem.colors.system.systemGray,
+    tabIconDefault: DesignSystem.colors.system.systemGray,
     tabIconSelected: tintColorLight,
   },
   dark: {
@@ -25,29 +27,10 @@ export const Colors = {
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
   },
-};
+}
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+// Use design system fonts
+export const Fonts = DesignSystem.fonts
+
+// Export design system for easy access
+export { DesignSystem } from './design-system'

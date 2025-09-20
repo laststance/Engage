@@ -1,0 +1,224 @@
+appId: com.anonymous.engage
+---
+# Figma Design Comparison Test
+# Takes comprehensive screenshots for comparison with Figma design files
+# Reference files: Today-View.png, カレンダーview.png, メインView.png,
+# メインViewタスク選択.png, メインViewタスク選択後.png, 実績View.png
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Screenshot 1: Calendar View (カレンダーview.png)
+- assertVisible:
+    id: 'calendar-component'
+- takeScreenshot: 'figma-comparison-calendar-view'
+
+# Screenshot 2: Today View (Today-View.png)
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'figma-comparison-today-view'
+
+# Screenshot 3: Stats View (実績View.png)
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'figma-comparison-stats-view'
+
+# Screenshot 4: Main View with Day Sheet (メインView.png)
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Select today's date to open day sheet
+- tapOn:
+    point: 50%, 40% # Center date (today)
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'figma-comparison-main-view'
+
+# Screenshot 5: Task Selection Modal (メインViewタスク選択.png)
+- runFlow:
+    when:
+      visible:
+        text: 'タスクを選択'
+    commands:
+      - tapOn: 'タスクを選択'
+      - waitForAnimationToEnd:
+          timeout: 2000
+      - takeScreenshot: 'figma-comparison-task-selection'
+
+# Screenshot 6: Task Selection After Selection (メインViewタスク選択後.png)
+- runFlow:
+    when:
+      visible:
+        id: 'task-picker-close'
+    commands:
+      # Select some tasks
+      - runFlow:
+          when:
+            visible:
+              text: '運動'
+          commands:
+            - tapOn: '運動'
+            - waitForAnimationToEnd:
+                timeout: 500
+
+      - runFlow:
+          when:
+            visible:
+              text: '読書'
+          commands:
+            - tapOn: '読書'
+            - waitForAnimationToEnd:
+                timeout: 500
+
+      # Take screenshot with selected tasks
+      - takeScreenshot: 'figma-comparison-task-selection-after'
+
+      # Confirm selection
+      - runFlow:
+          when:
+            visible:
+              id: 'task-picker-confirm'
+          commands:
+            - tapOn:
+                id: 'task-picker-confirm'
+            - waitForAnimationToEnd:
+                timeout: 2000
+
+      # Fallback: close modal
+      - runFlow:
+          when:
+            visible:
+              id: 'task-picker-close'
+          commands:
+            - tapOn:
+                id: 'task-picker-close'
+
+# Screenshot 7: Day Sheet with Selected Tasks
+- takeScreenshot: 'figma-comparison-day-sheet-with-tasks'
+
+# Screenshot 8: Calendar with Heatmap Data
+- tapOn:
+    point: 17%, 93% # Calendar tab if not already there
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'figma-comparison-calendar-with-data'
+
+# Screenshot 9: Today Tab with Tasks
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'figma-comparison-today-with-tasks'
+
+# Screenshot 10: Stats with Data
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Toggle between week and month views for comprehensive screenshots
+- tapOn:
+    id: 'stats-week-toggle'
+    waitToSettleTimeoutMs: 500
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: 'figma-comparison-stats-week-view'
+
+- tapOn:
+    id: 'stats-month-toggle'
+    waitToSettleTimeoutMs: 500
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: 'figma-comparison-stats-month-view'
+
+# Screenshot 11: Preset Editor (if accessible)
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: 50%, 40% # Select date
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- runFlow:
+    when:
+      visible:
+        text: 'タスクを選択'
+    commands:
+      - tapOn: 'タスクを選択'
+      - waitForAnimationToEnd:
+          timeout: 2000
+
+- runFlow:
+    when:
+      visible:
+        id: 'edit-presets-button'
+    commands:
+      - tapOn:
+          id: 'edit-presets-button'
+      - waitForAnimationToEnd:
+          timeout: 2000
+      - takeScreenshot: 'figma-comparison-preset-editor'
+
+      # Close preset editor
+      - runFlow:
+          when:
+            visible:
+              text: 'キャンセル'
+          commands:
+            - tapOn: 'キャンセル'
+            - waitForAnimationToEnd:
+                timeout: 1000
+
+# Close task picker if still open
+- runFlow:
+    when:
+      visible:
+        id: 'task-picker-close'
+    commands:
+      - tapOn:
+          id: 'task-picker-close'
+
+# Screenshot 12: Final State Verification
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'figma-comparison-final-calendar'
+
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'figma-comparison-final-today'
+
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'figma-comparison-final-stats'
+
+# Return to calendar for final verification
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- assertVisible:
+    id: 'calendar-component'

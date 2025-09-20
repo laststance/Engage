@@ -13,7 +13,12 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e:ios": "maestro test maestro/ios/",
-    "test:e2e:android": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios'"
+    "test:e2e:android": "echo 'Android tests not implemented yet. Run: npm run test:e2e:ios'",
+    "test:design-system": "maestro test maestro/ios/design-system-validation.yaml",
+    "test:onboarding": "maestro test maestro/ios/onboarding-flow-test.yaml",
+    "test:visual-feedback": "maestro test maestro/ios/visual-feedback-test.yaml",
+    "test:figma-comparison": "maestro test maestro/ios/figma-design-comparison.yaml",
+    "test:design-suite": "maestro test maestro/ios/design-system-test-suite.yaml"
   },
   "dependencies": {
     "@expo/html-elements": "^0.10.1",

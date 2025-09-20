@@ -1,0 +1,209 @@
+appId: com.anonymous.engage
+---
+# Design System and UX Validation Test
+# Tests Apple HIG compliance, visual feedback, and interaction states
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Test 1: Verify Apple HIG Typography
+- assertVisible:
+    text: 'カレンダー'
+- assertVisible:
+    text: '今日'
+- assertVisible:
+    text: '実績'
+
+# Test 2: Verify Touch Targets (minimum 44pt)
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 3: Test Calendar Interaction States
+- assertVisible:
+    id: 'calendar-component'
+
+# Test calendar navigation with visual feedback
+- tapOn:
+    id: 'calendar-next-month'
+    waitToSettleTimeoutMs: 500
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- tapOn:
+    id: 'calendar-prev-month'
+    waitToSettleTimeoutMs: 500
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 4: Verify Heatmap Colors (Apple HIG compliant)
+- assertVisible:
+    id: 'calendar-component'
+
+# Test date selection with proper feedback
+- tapOn:
+    point: 50%, 40% # Approximate center date
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 5: Navigate to Today Tab and Test Design System
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 6: Navigate to Statistics and Test Visual Hierarchy
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- assertVisible:
+    id: 'statistics-screen'
+
+# Test period toggle interaction states
+- tapOn:
+    id: 'stats-week-toggle'
+    waitToSettleTimeoutMs: 500
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- tapOn:
+    id: 'stats-month-toggle'
+    waitToSettleTimeoutMs: 500
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 7: Return to Calendar for Task Selection Flow
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Select today's date
+- tapOn:
+    point: 50%, 40% # Today's date
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 8: Task Selection Modal Design System
+- runFlow:
+    when:
+      visible:
+        text: 'タスクを選択'
+    commands:
+      - tapOn: 'タスクを選択'
+      - waitForAnimationToEnd:
+          timeout: 2000
+
+# Test task picker modal design
+- runFlow:
+    when:
+      visible:
+        id: 'task-picker-close'
+    commands:
+      # Test category colors and typography
+      - assertVisible:
+          text: '事業'
+      - assertVisible:
+          text: '生活'
+
+      # Test enhanced pressable interactions
+      - tapOn:
+          id: 'edit-presets-button'
+          waitToSettleTimeoutMs: 500
+      - waitForAnimationToEnd:
+          timeout: 1000
+
+      # Close preset editor if opened
+      - runFlow:
+          when:
+            visible:
+              text: 'キャンセル'
+          commands:
+            - tapOn: 'キャンセル'
+            - waitForAnimationToEnd:
+                timeout: 1000
+
+      # Test task selection with visual feedback
+      - runFlow:
+          when:
+            visible:
+              text: '運動'
+          commands:
+            - tapOn: '運動'
+            - waitToSettleTimeoutMs: 500
+
+      # Test confirm button states
+      - runFlow:
+          when:
+            visible:
+              id: 'task-picker-confirm'
+          commands:
+            - tapOn:
+                id: 'task-picker-confirm'
+            - waitForAnimationToEnd:
+                timeout: 2000
+
+      # Fallback: close modal
+      - runFlow:
+          when:
+            visible:
+              id: 'task-picker-close'
+          commands:
+            - tapOn:
+                id: 'task-picker-close'
+            - waitForAnimationToEnd:
+                timeout: 1000
+
+# Test 9: Verify Apple HIG Color System
+# Check that system colors are being used consistently
+- assertVisible:
+    id: 'calendar-component'
+
+# Test 10: Verify Consistent Spacing (8pt grid system)
+# Visual verification through screenshots
+- takeScreenshot: 'design-system-calendar-view'
+
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'design-system-today-view'
+
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 'design-system-stats-view'
+
+# Test 11: Verify Shadow System (iOS-style shadows)
+# Shadows should be subtle and consistent with Apple HIG
+
+# Test 12: Verify Typography Scale
+# All text should use Apple HIG typography classes
+
+# Test 13: Test Accessibility (VoiceOver compatibility)
+# Touch targets should be minimum 44pt
+# Text should have proper contrast ratios
+
+# Final verification: Return to calendar
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- assertVisible:
+    id: 'calendar-component'

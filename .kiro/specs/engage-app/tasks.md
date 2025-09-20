@@ -141,16 +141,31 @@
       - Repeat comparison and refinement until implementation matches Figma design exactly
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 9.1, 9.2, 9.3, 9.4, 9.5_
 
-  - [x] 4.5 Create E2E test for core UI components
+  - [x] 4.5 Create Today Tab component with dedicated current date interface
+
+    - Implement Today tab screen matching figma-design/Today-View.png exactly
+    - Ensure content synchronization between Today tab and Calendar tab (when today's date is selected)
+    - Implement shared state management for current date data
+    - Add all task management functionality (selection, completion, journal) to Today tab
+    - **Figma Design Implementation Process:**
+      - Reference `figma-design/Today-View.png` for exact visual specifications
+      - Take screenshot of implemented Today tab component
+      - Compare screenshot with `figma-design/Today-View.png`
+      - Identify and fix any visual differences (layout, styling, components, spacing)
+      - Repeat comparison and refinement until implementation matches Figma design exactly
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 10.1, 10.2, 10.3, 10.4, 10.5_
+
+  - [x] 4.6 Create E2E test for core UI components
     - Write Maestro test for calendar navigation and date selection
     - Test Day Sheet task management and journal functionality
     - Verify Task Picker modal and Statistics screen interactions
+    - Test Today tab functionality and content synchronization with Calendar tab
     - **Figma Design Validation:**
       - Take screenshots during E2E test execution
-      - Compare test screenshots with all Figma design files
+      - Compare test screenshots with all Figma design files including Today-View.png
       - Verify visual consistency across all screens during user interactions
       - Document any remaining visual discrepancies for final polish
-    - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 9.1, 9.2, 9.3, 9.4, 9.5_
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 9.1, 9.2, 9.3, 9.4, 9.5, 10.1, 10.2, 10.3, 10.4, 10.5_
 
 - [x] 5. Preset Task Management System
 
@@ -233,9 +248,9 @@
     - Verify deep linking from notifications to app
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 8. Design System and UI Polish
+- [x] 8. Design System and UI Polish
 
-  - [ ] 8.1 Implement Apple HIG-compliant design system
+  - [x] 8.1 Implement Apple HIG-compliant design system
 
     - Create color palette with default themes for preset categories (blue for "事業", green for "生活") and additional colors for custom categories
     - Implement typography system following iOS standards
@@ -246,9 +261,9 @@
       - Take screenshots of design system components
       - Compare with Figma design files to ensure consistency
       - Refine design tokens until they produce pixel-perfect matches with Figma designs
-    - _Requirements: 8.1, 8.2, 8.3, 8.4, 9.1, 9.2, 9.3, 9.4, 9.5_
+    - _Requirements: 8.1, 8.2, 8.3, 8.4, 10.1, 10.2, 10.3, 10.4, 10.5_
 
-  - [ ] 8.2 Add visual feedback and interaction states
+  - [x] 8.2 Add visual feedback and interaction states
 
     - Implement proper touch targets and feedback
     - Add loading states and transitions
@@ -260,9 +275,9 @@
       - Take screenshots of all interaction states
       - Compare with Figma design specifications for interactive elements
       - Refine interaction feedback until it matches Figma design exactly
-    - _Requirements: 8.3, 8.4, 9.1, 9.2, 9.3, 9.4, 9.5_
+    - _Requirements: 8.3, 8.4, 10.1, 10.2, 10.3, 10.4, 10.5_
 
-  - [ ] 8.3 Create onboarding and first-run experience
+  - [x] 8.3 Create onboarding and first-run experience
 
     - Implement welcome screen with app explanation
     - Add automatic selection of 3 recommended tasks
@@ -270,7 +285,7 @@
     - Implement low-effort mode with encouraging placeholders
     - _Requirements: 7.3_
 
-  - [ ] 8.4 Create E2E test for design system and UX
+  - [x] 8.4 Create E2E test for design system and UX
     - Write Maestro test for onboarding flow
     - Test visual feedback and interaction states
     - Verify Apple HIG compliance through UI interactions
@@ -279,7 +294,7 @@
       - Create side-by-side comparison with all Figma design files
       - Document final visual accuracy report
       - Ensure 100% visual match with Figma designs before deployment
-    - _Requirements: 7.3, 8.1, 8.2, 8.3, 8.4, 9.1, 9.2, 9.3, 9.4, 9.5_
+    - _Requirements: 7.3, 8.1, 8.2, 8.3, 8.4, 10.1, 10.2, 10.3, 10.4, 10.5_
 
 - [ ] 9. Data Persistence and Offline Support
 
@@ -330,24 +345,24 @@
   - [ ] 11.1 Comprehensive Figma design comparison audit
 
     - Take high-resolution screenshots of all implemented screens
-    - Create detailed side-by-side comparison with each Figma design file
+    - Create detailed side-by-side comparison with each Figma design file including Today-View.png
     - Document pixel-level differences and create improvement plan
-    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
+    - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
 
   - [ ] 11.2 Visual refinement and pixel-perfect implementation
 
     - Address all identified visual differences from Figma comparison
     - Refine spacing, typography, colors, and layout to match Figma exactly
     - Implement any missing visual details or micro-interactions
-    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
+    - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
 
   - [ ] 11.3 Final visual validation and approval
 
     - Take final screenshots of all screens after refinements
-    - Perform final comparison with Figma design files
+    - Perform final comparison with Figma design files including Today-View.png
     - Obtain visual approval confirmation that implementation matches Figma designs 100%
     - Create visual quality assurance report
-    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
+    - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
 
 - [ ] 12. Final Integration and Deployment Preparation
 
@@ -380,4 +395,4 @@
       - Perform final visual validation on target devices
       - Ensure Figma design fidelity is maintained across different screen sizes
       - Document final visual quality assurance approval
-    - _Requirements: All requirements including 9.1, 9.2, 9.3, 9.4, 9.5_
+    - _Requirements: All requirements including 10.1, 10.2, 10.3, 10.4, 10.5_

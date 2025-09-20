@@ -105,12 +105,24 @@
 
 ### Requirement 9
 
+**User Story:** As a user, I want a dedicated Today tab that shows my current day's tasks and progress, so that I can quickly access today's activities without navigating through the calendar.
+
+#### Acceptance Criteria
+
+1. WHEN the user taps the Today tab THEN the system SHALL display the Today screen matching the figma-design/Today-View.png design exactly
+2. WHEN the Today tab is displayed THEN the system SHALL show the same content and functionality as selecting today's date in the Calendar tab
+3. WHEN the user selects today's date in the Calendar tab THEN the system SHALL display identical content to what is shown in the Today tab
+4. WHEN the Today screen is displayed THEN the system SHALL include all task management features (task selection, completion tracking, journal entry) for the current date
+5. WHEN the user completes tasks or writes journal entries in the Today tab THEN the system SHALL synchronize these changes with the Calendar tab view for the same date
+
+### Requirement 10
+
 **User Story:** As a developer, I want to ensure pixel-perfect implementation of Figma designs, so that the final app matches the intended visual design exactly.
 
 #### Acceptance Criteria
 
 1. WHEN implementing any UI component THEN the system SHALL match the corresponding Figma design file in figma-design folder exactly
-2. WHEN a screen is implemented THEN the developer SHALL take screenshots and compare them with the reference Figma design files (カレンダー view.png, メイン View.png, メイン View タスク選択.png, メイン View タスク選択後.png, 実績 View.png)
+2. WHEN a screen is implemented THEN the developer SHALL take screenshots and compare them with the reference Figma design files (Today-View.png, カレンダー view.png, メイン View.png, メイン View タスク選択.png, メイン View タスク選択後.png, 実績 View.png)
 3. WHEN visual differences are identified THEN the developer SHALL modify the implementation to match the Figma design
 4. WHEN comparing designs THEN the developer SHALL repeat the comparison and modification process until the implementation matches the Figma design completely
 5. WHEN all screens are implemented THEN each screen SHALL be visually identical to its corresponding Figma design file

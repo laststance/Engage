@@ -1,0 +1,242 @@
+appId: com.anonymous.engage
+---
+# Visual Feedback and Interaction States Test
+# Tests enhanced pressables, loading states, and visual feedback
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Test 1: Calendar Navigation Feedback
+- assertVisible:
+    id: 'calendar-component'
+
+# Test month navigation buttons for visual feedback
+- tapOn:
+    id: 'calendar-next-month'
+    waitToSettleTimeoutMs: 200
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- tapOn:
+    id: 'calendar-prev-month'
+    waitToSettleTimeoutMs: 200
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 2: Date Selection Feedback
+# Test multiple date taps for consistent feedback
+- tapOn:
+    point: 30%, 35% # First date
+    waitToSettleTimeoutMs: 300
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- tapOn:
+    point: 50%, 35% # Second date
+    waitToSettleTimeoutMs: 300
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- tapOn:
+    point: 70%, 35% # Third date
+    waitToSettleTimeoutMs: 300
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 3: Tab Navigation Feedback
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 300
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 300
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 4: Statistics Toggle Feedback
+- assertVisible:
+    id: 'statistics-screen'
+
+- tapOn:
+    id: 'stats-week-toggle'
+    waitToSettleTimeoutMs: 200
+- waitForAnimationToEnd:
+    timeout: 1000
+
+- tapOn:
+    id: 'stats-month-toggle'
+    waitToSettleTimeoutMs: 200
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Test 5: Return to Calendar for Task Flow
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 300
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Select a date to open day sheet
+- tapOn:
+    point: 50%, 40% # Center date
+    waitToSettleTimeoutMs: 500
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 6: Task Selection Modal Feedback
+- runFlow:
+    when:
+      visible:
+        text: 'タスクを選択'
+    commands:
+      - tapOn: 'タスクを選択'
+      - waitForAnimationToEnd:
+          timeout: 2000
+
+# Test task picker interactions
+- runFlow:
+    when:
+      visible:
+        id: 'task-picker-close'
+    commands:
+      # Test edit presets button feedback
+      - tapOn:
+          id: 'edit-presets-button'
+          waitToSettleTimeoutMs: 300
+      - waitForAnimationToEnd:
+          timeout: 1000
+
+      # Close preset editor if opened
+      - runFlow:
+          when:
+            visible:
+              text: 'キャンセル'
+          commands:
+            - tapOn: 'キャンセル'
+            - waitForAnimationToEnd:
+                timeout: 1000
+
+      # Test task selection feedback
+      - runFlow:
+          when:
+            visible:
+              text: '運動'
+          commands:
+            - tapOn: '運動'
+            - waitToSettleTimeoutMs: 300
+            - waitForAnimationToEnd:
+                timeout: 500
+
+            # Deselect to test feedback
+            - tapOn: '運動'
+            - waitToSettleTimeoutMs: 300
+            - waitForAnimationToEnd:
+                timeout: 500
+
+            # Select again
+            - tapOn: '運動'
+            - waitToSettleTimeoutMs: 300
+
+      # Test confirm button feedback
+      - runFlow:
+          when:
+            visible:
+              id: 'task-picker-confirm'
+          commands:
+            - tapOn:
+                id: 'task-picker-confirm'
+                waitToSettleTimeoutMs: 300
+            - waitForAnimationToEnd:
+                timeout: 2000
+
+      # Fallback: close modal
+      - runFlow:
+          when:
+            visible:
+              id: 'task-picker-close'
+          commands:
+            - tapOn:
+                id: 'task-picker-close'
+                waitToSettleTimeoutMs: 300
+
+# Test 7: Task Completion Feedback
+- runFlow:
+    when:
+      visible:
+        id: 'task-checkbox-0'
+    commands:
+      - tapOn:
+          id: 'task-checkbox-0'
+          waitToSettleTimeoutMs: 300
+      - waitForAnimationToEnd:
+          timeout: 1000
+
+      # Uncheck to test feedback
+      - tapOn:
+          id: 'task-checkbox-0'
+          waitToSettleTimeoutMs: 300
+      - waitForAnimationToEnd:
+          timeout: 1000
+
+# Test 8: Journal Input Feedback
+- runFlow:
+    when:
+      visible:
+        id: 'journal-input'
+    commands:
+      - tapOn:
+          id: 'journal-input'
+          waitToSettleTimeoutMs: 300
+      - waitForAnimationToEnd:
+          timeout: 1000
+
+      - inputText: 'テスト入力'
+      - waitForAnimationToEnd:
+          timeout: 1000
+
+# Test 9: Empty State Feedback (if applicable)
+# Navigate to stats to potentially see empty states
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 300
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 10: Loading State Feedback (if applicable)
+# This would test loading spinners and states
+
+# Test 11: Take Screenshots for Visual Validation
+- takeScreenshot: 'visual-feedback-stats'
+
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 300
+- takeScreenshot: 'visual-feedback-today'
+
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 300
+- takeScreenshot: 'visual-feedback-calendar'
+
+# Test 12: Rapid Interaction Test
+# Test that rapid taps don't break the interface
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 100
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 100
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 100
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Final verification
+- assertVisible:
+    id: 'calendar-component'

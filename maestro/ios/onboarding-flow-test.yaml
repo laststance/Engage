@@ -1,0 +1,181 @@
+appId: com.anonymous.engage
+---
+# Onboarding Flow Test
+# Tests first-run experience, task recommendations, and user guidance
+
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Test 1: Check if onboarding appears on first launch
+# Note: This test assumes the app detects first launch
+- runFlow:
+    when:
+      visible:
+        text: 'Engageへようこそ'
+    commands:
+      # Test onboarding step 1
+      - assertVisible:
+          text: '毎日の習慣を継続するためのシンプルなアプリです'
+
+      # Test progress indicator
+      - assertVisible:
+          id: 'onboarding-next'
+
+      # Test onboarding navigation
+      - tapOn:
+          id: 'onboarding-next'
+      - waitForAnimationToEnd:
+          timeout: 2000
+
+      # Test onboarding step 2 - task selection
+      - assertVisible:
+          text: 'おすすめタスクを選択'
+
+      # Test task selection (select 3 tasks)
+      - runFlow:
+          when:
+            visible:
+              text: '運動'
+          commands:
+            - tapOn: '運動'
+            - waitForAnimationToEnd:
+                timeout: 500
+
+      - runFlow:
+          when:
+            visible:
+              text: '読書'
+          commands:
+            - tapOn: '読書'
+            - waitForAnimationToEnd:
+                timeout: 500
+
+      - runFlow:
+          when:
+            visible:
+              text: 'ネットワーキング'
+          commands:
+            - tapOn: 'ネットワーキング'
+            - waitForAnimationToEnd:
+                timeout: 500
+
+      # Complete onboarding
+      - tapOn:
+          id: 'onboarding-next'
+      - waitForAnimationToEnd:
+          timeout: 3000
+
+# Test 2: Verify app loads normally after onboarding
+- assertVisible:
+    id: 'calendar-component'
+
+# Test 3: Test tooltip system (if implemented)
+- runFlow:
+    when:
+      visible:
+        text: 'ヒント'
+    commands:
+      - tapOn: 'ヒント'
+      - waitForAnimationToEnd:
+          timeout: 1000
+
+      # Test tooltip navigation
+      - runFlow:
+          when:
+            visible:
+              id: 'tooltip-next'
+          commands:
+            - tapOn:
+                id: 'tooltip-next'
+            - waitForAnimationToEnd:
+                timeout: 1000
+
+      # Close tooltip
+      - runFlow:
+          when:
+            visible:
+              id: 'tooltip-close'
+          commands:
+            - tapOn:
+                id: 'tooltip-close'
+            - waitForAnimationToEnd:
+                timeout: 1000
+
+# Test 4: Test low-effort mode (if available)
+- runFlow:
+    when:
+      visible:
+        text: '今日は調子が出ませんか？'
+    commands:
+      # Enable low-effort mode
+      - tapOn:
+          id: 'enable-low-effort-mode'
+      - waitForAnimationToEnd:
+          timeout: 1000
+
+      # Test low-effort mode interface
+      - assertVisible:
+          text: '低負荷モード'
+
+      # Test quick win action
+      - runFlow:
+          when:
+            visible:
+              id: 'quick-win-action'
+          commands:
+            - tapOn:
+                id: 'quick-win-action'
+            - waitForAnimationToEnd:
+                timeout: 1000
+
+      # Disable low-effort mode
+      - runFlow:
+          when:
+            visible:
+              id: 'disable-low-effort-mode'
+          commands:
+            - tapOn:
+                id: 'disable-low-effort-mode'
+            - waitForAnimationToEnd:
+                timeout: 1000
+
+# Test 5: Verify normal app functionality after onboarding
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: 17%, 93% # Calendar tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Test 6: Take screenshots for visual validation
+- takeScreenshot: 'onboarding-complete-calendar'
+
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'onboarding-complete-today'
+
+- tapOn:
+    point: 83%, 93% # Stats tab
+    waitToSettleTimeoutMs: 1000
+- takeScreenshot: 'onboarding-complete-stats'
+
+# Final verification
+- tapOn:
+    point: 17%, 93% # Return to calendar
+    waitToSettleTimeoutMs: 1000
+- assertVisible:
+    id: 'calendar-component'

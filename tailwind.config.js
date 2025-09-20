@@ -15,10 +15,83 @@ module.exports = {
       pattern:
         /(bg|border|text|stroke|fill)-(primary|secondary|tertiary|error|success|warning|info|typography|outline|background|indicator)-(0|50|100|200|300|400|500|600|700|800|900|950|white|gray|black|error|warning|muted|success|info|light|dark|primary)/,
     },
+    // Add Apple HIG color patterns
+    {
+      pattern:
+        /(bg|border|text)-(system-blue|system-green|system-orange|system-pink|system-purple|system-red|system-teal|system-yellow|system-gray|business|life|study|health|finance|hobby|work|personal)/,
+    },
   ],
   theme: {
     extend: {
+      // Apple HIG System Colors
       colors: {
+        // iOS System Colors
+        'system-blue': '#007AFF',
+        'system-green': '#34C759',
+        'system-indigo': '#5856D6',
+        'system-orange': '#FF9500',
+        'system-pink': '#FF2D92',
+        'system-purple': '#AF52DE',
+        'system-red': '#FF3B30',
+        'system-teal': '#5AC8FA',
+        'system-yellow': '#FFCC00',
+
+        // System Grays
+        'system-gray': '#8E8E93',
+        'system-gray-2': '#AEAEB2',
+        'system-gray-3': '#C7C7CC',
+        'system-gray-4': '#D1D1D6',
+        'system-gray-5': '#E5E5EA',
+        'system-gray-6': '#F2F2F7',
+
+        // Label Colors
+        label: '#000000',
+        'secondary-label': '#3C3C43',
+        'tertiary-label': '#3C3C43',
+        'quaternary-label': '#2C2C2E',
+
+        // Background Colors
+        'system-background': '#FFFFFF',
+        'secondary-system-background': '#F2F2F7',
+        'tertiary-system-background': '#FFFFFF',
+        'system-grouped-background': '#F2F2F7',
+        'secondary-system-grouped-background': '#FFFFFF',
+        'tertiary-system-grouped-background': '#F2F2F7',
+
+        // Category Colors
+        business: '#007AFF',
+        'business-light': '#E3F2FD',
+        'business-dark': '#1565C0',
+        life: '#34C759',
+        'life-light': '#E8F5E8',
+        'life-dark': '#2E7D32',
+        study: '#FF9500',
+        'study-light': '#FFF3E0',
+        'study-dark': '#F57C00',
+        health: '#FF2D92',
+        'health-light': '#FCE4EC',
+        'health-dark': '#C2185B',
+        finance: '#AF52DE',
+        'finance-light': '#F3E5F5',
+        'finance-dark': '#7B1FA2',
+        hobby: '#5AC8FA',
+        'hobby-light': '#E0F2F1',
+        'hobby-dark': '#00695C',
+        work: '#5856D6',
+        'work-light': '#E8EAF6',
+        'work-dark': '#303F9F',
+        personal: '#FFCC00',
+        'personal-light': '#FFFDE7',
+        'personal-dark': '#F57F17',
+
+        // Heatmap Colors
+        'heatmap-none': '#F2F2F7',
+        'heatmap-low': '#C8E6C9',
+        'heatmap-medium': '#81C784',
+        'heatmap-high': '#4CAF50',
+        'heatmap-highest': '#2E7D32',
+
+        // Legacy Gluestack colors (for backward compatibility)
         primary: {
           0: 'rgb(var(--color-primary-0)/<alpha-value>)',
           50: 'rgb(var(--color-primary-50)/<alpha-value>)',
@@ -174,7 +247,87 @@ module.exports = {
           error: 'rgb(var(--color-indicator-error)/<alpha-value>)',
         },
       },
+
+      // Apple HIG Typography
+      fontSize: {
+        // iOS Typography Scale
+        'large-title': [
+          '34px',
+          { lineHeight: '41px', letterSpacing: '0.37px', fontWeight: '700' },
+        ],
+        'title-1': [
+          '28px',
+          { lineHeight: '34px', letterSpacing: '0.36px', fontWeight: '700' },
+        ],
+        'title-2': [
+          '22px',
+          { lineHeight: '28px', letterSpacing: '0.35px', fontWeight: '700' },
+        ],
+        'title-3': [
+          '20px',
+          { lineHeight: '25px', letterSpacing: '0.38px', fontWeight: '600' },
+        ],
+        headline: [
+          '17px',
+          { lineHeight: '22px', letterSpacing: '-0.41px', fontWeight: '600' },
+        ],
+        body: [
+          '17px',
+          { lineHeight: '22px', letterSpacing: '-0.41px', fontWeight: '400' },
+        ],
+        callout: [
+          '16px',
+          { lineHeight: '21px', letterSpacing: '-0.32px', fontWeight: '400' },
+        ],
+        subhead: [
+          '15px',
+          { lineHeight: '20px', letterSpacing: '-0.24px', fontWeight: '400' },
+        ],
+        footnote: [
+          '13px',
+          { lineHeight: '18px', letterSpacing: '-0.08px', fontWeight: '400' },
+        ],
+        'caption-1': [
+          '12px',
+          { lineHeight: '16px', letterSpacing: '0px', fontWeight: '400' },
+        ],
+        'caption-2': [
+          '11px',
+          { lineHeight: '13px', letterSpacing: '0.07px', fontWeight: '400' },
+        ],
+
+        // Legacy sizes
+        '2xs': '10px',
+      },
+
+      // Apple HIG Spacing (8pt grid)
+      spacing: {
+        xs: '4px',
+        sm: '8px',
+        md: '16px',
+        lg: '24px',
+        xl: '32px',
+        xxl: '48px',
+        xxxl: '64px',
+      },
+
+      // Apple HIG Border Radius
+      borderRadius: {
+        xs: '4px',
+        sm: '8px',
+        md: '12px',
+        lg: '16px',
+        xl: '20px',
+        xxl: '24px',
+      },
+
       fontFamily: {
+        // iOS System Fonts
+        system: ['system-ui', 'sans-serif'],
+        'system-rounded': ['ui-rounded', 'system-ui', 'sans-serif'],
+        'system-mono': ['ui-monospace', 'monospace'],
+
+        // Legacy fonts
         heading: undefined,
         body: undefined,
         mono: undefined,
@@ -184,13 +337,21 @@ module.exports = {
         inter: ['var(--font-inter)'],
         'space-mono': ['var(--font-space-mono)'],
       },
+
       fontWeight: {
         extrablack: '950',
       },
-      fontSize: {
-        '2xs': '10px',
-      },
+
+      // Apple HIG Shadows
       boxShadow: {
+        // iOS-style shadows
+        'ios-small': '0 1px 2px rgba(0, 0, 0, 0.05)',
+        'ios-medium': '0 2px 4px rgba(0, 0, 0, 0.1)',
+        'ios-large': '0 4px 8px rgba(0, 0, 0, 0.15)',
+        'ios-card': '0 1px 2px rgba(0, 0, 0, 0.05)',
+        'ios-modal': '0 8px 16px rgba(0, 0, 0, 0.25)',
+
+        // Legacy shadows
         'hard-1': '-2px 2px 8px 0px rgba(38, 38, 38, 0.20)',
         'hard-2': '0px 3px 10px 0px rgba(38, 38, 38, 0.20)',
         'hard-3': '2px 2px 8px 0px rgba(38, 38, 38, 0.20)',
@@ -201,6 +362,13 @@ module.exports = {
         'soft-3': '0px 0px 30px rgba(38, 38, 38, 0.1)',
         'soft-4': '0px 0px 40px rgba(38, 38, 38, 0.1)',
       },
+
+      // Animation timing
+      transitionDuration: {
+        fast: '150ms',
+        normal: '250ms',
+        slow: '350ms',
+      },
     },
   },
-};
+}

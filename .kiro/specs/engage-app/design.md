@@ -132,10 +132,21 @@ TabNavigator
 │           └── TaskPicker (Modal)
 │               └── PresetEditor (Modal)
 ├── Today Tab
-│   └── TodayScreen (Same as DaySheet for current date)
+│   └── TodayScreen (Dedicated view for current date matching Today-View.png design)
+│       └── TaskPicker (Modal)
+│           └── PresetEditor (Modal)
 └── Stats Tab
     └── StatisticsScreen
 ```
+
+### Today Tab Implementation Details
+
+The Today tab provides a dedicated interface for the current date that matches the `figma-design/Today-View.png` design exactly. Key implementation requirements:
+
+- **Content Synchronization**: The Today tab displays identical content to what would be shown when selecting today's date in the Calendar tab
+- **State Sharing**: Both Calendar tab (when today's date is selected) and Today tab share the same underlying data and state
+- **Design Fidelity**: The Today tab implementation must match the Today-View.png Figma design pixel-perfectly
+- **Feature Parity**: All functionality available in the Calendar tab's day view (task selection, completion, journal entry) must be available in the Today tab
 
 ## Data Models
 
@@ -379,6 +390,7 @@ appId: com.anonymous.engage
 
 The app implementation must match the Figma design files located in the `figma-design/` folder:
 
+- `Today-View.png` - Today tab dedicated interface for current date
 - `カレンダーview.png` - Calendar screen with monthly view and heatmap
 - `メインView.png` - Main day view with task list and journal
 - `メインViewタスク選択.png` - Task selection modal interface
