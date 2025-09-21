@@ -3,8 +3,34 @@
     "version": ">= 6.0.0"
   },
   "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "node": "22.19.0"
+    },
+    "preview": {
+      "extends": "production",
+      "distribution": "internal",
+      "node": "22.19.0"
+    },
+    "production": {
+      "node": "22.19.0",
+      "env": {
+        "NODE_ENV": "production",
+        "REACT_NATIVE_NO_DEVTOOLS": "1"
+      },
+      "ios": {
+        "resourceClass": "large",
+        "buildConfiguration": "Release",
+        "scheme": "engage"
+      },
+      "android": {
+        "resourceClass": "medium",
+        "buildType": "aab"
+      }
+    },
     "e2e-production": {
-      "developmentClient": false,
+      "extends": "production",
       "distribution": "internal",
       "env": {
         "E2E_TEST": "true",
@@ -19,17 +45,19 @@
       "android": {
         "buildType": "apk"
       }
-    },
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal"
-    },
-    "production": {}
+    }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "your-apple-id@example.com",
+        "ascAppId": "placeholder-app-store-connect-id",
+        "appleTeamId": "placeholder-team-id"
+      },
+      "android": {
+        "serviceAccountKeyPath": "path/to/service-account-key.json",
+        "track": "internal"
+      }
+    }
   }
 }

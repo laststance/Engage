@@ -8,12 +8,16 @@ appId: com.anonymous.engage
 - waitForAnimationToEnd:
     timeout: 3000
 
-# Screen 1: Today Tab (Default) - Compare with Today-View.png
-- assertVisible:
-    text: 'Today'
+# Screen 1: Today Tab - Compare with Today-View.png
+# First navigate to Today tab as app starts on Calendar
+- tapOn:
+    point: 50%, 93% # Today tab
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 2000
+# Verify we're on Today screen - tab labels not visible in production
 - assertVisible:
     id: 'today-screen'
-    optional: true
 
 # Take note of Today tab layout, task list, journal section
 - waitForAnimationToEnd:
@@ -133,5 +137,4 @@ appId: com.anonymous.engage
 
 # Final verification that all screens are accessible
 - assertVisible:
-    text: 'Today'
-    optional: true
+    id: 'today-screen'

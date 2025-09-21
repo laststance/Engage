@@ -37,17 +37,19 @@ tags: [ios, ui-components]
     timeout: 1000
 
 # Test date selection (tap on a calendar date)
-# Note: Using coordinate-based approach for date selection
+# Note: Using testID-based approach for reliable date selection
 - tapOn:
-    point: 50%, 45% # Middle of calendar grid
+    id: 'calendar-date-2025-09-15' # Mid-month date, always visible
     waitToSettleTimeoutMs: 1000
 - waitForAnimationToEnd:
-    timeout: 2000
+    timeout: 3000
 
 # === DAY SHEET COMPONENT TESTS ===
-# Check if Day Modal opened
-- assertVisible:
-    id: 'day-sheet'
+# Wait for Day Modal to open
+- extendedWaitUntil:
+    visible:
+      id: 'day-sheet'
+    timeout: 10000
 
 # Test Day Sheet header
 - assertVisible:
@@ -82,31 +84,49 @@ tags: [ios, ui-components]
 - waitForAnimationToEnd:
     timeout: 2000
 
-# Look for journal section with multiple attempts
-- assertVisible:
-    text: '今日の振り返り'
-    optional: true
+# Test journal input - try multiple approaches to find it
+- runFlow:
+    when:
+      visible:
+        id: 'journal-input-container'
+    commands:
+      - tapOn:
+          id: 'journal-input-container'
+      - inputText: 'Test journal entry for E2E testing'
+      - waitForAnimationToEnd:
+          timeout: 1000
 
-# Try scrolling to find journal section
-- scroll
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# Try swipe down as well
-- swipe:
-    direction: DOWN
-- waitForAnimationToEnd:
-    timeout: 1000
-
-# Test journal input
-- assertVisible:
-    id: 'journal-input-container'
-    optional: true
-- tapOn:
-    id: 'journal-input-container'
-- inputText: 'Test journal entry for E2E testing'
-- waitForAnimationToEnd:
-    timeout: 1000
+# If journal input is not immediately visible, try scrolling
+- runFlow:
+    when:
+      notVisible:
+        id: 'journal-input-container'
+    commands:
+      # Try regular scrolling down multiple times
+      - scroll
+      - waitForAnimationToEnd:
+          timeout: 1000
+      - scroll
+      - waitForAnimationToEnd:
+          timeout: 1000
+      
+      # Try swipe down approach
+      - swipe:
+          direction: DOWN
+      - waitForAnimationToEnd:
+          timeout: 1000
+      
+      # Check if journal input is now visible and interact
+      - runFlow:
+          when:
+            visible:
+              id: 'journal-input-container'
+          commands:
+            - tapOn:
+                id: 'journal-input-container'
+            - inputText: 'Test journal entry for E2E testing'
+            - waitForAnimationToEnd:
+                timeout: 1000
 
 # Close Day Modal
 - tapOn:

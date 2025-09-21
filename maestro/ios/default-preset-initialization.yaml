@@ -17,10 +17,22 @@ tags: [ios]
     id: 'calendar-screen'
 
 # Test 1: Verify default categories and tasks are initialized
-# Open a day to access task selection
+# Open a day by tapping on a specific date that's guaranteed to exist
 - tapOn:
-    point: 50%, 50% # Tap on middle of calendar
-- waitForAnimationToEnd
+    id: 'calendar-date-2025-09-15' # Mid-month date, always visible
+    waitToSettleTimeoutMs: 1000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Wait for day modal to appear - check for day-sheet testID instead of text
+- extendedWaitUntil:
+    visible:
+      id: 'day-sheet'
+    timeout: 10000
+
+# Verify we're in the day modal
+- assertVisible:
+    id: 'day-sheet-date'
 
 # Open task picker
 - tapOn:
@@ -40,7 +52,7 @@ tags: [ios]
 - assertVisible: 'アイデア記録'
 
 # Verify some default life tasks exist (using partial matches to be more flexible)
-- assertVisible: 
+- assertVisible:
     text: '運動.*'
 - assertVisible: '読書・勉強'
 - assertVisible: '家族との時間'

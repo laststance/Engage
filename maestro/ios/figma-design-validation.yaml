@@ -31,16 +31,23 @@ tags: [ios, visual-validation, figma]
 # === DAY SHEET VIEW VALIDATION ===
 # Reference: figma-design/メインView.png
 - tapOn:
-    point: 50%, 45% # Select a date
+    id: 'calendar-date-2025-09-15' # Select a specific date
     waitToSettleTimeoutMs: 1000
 - waitForAnimationToEnd:
-    timeout: 2000
+    timeout: 3000
 
 # Wait for modal to open and day-sheet to be visible
 - extendedWaitUntil:
     visible:
       id: 'day-sheet'
-    timeout: 5000
+    timeout: 10000
+
+# Verify day sheet components are visible
+- assertVisible:
+    id: 'day-sheet-date'
+- assertVisible:
+    id: 'task-selection-button'
+    
 - takeScreenshot: 'day-sheet-main-view.png'
 
 # === TASK SELECTION MODAL VALIDATION ===

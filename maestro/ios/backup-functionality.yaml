@@ -6,7 +6,7 @@ appId: com.anonymous.engage
 - waitForAnimationToEnd:
     timeout: 5000
 
-# Wait for app initialization
+# Wait for app initialization - verify Calendar tab is active
 - extendedWaitUntil:
     visible:
       id: 'calendar-screen'
@@ -92,7 +92,7 @@ appId: com.anonymous.engage
 # Wait for app to reload (simulates backup restore)
 - extendedWaitUntil:
     visible:
-      text: 'Calendar'
+      id: 'calendar-screen'
     timeout: 15000
 
 # Test 5: Verify data integrity after "restore"
