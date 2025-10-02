@@ -1,0 +1,36 @@
+name: "CodeQL Config"
+
+# Disable default queries to use only security-focused ones
+disable-default-queries: false
+
+# Additional queries to run
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+
+# Paths to ignore during analysis
+paths-ignore:
+  - node_modules
+  - '**/node_modules/**'
+  - '**/__tests__/**'
+  - '**/test/**'
+  - '**/tests/**'
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.ts'
+  - '**/*.spec.tsx'
+  - coverage
+  - .expo
+  - .git
+  - build
+  - dist
+  - ios/build
+  - android/build
+
+# Paths to specifically include
+paths:
+  - src
+  - app
+  - components
+  - hooks
+  - constants

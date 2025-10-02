@@ -1,0 +1,223 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+      - 'src/**'
+      - 'components/**'
+      - 'maestro/**'
+  schedule:
+    # Run E2E tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+# Only allow one E2E run at a time
+concurrency:
+  group: e2e-tests
+  cancel-in-progress: true
+
+jobs:
+  e2e-ios:
+    name: E2E Tests (iOS)
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Setup iOS Simulator
+        run: |
+          # List available simulators
+          xcrun simctl list devices available
+
+          # Boot iPhone 15 Pro simulator (or latest available)
+          SIMULATOR_ID=$(xcrun simctl list devices available iPhone | grep "iPhone 15 Pro" | head -1 | grep -o -E '\([A-Z0-9-]+\)' | tr -d '()')
+
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "iPhone 15 Pro not found, using first available iPhone"
+            SIMULATOR_ID=$(xcrun simctl list devices available iPhone | head -1 | grep -o -E '\([A-Z0-9-]+\)' | tr -d '()')
+          fi
+
+          echo "Using simulator: $SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || echo "Simulator already booted"
+
+          # Wait for simulator to boot
+          sleep 10
+
+      - name: Build E2E production app
+        run: |
+          # Clean previous builds
+          npm run build:e2e:clean || true
+
+          # Build production app for testing
+          npm run build:e2e &
+          BUILD_PID=$!
+
+          # Wait for build to complete (max 10 minutes)
+          SECONDS=0
+          MAX_WAIT=600
+
+          while kill -0 $BUILD_PID 2>/dev/null; do
+            if [ $SECONDS -ge $MAX_WAIT ]; then
+              echo "Build timeout after $MAX_WAIT seconds"
+              kill $BUILD_PID 2>/dev/null || true
+              exit 1
+            fi
+            echo "Building... (${SECONDS}s elapsed)"
+            sleep 30
+          done
+
+          # Check if build succeeded
+          wait $BUILD_PID
+          BUILD_EXIT_CODE=$?
+
+          if [ $BUILD_EXIT_CODE -ne 0 ]; then
+            echo "Build failed with exit code $BUILD_EXIT_CODE"
+            exit 1
+          fi
+
+          echo "Build completed successfully"
+
+      - name: Wait for app to be ready
+        run: |
+          # Wait for app to fully start (3-5 minutes typical)
+          echo "Waiting for app to be ready..."
+          sleep 180
+
+          # Verify app is running
+          xcrun simctl list | grep Booted
+
+      - name: Run Maestro E2E tests
+        run: |
+          # Run all E2E tests
+          npm run test:e2e:production
+
+      - name: Upload Maestro test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-test-results
+          path: |
+            ~/.maestro/tests/**/*
+            maestro-results.xml
+          retention-days: 30
+
+      - name: Upload app logs
+        if: always()
+        run: |
+          # Capture simulator logs
+          xcrun simctl spawn booted log collect --output sim-logs.logarchive || true
+
+      - name: Upload simulator logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulator-logs
+          path: sim-logs.logarchive
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Kill all Expo and DevTools processes
+          npm run build:e2e:clean || true
+
+          # Shutdown simulator
+          xcrun simctl shutdown all || true
+
+  e2e-android:
+    name: E2E Tests (Android)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # @TODO Currently disabled - enable when Android E2E tests are implemented
+    if: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Setup Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          script: npm run test:e2e:android
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-test-results-android
+          path: ~/.maestro/tests/**/*
+          retention-days: 30
+
+  e2e-summary:
+    name: E2E Test Summary
+    runs-on: ubuntu-latest
+    needs: [e2e-ios]
+    if: always()
+
+    steps:
+      - name: Check E2E results
+        run: |
+          echo "## E2E Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- iOS E2E: ${{ needs.e2e-ios.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Android E2E: skipped (not implemented)" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.e2e-ios.result }}" != "success" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ E2E tests failed. Check the logs for details." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All E2E tests passed successfully!" >> $GITHUB_STEP_SUMMARY

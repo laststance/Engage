@@ -1,0 +1,257 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  coverage-check:
+    name: Coverage Enforcement
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Check coverage thresholds
+        run: |
+          # Extract coverage percentages
+          STATEMENTS=$(cat coverage/coverage-summary.json | jq '.total.statements.pct')
+          BRANCHES=$(cat coverage/coverage-summary.json | jq '.total.branches.pct')
+          FUNCTIONS=$(cat coverage/coverage-summary.json | jq '.total.functions.pct')
+          LINES=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+
+          echo "Coverage Report:"
+          echo "- Statements: ${STATEMENTS}%"
+          echo "- Branches: ${BRANCHES}%"
+          echo "- Functions: ${FUNCTIONS}%"
+          echo "- Lines: ${LINES}%"
+
+          # Set minimum thresholds
+          MIN_COVERAGE=70
+
+          # Check if any coverage is below threshold
+          if (( $(echo "$STATEMENTS < $MIN_COVERAGE" | bc -l) )) || \
+             (( $(echo "$BRANCHES < $MIN_COVERAGE" | bc -l) )) || \
+             (( $(echo "$FUNCTIONS < $MIN_COVERAGE" | bc -l) )) || \
+             (( $(echo "$LINES < $MIN_COVERAGE" | bc -l) )); then
+            echo "::warning::Coverage is below ${MIN_COVERAGE}% threshold"
+            # Don't fail the build, just warn
+          else
+            echo "✅ Coverage meets ${MIN_COVERAGE}% threshold"
+          fi
+
+          # Save coverage for PR comment
+          echo "COVERAGE_STATEMENTS=${STATEMENTS}" >> $GITHUB_ENV
+          echo "COVERAGE_BRANCHES=${BRANCHES}" >> $GITHUB_ENV
+          echo "COVERAGE_FUNCTIONS=${FUNCTIONS}" >> $GITHUB_ENV
+          echo "COVERAGE_LINES=${LINES}" >> $GITHUB_ENV
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: coverage/
+          retention-days: 30
+
+  bundle-size:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Analyze bundle size
+        run: |
+          # Create a simple bundle size analysis
+          echo "Analyzing bundle size..."
+
+          # Get package.json dependencies size
+          PROD_DEPS=$(du -sh node_modules 2>/dev/null | cut -f1 || echo "unknown")
+
+          # Count dependencies
+          DEPS_COUNT=$(cat package.json | jq '.dependencies | length')
+          DEV_DEPS_COUNT=$(cat package.json | jq '.devDependencies | length')
+
+          echo "Bundle Analysis:"
+          echo "- node_modules size: ${PROD_DEPS}"
+          echo "- Production dependencies: ${DEPS_COUNT}"
+          echo "- Dev dependencies: ${DEV_DEPS_COUNT}"
+
+          # Save for PR comment
+          echo "BUNDLE_SIZE=${PROD_DEPS}" >> $GITHUB_ENV
+          echo "DEPS_COUNT=${DEPS_COUNT}" >> $GITHUB_ENV
+          echo "DEV_DEPS_COUNT=${DEV_DEPS_COUNT}" >> $GITHUB_ENV
+
+  code-metrics:
+    name: Code Complexity Metrics
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Calculate code metrics
+        run: |
+          # Count lines of code
+          TS_LINES=$(find src app components -name "*.ts" -o -name "*.tsx" | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}' || echo "0")
+          TEST_LINES=$(find . -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.spec.tsx" | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}' || echo "0")
+
+          # Count files
+          TS_FILES=$(find src app components -name "*.ts" -o -name "*.tsx" | wc -l)
+          TEST_FILES=$(find . -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.spec.tsx" | wc -l)
+
+          echo "Code Metrics:"
+          echo "- TypeScript lines: ${TS_LINES}"
+          echo "- Test lines: ${TEST_LINES}"
+          echo "- TypeScript files: ${TS_FILES}"
+          echo "- Test files: ${TEST_FILES}"
+
+          # Calculate test ratio
+          if [ "$TS_LINES" -gt 0 ]; then
+            TEST_RATIO=$(echo "scale=2; ($TEST_LINES * 100) / $TS_LINES" | bc)
+          else
+            TEST_RATIO=0
+          fi
+
+          echo "- Test/Code ratio: ${TEST_RATIO}%"
+
+          # Save for PR comment
+          echo "TS_LINES=${TS_LINES}" >> $GITHUB_ENV
+          echo "TEST_LINES=${TEST_LINES}" >> $GITHUB_ENV
+          echo "TS_FILES=${TS_FILES}" >> $GITHUB_ENV
+          echo "TEST_FILES=${TEST_FILES}" >> $GITHUB_ENV
+          echo "TEST_RATIO=${TEST_RATIO}" >> $GITHUB_ENV
+
+  pr-comment:
+    name: PR Quality Report
+    runs-on: ubuntu-latest
+    needs: [coverage-check, bundle-size, code-metrics]
+    if: always() && github.event_name == 'pull_request'
+
+    steps:
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports
+          path: coverage/
+        continue-on-error: true
+
+      - name: Create PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let coverageData = {};
+            try {
+              const summary = fs.readFileSync('coverage/coverage-summary.json', 'utf8');
+              coverageData = JSON.parse(summary).total;
+            } catch (error) {
+              console.log('Could not read coverage data:', error.message);
+            }
+
+            const comment = `## 📊 Code Quality Report
+
+            ### Test Coverage
+            | Metric | Coverage |
+            |--------|----------|
+            | Statements | ${coverageData.statements?.pct || 'N/A'}% |
+            | Branches | ${coverageData.branches?.pct || 'N/A'}% |
+            | Functions | ${coverageData.functions?.pct || 'N/A'}% |
+            | Lines | ${coverageData.lines?.pct || 'N/A'}% |
+
+            ### Code Metrics
+            - **TypeScript Lines**: ${{ needs.code-metrics.result == 'success' && env.TS_LINES || 'N/A' }}
+            - **Test Lines**: ${{ needs.code-metrics.result == 'success' && env.TEST_LINES || 'N/A' }}
+            - **Test/Code Ratio**: ${{ needs.code-metrics.result == 'success' && env.TEST_RATIO || 'N/A' }}%
+
+            ### Bundle Analysis
+            - **node_modules Size**: ${{ needs.bundle-size.result == 'success' && env.BUNDLE_SIZE || 'N/A' }}
+            - **Dependencies**: ${{ needs.bundle-size.result == 'success' && env.DEPS_COUNT || 'N/A' }}
+            - **Dev Dependencies**: ${{ needs.bundle-size.result == 'success' && env.DEV_DEPS_COUNT || 'N/A' }}
+
+            ### Status
+            - Coverage Check: ${{ needs.coverage-check.result }}
+            - Bundle Analysis: ${{ needs.bundle-size.result }}
+            - Code Metrics: ${{ needs.code-metrics.result }}
+
+            ---
+            *This comment was automatically generated by the Quality workflow*
+            `;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('📊 Code Quality Report')
+            );
+
+            // Create or update comment
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+  quality-summary:
+    name: Quality Summary
+    runs-on: ubuntu-latest
+    needs: [coverage-check, bundle-size, code-metrics, pr-comment]
+    if: always()
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## Quality Checks Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage Check: ${{ needs.coverage-check.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Bundle Analysis: ${{ needs.bundle-size.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Code Metrics: ${{ needs.code-metrics.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- PR Comment: ${{ needs.pr-comment.result }}" >> $GITHUB_STEP_SUMMARY
