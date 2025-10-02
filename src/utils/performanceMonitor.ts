@@ -135,10 +135,10 @@ class PerformanceMonitor {
     if (!this.isEnabled) return []
 
     if (name) {
-      return this.metrics.filter((m) => m.name === name && m.duration)
+      return this.metrics.filter((m) => m.name === name && m.duration !== undefined)
     }
 
-    return this.metrics.filter((m) => m.duration)
+    return this.metrics.filter((m) => m.duration !== undefined)
   }
 
   /**
