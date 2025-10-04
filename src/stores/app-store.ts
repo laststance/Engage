@@ -302,9 +302,45 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       set({ error: null })
 
-      // This action doesn't actually create completions, just makes tasks available for the date
-      // The actual completion happens when user checks the task
-      console.log(`Tasks ${taskIds.join(', ')} added to ${date}`)
+      const state = get()
+      const existingCompletions = state.completions[date] || []
+      const existingTaskIds = new Set(
+        existingCompletions.map((c) => c.taskId)
+      )
+
+      // Filter out tasks that already have completions for this date
+      const newTaskIds = taskIds.filter((id) => !existingTaskIds.has(id))
+
+      if (newTaskIds.length === 0) {
+        console.log(`All tasks already added to ${date}`)
+        return
+      }
+
+      // Create completion records for new tasks
+      const completionsToCreate = newTaskIds.map((taskId) => ({
+        date,
+        taskId,
+      }))
+
+      const createdCompletions = await completionRepository.createMultiple(
+        completionsToCreate
+      )
+
+      // Update local state
+      const updatedCompletions = { ...state.completions }
+      if (!updatedCompletions[date]) {
+        updatedCompletions[date] = []
+      }
+      updatedCompletions[date] = [
+        ...updatedCompletions[date],
+        ...createdCompletions,
+      ]
+
+      set({ completions: updatedCompletions })
+
+      console.log(
+        `${createdCompletions.length} tasks added to ${date}: ${newTaskIds.join(', ')}`
+      )
     } catch (error) {
       console.error('Failed to add tasks to date:', error)
       set({

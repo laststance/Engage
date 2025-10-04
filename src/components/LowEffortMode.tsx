@@ -111,7 +111,7 @@ export const LowEffortMode: React.FC<LowEffortModeProps> = ({
         {/* Encouraging Message */}
         <Box className="p-4 bg-system-background/60 rounded-lg">
           <Text className="text-callout text-secondary-label text-center italic">
-            "{todayMessage}"
+            &quot;{todayMessage}&quot;
           </Text>
         </Box>
 
