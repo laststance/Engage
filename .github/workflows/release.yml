@@ -39,28 +39,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22.19.0'
-          cache: 'npm'
+          node-version: '22.20.0'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Run all CI checks
         run: |
           echo "Running lint..."
-          npm run lint
+          pnpm lint
 
           echo "Running type check..."
-          npm run typecheck
+          pnpm typecheck
 
           echo "Running tests..."
-          npm test
+          pnpm test
 
       - name: Deployment check
-        run: npm run deploy:check
+        run: pnpm deploy:check
 
   version-bump:
     name: Version Bump
@@ -75,14 +80,19 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22.19.0'
-          cache: 'npm'
+          node-version: '22.20.0'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Configure git
         run: |
@@ -93,7 +103,7 @@ jobs:
         id: version
         run: |
           # Use deployment script for version bump
-          npm run deploy:version -- ${{ inputs.version }}
+          pnpm deploy:version -- ${{ inputs.version }}
 
           # Get the new version
           NEW_VERSION=$(node -p "require('./package.json').version")
@@ -102,7 +112,7 @@ jobs:
 
       - name: Commit version changes
         run: |
-          git add package.json package-lock.json app.json
+          git add package.json pnpm-lock.yaml app.json
           git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }}"
           git push
 
@@ -119,14 +129,19 @@ jobs:
         with:
           ref: main
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22.19.0'
-          cache: 'npm'
+          node-version: '22.20.0'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
@@ -136,7 +151,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build iOS with EAS
-        run: npm run deploy:build:ios
+        run: pnpm deploy:build:ios
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
@@ -153,14 +168,19 @@ jobs:
         with:
           ref: main
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22.19.0'
-          cache: 'npm'
+          node-version: '22.20.0'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
@@ -170,7 +190,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build Android with EAS
-        run: npm run deploy:build:android
+        run: pnpm deploy:build:android
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
@@ -189,14 +209,19 @@ jobs:
         with:
           ref: main
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22.19.0'
-          cache: 'npm'
+          node-version: '22.20.0'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
@@ -206,7 +231,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Submit to App Store
-        run: npm run deploy:submit:ios
+        run: pnpm deploy:submit:ios
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.EXPO_APPLE_APP_SPECIFIC_PASSWORD }}
@@ -226,14 +251,19 @@ jobs:
         with:
           ref: main
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22.19.0'
-          cache: 'npm'
+          node-version: '22.20.0'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
@@ -243,7 +273,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Submit to Google Play
-        run: npm run deploy:submit:android
+        run: pnpm deploy:submit:android
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 

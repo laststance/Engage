@@ -63,8 +63,8 @@ jobs:
           deny-licenses: GPL-3.0, AGPL-3.0
           comment-summary-in-pr: always
 
-  npm-audit:
-    name: npm Audit
+  pnpm-audit:
+    name: pnpm Audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -72,26 +72,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22.19.0'
-          cache: 'npm'
+          node-version: '22.20.0'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
-      - name: Run npm audit
+      - name: Run pnpm audit
         run: |
           # Run audit and capture output
-          npm audit --audit-level=moderate --json > audit-results.json || true
+          pnpm audit --audit-level=moderate --json > audit-results.json || true
 
           # Check for vulnerabilities
           VULNERABILITIES=$(cat audit-results.json | jq '.metadata.vulnerabilities | to_entries | map(select(.value > 0)) | length')
 
           if [ "$VULNERABILITIES" -gt 0 ]; then
             echo "::warning::Found vulnerabilities in dependencies"
-            npm audit --audit-level=moderate
+            pnpm audit --audit-level=moderate
 
             # Fail on high or critical vulnerabilities
             HIGH_CRITICAL=$(cat audit-results.json | jq '.metadata.vulnerabilities.high + .metadata.vulnerabilities.critical')
@@ -107,7 +112,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: npm-audit-results
+          name: pnpm-audit-results
           path: audit-results.json
           retention-days: 30
 
@@ -133,14 +138,14 @@ jobs:
   security-summary:
     name: Security Summary
     runs-on: ubuntu-latest
-    needs: [codeql-analysis, npm-audit, secret-scanning]
+    needs: [codeql-analysis, pnpm-audit, secret-scanning]
     if: always()
 
     steps:
       - name: Check security scan results
         run: |
           if [ "${{ needs.codeql-analysis.result }}" != "success" ] || \
-             [ "${{ needs.npm-audit.result }}" != "success" ] || \
+             [ "${{ needs.pnpm-audit.result }}" != "success" ] || \
              [ "${{ needs.secret-scanning.result }}" != "success" ]; then
             echo "::warning::One or more security scans failed or found issues"
             exit 1

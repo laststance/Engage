@@ -47,7 +47,7 @@ function checkPrerequisites() {
     log('✅ EAS CLI is installed', 'green')
   } catch (error) {
     log(
-      '❌ EAS CLI is not installed. Please run: npm install -g @expo/eas-cli',
+      '❌ EAS CLI is not installed. Please run: pnpm add -g @expo/eas-cli',
       'red'
     )
     process.exit(1)
@@ -82,16 +82,16 @@ function runTests() {
 
   // Run unit tests
   try {
-    execCommand('npm test', 'Running unit tests')
+    execCommand('pnpm test', 'Running unit tests')
   } catch (error) {
     log('⚠️  Some unit tests failed, but continuing with deployment', 'yellow')
   }
 
   // Run type checking
-  execCommand('npm run typecheck', 'Running TypeScript type checking')
+  execCommand('pnpm typecheck', 'Running TypeScript type checking')
 
   // Run linting
-  execCommand('npm run lint', 'Running ESLint')
+  execCommand('pnpm lint', 'Running ESLint')
 }
 
 function buildApp(platform, profile = 'production') {

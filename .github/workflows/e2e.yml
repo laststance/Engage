@@ -29,14 +29,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22.19.0'
-          cache: 'npm'
+          node-version: '22.20.0'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
@@ -72,10 +77,10 @@ jobs:
       - name: Build E2E production app
         run: |
           # Clean previous builds
-          npm run build:e2e:clean || true
+          pnpm build:e2e:clean || true
 
           # Build production app for testing
-          npm run build:e2e &
+          pnpm build:e2e &
           BUILD_PID=$!
 
           # Wait for build to complete (max 10 minutes)
@@ -115,7 +120,7 @@ jobs:
       - name: Run Maestro E2E tests
         run: |
           # Run all E2E tests
-          npm run test:e2e:production
+          pnpm test:e2e:production
 
       - name: Upload Maestro test results
         if: always()
@@ -145,7 +150,7 @@ jobs:
         if: always()
         run: |
           # Kill all Expo and DevTools processes
-          npm run build:e2e:clean || true
+          pnpm build:e2e:clean || true
 
           # Shutdown simulator
           xcrun simctl shutdown all || true
@@ -161,14 +166,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22.19.0'
-          cache: 'npm'
+          node-version: '22.20.0'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
@@ -189,7 +199,7 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          script: npm run test:e2e:android
+          script: pnpm test:e2e:android
 
       - name: Upload test results
         if: always()

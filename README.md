@@ -7,7 +7,7 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 1. Install dependencies
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. Start the app
@@ -30,7 +30,7 @@ You can start developing by editing the files inside the **app** directory. This
 When you're ready, run:
 
 ```bash
-npm run reset-project
+pnpm reset-project
 ```
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
@@ -41,17 +41,17 @@ This command will move the starter code to the **app-example** directory and cre
 
 ```bash
 # Start development server
-npm start                    # Start Expo dev server
-npm run ios                  # Start iOS development build
-npm run android             # Start Android development build
-npm run web                 # Start web development build
+pnpm start                    # Start Expo dev server
+pnpm ios                  # Start iOS development build
+pnpm android             # Start Android development build
+pnpm web                 # Start web development build
 
 # Code quality
-npm run lint                # Run ESLint
-npm run typecheck          # Run TypeScript type checking
-npm test                   # Run Jest unit tests
-npm run test:watch         # Run Jest in watch mode
-npm run test:coverage      # Run Jest with coverage report
+pnpm lint                # Run ESLint
+pnpm typecheck          # Run TypeScript type checking
+pnpm test                   # Run Jest unit tests
+ppnpm test:watch         # Run Jest in watch mode
+ppnpm test:coverage      # Run Jest with coverage report
 ```
 
 ### 🧪 E2E Testing Scripts
@@ -69,39 +69,39 @@ This project includes E2E tests using [Maestro](https://maestro.mobile.dev/) wit
 
 ```bash
 # Step 1: Start Production Build (DevTools disabled)
-npm run build:e2e           # Start E2E production build
-npm run build:e2e:restart   # Clean restart production build
+pnpm build:e2e           # Start E2E production build
+pnpm build:e2e:restart   # Clean restart production build
 
 # Step 2: Run E2E Tests (after build completes ~3-5 minutes)
-npm run test:e2e:production              # Run all E2E tests
-npm run test:e2e:production:single       # Run single test file
+ppnpm test:e2e:production              # Run all E2E tests
+ppnpm test:e2e:production:single       # Run single test file
 
 # Clean up processes if needed
-npm run build:e2e:clean     # Stop production build processes
-npm run test:e2e:clean      # Kill DevTools processes
+pnpm build:e2e:clean     # Stop production build processes
+ppnpm test:e2e:clean      # Kill DevTools processes
 ```
 
 #### Development Build E2E Testing
 
 ```bash
 # Quick testing with development build (may show DevTools)
-npm run test:e2e:ios        # Run all E2E tests
+ppnpm test:e2e:ios        # Run all E2E tests
 ```
 
 #### Example Workflow
 
 ```bash
 # 1. Start DevTools-free production build
-npm run build:e2e
+pnpm build:e2e
 
 # 2. Wait for build completion (watch terminal output)
 #    Look for: "Build Succeeded" and "Opening on iPhone 16 Pro"
 
 # 3. Run specific test
-npm run test:e2e:production:single maestro/ios/app-launch.yaml
+ppnpm test:e2e:production:single maestro/ios/app-launch.yaml
 
 # 4. Run all tests
-npm run test:e2e:production
+ppnpm test:e2e:production
 ```
 
 **✨ Benefits of Production Build Testing:**
