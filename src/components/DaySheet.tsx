@@ -1,4 +1,5 @@
 import React from 'react'
+import { ScrollView } from 'react-native'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
@@ -91,7 +92,12 @@ export const DaySheet: React.FC<DaySheetProps> = ({
 
   return (
     <Box className="flex-1 bg-white" testID="day-sheet">
-      <VStack space="lg" className="p-4">
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+        <VStack space="lg" className="p-4">
         {/* Header */}
         <VStack space="sm">
           <Text
@@ -210,6 +216,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
           onUpdate={onJournalUpdate}
         />
       </VStack>
+      </ScrollView>
     </Box>
   )
 }
