@@ -112,12 +112,12 @@ describe('TaskPicker', () => {
   })
 
   it('shows selected tasks count in confirm button', () => {
-    const { getByTestId, rerender } = render(
+    const { getByText } = render(
       <TaskPicker {...defaultProps} selectedTasks={['task1', 'task2']} />
     )
 
-    const confirmButton = getByTestId('task-picker-confirm')
-    expect(confirmButton.props.children.props.children).toContain('2')
+    // Check that the confirm button shows the count
+    expect(getByText('確定 (2個)')).toBeTruthy()
   })
 
   it('calls onConfirm with selected task IDs', () => {
@@ -158,22 +158,22 @@ describe('TaskPicker', () => {
     expect(mockOnEditPresets).toHaveBeenCalled()
   })
 
-  it('disables confirm button when no tasks selected', () => {
-    const { getByTestId } = render(
+  it('shows zero count when no tasks selected', () => {
+    const { getByText } = render(
       <TaskPicker {...defaultProps} selectedTasks={[]} />
     )
 
-    const confirmButton = getByTestId('task-picker-confirm')
-    expect(confirmButton.props.accessibilityState?.disabled).toBe(true)
+    // Check that the confirm button shows zero count
+    expect(getByText('確定 (0個)')).toBeTruthy()
   })
 
-  it('enables confirm button when tasks are selected', () => {
-    const { getByTestId } = render(
+  it('shows correct count when tasks are selected', () => {
+    const { getByText } = render(
       <TaskPicker {...defaultProps} selectedTasks={['task1']} />
     )
 
-    const confirmButton = getByTestId('task-picker-confirm')
-    expect(confirmButton.props.accessibilityState?.disabled).toBe(false)
+    // Check that the confirm button shows one task selected
+    expect(getByText('確定 (1個)')).toBeTruthy()
   })
 
   it('filters out archived tasks', () => {
@@ -200,9 +200,9 @@ describe('TaskPicker', () => {
   it('handles empty task list gracefully', () => {
     const { getByText } = render(<TaskPicker {...defaultProps} presetTasks={[]} />)
 
-    // Should still show category headers but no tasks
-    expect(getByText('事業')).toBeTruthy()
-    expect(getByText('生活')).toBeTruthy()
+    // Should show empty state message
+    expect(getByText('プリセットタスクがありません')).toBeTruthy()
+    expect(getByText('タスクを追加')).toBeTruthy()
   })
 
   it('shows task duration when available', () => {

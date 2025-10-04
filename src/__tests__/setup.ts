@@ -13,5 +13,10 @@ jest.mock('expo-sqlite', () => ({
   openDatabaseAsync: jest.fn(),
 }))
 
+// Mock expo-symbols module
+jest.mock('expo-symbols', () => ({
+  SymbolView: 'SymbolView',
+}))
+
 // Global test timeout
 jest.setTimeout(10000)
