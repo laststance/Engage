@@ -34,6 +34,12 @@ jobs:
           node-version: '22.20.0'
           cache: 'pnpm'
 
+      - name: Install Aikido Safe Chain
+        run: npm install -g @aikidosec/safe-chain
+
+      - name: Setup Aikido Safe Chain for CI
+        run: safe-chain setup-ci
+
       - name: Install dependencies
         run: pnpm install
 
@@ -60,6 +66,12 @@ jobs:
           node-version: '22.20.0'
           cache: 'pnpm'
 
+      - name: Install Aikido Safe Chain
+        run: npm install -g @aikidosec/safe-chain
+
+      - name: Setup Aikido Safe Chain for CI
+        run: safe-chain setup-ci
+
       - name: Install dependencies
         run: pnpm install
 
@@ -85,6 +97,12 @@ jobs:
         with:
           node-version: '22.20.0'
           cache: 'pnpm'
+
+      - name: Install Aikido Safe Chain
+        run: npm install -g @aikidosec/safe-chain
+
+      - name: Setup Aikido Safe Chain for CI
+        run: safe-chain setup-ci
 
       - name: Install dependencies
         run: pnpm install
@@ -127,6 +145,12 @@ jobs:
         with:
           node-version: '22.20.0'
           cache: 'pnpm'
+
+      - name: Install Aikido Safe Chain
+        run: npm install -g @aikidosec/safe-chain
+
+      - name: Setup Aikido Safe Chain for CI
+        run: safe-chain setup-ci
 
       - name: Install dependencies
         run: pnpm install

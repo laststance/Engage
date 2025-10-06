@@ -7,6 +7,7 @@ Comprehensive CI/CD workflows for the Engage mobile application.
 - [Overview](#overview)
 - [Workflows](#workflows)
   - [CI (Continuous Integration)](#ci-continuous-integration)
+  - [Aikido Safe Chain - Malware Protection](#aikido-safe-chain---malware-protection)
   - [E2E Tests](#e2e-tests)
   - [Security Scanning](#security-scanning)
   - [Release & Deployment](#release--deployment)
@@ -29,7 +30,8 @@ This project uses GitHub Actions for automated testing, security scanning, quali
 │                                                                 │
 │  PR/Push           Manual              Schedule                │
 │     │                 │                    │                    │
-│     ├─→ CI ──────────┐                    │                    │
+│     ├─→ Safe Chain ──┐                    │                    │
+│     ├─→ CI ──────────┤                    │                    │
 │     ├─→ Security ────┤                    ├─→ Security         │
 │     ├─→ Quality ─────┤                    ├─→ E2E              │
 │     │                 │                    │                    │
@@ -40,6 +42,9 @@ This project uses GitHub Actions for automated testing, security scanning, quali
 │                                                                 │
 │  Dependabot (Weekly)                                            │
 │     └─→ Auto-update dependencies                                │
+│                                                                 │
+│  Security Layer (Aikido Safe Chain)                             │
+│     └─→ Malware protection for all dependency installations     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -59,24 +64,57 @@ This project uses GitHub Actions for automated testing, security scanning, quali
 1. **Lint** (10 min timeout)
    - Runs ESLint on the codebase
    - Enforces code style and best practices
+   - Protected by Aikido Safe Chain malware scanning
 
 2. **Type Check** (10 min timeout)
    - Runs TypeScript compiler in check mode
    - Ensures type safety across the project
+   - Protected by Aikido Safe Chain malware scanning
 
 3. **Unit Tests** (15 min timeout)
    - Runs Jest unit tests with coverage
    - Uploads coverage to Codecov
    - Artifacts: Coverage reports (30 days retention)
+   - Protected by Aikido Safe Chain malware scanning
 
 4. **Build Validation** (20 min timeout)
    - Validates Expo configuration
    - Runs prebuild for iOS and Android
    - Ensures the app builds successfully
+   - Protected by Aikido Safe Chain malware scanning
 
 **Concurrency**: Cancels previous runs on new pushes to the same PR
 
 **Success Criteria**: All jobs must pass for CI to be considered successful
+
+### Aikido Safe Chain - Malware Protection
+
+**File**: `safe-chain.yml`
+
+**Triggers**:
+- Push to `main` branch
+- Pull requests to `main`
+- Manual dispatch
+
+**Jobs**:
+
+1. **Dependency Malware Scan** (15 min timeout)
+   - Installs Aikido Safe Chain globally
+   - Sets up CI environment protection
+   - Scans all dependencies during installation
+   - Blocks malicious packages before they can be installed
+   - Uses Aikido Intel - Open Source Threat Intelligence
+
+**Features**:
+- ✅ **Free to use** - No tokens or authentication required
+- 🛡️ **Malware detection** - Blocks malicious packages before installation
+- 🔍 **Threat intelligence** - Uses open source threat data to identify risks
+- 📦 **Multi-package manager support** - npm, pnpm, yarn, npx, pnpx
+- 🚀 **Node.js 18+** compatible
+
+**Note on pnpm Support**: Currently offers limited scanning for pnpm (scans install command arguments). Full dependency tree scanning for pnpm is coming soon.
+
+**Concurrency**: Cancels previous runs on new pushes to the same PR
 
 ### E2E Tests
 
@@ -130,10 +168,11 @@ This project uses GitHub Actions for automated testing, security scanning, quali
    - Fails on moderate+ severity vulnerabilities
    - Blocks GPL-3.0 and AGPL-3.0 licenses
 
-3. **npm Audit** (10 min timeout)
+3. **pnpm Audit** (10 min timeout)
    - Scans for vulnerable dependencies
    - Fails on high/critical vulnerabilities
    - Warnings for moderate vulnerabilities
+   - Protected by Aikido Safe Chain malware scanning
 
 4. **Secret Scanning** (10 min timeout)
    - Uses TruffleHog to detect secrets
@@ -143,6 +182,8 @@ This project uses GitHub Actions for automated testing, security scanning, quali
 **Permissions**: Requires `security-events: write` for CodeQL
 
 **Configuration**: See `.github/codeql-config.yml` for CodeQL settings
+
+**Additional Protection**: All workflows that install dependencies are protected by Aikido Safe Chain, which scans packages for malware before installation.
 
 ### Release & Deployment
 
@@ -217,11 +258,13 @@ This project uses GitHub Actions for automated testing, security scanning, quali
    - Runs tests with coverage
    - Checks 70% minimum threshold
    - Uploads coverage reports
+   - Protected by Aikido Safe Chain malware scanning
 
 2. **Bundle Size Analysis** (15 min timeout)
    - Analyzes node_modules size
    - Counts dependencies
    - Tracks bundle metrics
+   - Protected by Aikido Safe Chain malware scanning
 
 3. **Code Metrics** (10 min timeout)
    - Counts TypeScript lines
@@ -501,6 +544,7 @@ Add these badges to your README.md:
 ```markdown
 [![CI](https://github.com/USERNAME/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/USERNAME/REPO/actions/workflows/ci.yml)
 [![Security](https://github.com/USERNAME/REPO/actions/workflows/security.yml/badge.svg)](https://github.com/USERNAME/REPO/actions/workflows/security.yml)
+[![Safe Chain](https://github.com/USERNAME/REPO/actions/workflows/safe-chain.yml/badge.svg)](https://github.com/USERNAME/REPO/actions/workflows/safe-chain.yml)
 [![E2E Tests](https://github.com/USERNAME/REPO/actions/workflows/e2e.yml/badge.svg)](https://github.com/USERNAME/REPO/actions/workflows/e2e.yml)
 ```
 

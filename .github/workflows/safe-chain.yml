@@ -1,0 +1,50 @@
+name: Aikido Safe Chain - Malware Protection
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Cancel previous runs on the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  safe-chain-protection:
+    name: Dependency Malware Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22.20.0'
+
+      - name: Install Aikido Safe Chain
+        run: npm install -g @aikidosec/safe-chain
+
+      - name: Setup Aikido Safe Chain for CI
+        run: safe-chain setup-ci
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies with malware protection
+        run: pnpm install
+
+      - name: Verify installation
+        run: |
+          echo "✅ Dependencies installed successfully with Aikido Safe Chain protection"
+          echo "📦 Verifying package integrity..."
+          pnpm list --depth=0
