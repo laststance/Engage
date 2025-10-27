@@ -1,10 +1,10 @@
 // Jest setup file for global test configuration
 
 // Define React Native globals
-;(global as any).__DEV__ = true
+;(globalThis as any).__DEV__ = true
 
 // Mock console methods to reduce noise in tests
-global.console = {
+globalThis.console = {
   ...console,
   log: jest.fn(),
   warn: jest.fn(),
