@@ -61,7 +61,7 @@ export class TaskRepository {
   }
 
   async findTasksWithCategories(): Promise<
-    Array<Task & { categoryName: string }>
+    (Task & { categoryName: string })[]
   > {
     try {
       return await databaseService.getTasksWithCategories()
@@ -128,7 +128,7 @@ export class TaskRepository {
 
   // Bulk operations
   async createMultiple(
-    tasks: Array<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>
+    tasks: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>[]
   ): Promise<Task[]> {
     try {
       const createdTasks: Task[] = []
@@ -166,7 +166,7 @@ export class TaskRepository {
         return // Already seeded
       }
 
-      const defaultTasks: Array<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>> =
+      const defaultTasks: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>[] =
         [
           // Business tasks
           {

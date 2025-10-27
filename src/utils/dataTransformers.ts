@@ -211,25 +211,25 @@ export function generateCalendarGrid(
   year: number,
   month: number,
   heatmapData: Record<string, number> = {}
-): Array<{
+): {
   date: string
   day: number
   isCurrentMonth: boolean
   completionCount: number
   intensity: number
-}> {
+}[] {
   const firstDay = new Date(year, month - 1, 1)
   const lastDay = new Date(year, month, 0)
   const startOfWeek = new Date(firstDay)
   startOfWeek.setDate(firstDay.getDate() - firstDay.getDay())
 
-  const grid: Array<{
+  const grid: {
     date: string
     day: number
     isCurrentMonth: boolean
     completionCount: number
     intensity: number
-  }> = []
+  }[] = []
 
   // Generate 6 weeks (42 days) to fill calendar grid
   for (let i = 0; i < 42; i++) {

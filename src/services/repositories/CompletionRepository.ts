@@ -402,7 +402,7 @@ export class CompletionRepository {
 
   // Bulk operations
   async createMultiple(
-    completions: Array<Omit<Completion, 'id' | 'createdAt'>>
+    completions: Omit<Completion, 'id' | 'createdAt'>[]
   ): Promise<Completion[]> {
     try {
       const createdCompletions: Completion[] = []

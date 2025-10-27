@@ -376,8 +376,8 @@ export const calculateProductivityTrends = (
   startDate: string,
   endDate: string
 ): {
-  dailyCompletions: Array<{ date: string; completions: number }>
-  weeklyAverages: Array<{ week: string; average: number }>
+  dailyCompletions: { date: string; completions: number }[]
+  weeklyAverages: { week: string; average: number }[]
   bestDay: { date: string; completions: number } | null
   mostProductiveWeekday: string
 } => {
@@ -422,7 +422,7 @@ export const calculateProductivityTrends = (
       .sort((a, b) => b.average - a.average)[0]?.day || 'Monday'
 
   // Weekly averages (simplified - just group by 7-day periods)
-  const weeklyAverages: Array<{ week: string; average: number }> = []
+  const weeklyAverages: { week: string; average: number }[] = []
   for (let i = 0; i < dailyCompletions.length; i += 7) {
     const weekData = dailyCompletions.slice(i, i + 7)
     const weekTotal = weekData.reduce((sum, day) => sum + day.completions, 0)

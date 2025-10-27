@@ -66,7 +66,7 @@ export class CategoryRepository {
   }
 
   async getCategoriesWithTaskCounts(): Promise<
-    Array<Category & { taskCount: number }>
+    (Category & { taskCount: number })[]
   > {
     try {
       const result = await databaseService.executeQuery<any>(
@@ -91,7 +91,7 @@ export class CategoryRepository {
 
   // Bulk operations
   async createMultiple(
-    categories: Array<Omit<Category, 'id'> & { id?: string }>
+    categories: (Omit<Category, 'id'> & { id?: string })[]
   ): Promise<Category[]> {
     try {
       const createdCategories: Category[] = []
@@ -117,7 +117,7 @@ export class CategoryRepository {
         return // Already seeded
       }
 
-      const defaultCategories: Array<Category> = [
+      const defaultCategories: Category[] = [
         { id: 'business', name: '事業' },
         { id: 'life', name: '生活' },
       ]

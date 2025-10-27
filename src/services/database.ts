@@ -449,7 +449,7 @@ class DatabaseService {
   }
 
   async getTasksWithCategories(): Promise<
-    Array<Task & { categoryName: string }>
+    (Task & { categoryName: string })[]
   > {
     try {
       const result = await this.executeQuery<any>(
@@ -926,7 +926,7 @@ class DatabaseService {
     tasks: Task[]
     entries: Entry[]
     completions: Completion[]
-    settings: Array<{ key: string; value: string }>
+    settings: { key: string; value: string }[]
   }> {
     try {
       const [categories, tasks, entries, completions, settings] =
@@ -959,7 +959,7 @@ class DatabaseService {
     tasks?: Task[]
     entries?: Entry[]
     completions?: Completion[]
-    settings?: Array<{ key: string; value: string }>
+    settings?: { key: string; value: string }[]
   }): Promise<void> {
     try {
       await this.executeTransaction([

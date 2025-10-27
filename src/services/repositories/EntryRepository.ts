@@ -186,7 +186,7 @@ export class EntryRepository {
   }
 
   async bulkUpsert(
-    entries: Array<{ date: string; note: string }>
+    entries: { date: string; note: string }[]
   ): Promise<Entry[]> {
     try {
       const upsertedEntries: Entry[] = []
@@ -230,7 +230,7 @@ export class EntryRepository {
   }
 
   async getEntriesWithWordCount(): Promise<
-    Array<Entry & { wordCount: number }>
+    (Entry & { wordCount: number })[]
   > {
     try {
       const entries = await this.findNonEmptyEntries()

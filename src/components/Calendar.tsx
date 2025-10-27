@@ -49,14 +49,12 @@ export const Calendar: React.FC<CalendarProps> = ({
     const startDayOfWeek = firstDay.getDay() // 0 = Sunday, 1 = Monday, etc.
 
     // Create calendar grid
-    const weeks: Array<
-      Array<{ date: number; dateString: string; isCurrentMonth: boolean }>
-    > = []
-    let currentWeek: Array<{
+    const weeks: { date: number; dateString: string; isCurrentMonth: boolean }[][] = []
+    let currentWeek: {
       date: number
       dateString: string
       isCurrentMonth: boolean
-    }> = []
+    }[] = []
 
     // Add empty cells for days before month starts
     for (let i = 0; i < startDayOfWeek; i++) {

@@ -12,7 +12,7 @@ export interface BackupData {
   tasks: Task[]
   entries: Entry[]
   completions: Completion[]
-  settings: Array<{ key: string; value: string }>
+  settings: { key: string; value: string }[]
   metadata: {
     totalRecords: number
     exportedBy: string
@@ -276,13 +276,13 @@ export class BackupService {
    * List all available backup files
    */
   async listBackups(): Promise<
-    Array<{
+    {
       fileName: string
       filePath: string
       size: number
       createdAt: Date
       isValid: boolean
-    }>
+    }[]
   > {
     try {
       await this.ensureBackupDirectory()

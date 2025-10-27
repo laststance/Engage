@@ -182,7 +182,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     }
     acc[task.categoryId].push({ ...task, index })
     return acc
-  }, {} as Record<string, Array<EditingTask & { index: number }>>)
+  }, {} as Record<string, (EditingTask & { index: number })[]>)
 
   return (
     <Modal
