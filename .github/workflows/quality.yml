@@ -72,7 +72,7 @@ jobs:
           echo "COVERAGE_LINES=${LINES}" >> $GITHUB_ENV
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-reports
           path: coverage/
