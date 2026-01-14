@@ -96,8 +96,12 @@ appId: com.anonymous.engage
     timeout: 3000
 
 # Verify stats loads offline
+- extendedWaitUntil:
+    visible:
+      id: 'stats-screen'
+    timeout: 10000
 - assertVisible:
-    text: 'Stats'
+    id: 'stats-screen'
 
 # Test 6: Restart app to verify data persistence
 - stopApp
