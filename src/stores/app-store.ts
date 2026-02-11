@@ -29,6 +29,7 @@ import {
   type DayProgress,
 } from '../utils/businessLogic'
 import {
+  formatDate,
   getCurrentDate,
   getWeekStartDate,
   getWeekEndDate,
@@ -127,7 +128,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   tasks: [],
   entries: {},
   completions: {},
-  selectedDate: new Date().toISOString().split('T')[0],
+  selectedDate: formatDate(new Date()),
   isTaskPickerVisible: false,
   isPresetEditorVisible: false,
   isCategoryEditorVisible: false,
@@ -155,10 +156,8 @@ export const useAppStore = create<AppState>((set, get) => ({
             entryRepository.findRecentEntries(30), // Load last 30 days of entries
             completionRepository.findByDateRange(
               // Load last 30 days of completions
-              new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-                .toISOString()
-                .split('T')[0],
-              new Date().toISOString().split('T')[0]
+              formatDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
+              formatDate(new Date())
             ),
           ])
 
@@ -587,7 +586,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const recentCompletions: Completion[] = []
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-    const cutoffDate = thirtyDaysAgo.toISOString().split('T')[0]
+    const cutoffDate = formatDate(thirtyDaysAgo)
 
     Object.entries(state.completions).forEach(([date, completions]) => {
       if (date >= cutoffDate) {

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
@@ -6,6 +7,7 @@ import { DaySheet } from '@/src/components/DaySheet'
 import { TaskPicker } from '@/src/components/TaskPicker'
 import { useAppStore } from '@/src/stores/app-store'
 import { Task } from '@/src/types'
+import { formatDate } from '@/src/utils/dateUtils'
 
 export default function TodayScreen() {
   console.log('TodayScreen: Component rendering')
@@ -27,8 +29,10 @@ export default function TodayScreen() {
     createCategory,
   } = useAppStore()
 
-  // Get today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0]
+  const insets = useSafeAreaInsets()
+
+  // Get today's date in YYYY-MM-DD format (local timezone)
+  const today = formatDate(new Date())
 
   console.log('TodayScreen: Today date is', today)
 
@@ -103,7 +107,7 @@ export default function TodayScreen() {
   try {
     return (
       <Box className="flex-1 bg-white" testID="today-screen">
-        <VStack className="flex-1">
+        <VStack className="flex-1" style={{ paddingTop: insets.top }}>
           <Box className="px-4 pt-4 pb-2">
             <Text 
               className="text-2xl font-bold text-gray-800 text-center mb-2"

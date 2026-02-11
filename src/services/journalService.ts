@@ -5,6 +5,7 @@
 import { Entry } from '../types'
 import { entryRepository } from './repositories/EntryRepository'
 import { validateJournalEntry } from '../utils/businessLogic'
+import { formatDate } from '../utils/dateUtils'
 
 export interface JournalValidationResult {
   isValid: boolean
@@ -181,7 +182,7 @@ export class JournalService {
    */
   async getJournalStats(currentDate?: string): Promise<JournalStats> {
     try {
-      const today = currentDate || new Date().toISOString().split('T')[0]
+      const today = currentDate || formatDate(new Date())
 
       // Get basic counts
       const [totalEntries, nonEmptyEntries, averageLength, currentStreak] =
@@ -199,11 +200,11 @@ export class JournalService {
 
       const weekStart = new Date(todayDate)
       weekStart.setDate(todayDate.getDate() + mondayOffset)
-      const weekStartStr = weekStart.toISOString().split('T')[0]
+      const weekStartStr = formatDate(weekStart)
 
       const weekEnd = new Date(weekStart)
       weekEnd.setDate(weekStart.getDate() + 6)
-      const weekEndStr = weekEnd.toISOString().split('T')[0]
+      const weekEndStr = formatDate(weekEnd)
 
       // Calculate month range
       const monthStart = `${today.substring(0, 7)}-01`
@@ -212,7 +213,7 @@ export class JournalService {
         todayDate.getMonth() + 1,
         0
       )
-      const monthEnd = monthEndDate.toISOString().split('T')[0]
+      const monthEnd = formatDate(monthEndDate)
 
       // Get entries for week and month
       const [weekEntries, monthEntries] = await Promise.all([

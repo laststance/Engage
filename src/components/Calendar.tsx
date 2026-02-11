@@ -5,6 +5,7 @@ import { Pressable } from '@/components/ui/pressable'
 import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import { formatDate } from '@/src/utils/dateUtils'
 
 interface CalendarProps {
   selectedDate: string
@@ -61,7 +62,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       const prevMonthDate = new Date(year, month, 0 - (startDayOfWeek - 1 - i))
       currentWeek.push({
         date: prevMonthDate.getDate(),
-        dateString: prevMonthDate.toISOString().split('T')[0],
+        dateString: formatDate(prevMonthDate),
         isCurrentMonth: false,
       })
     }
@@ -71,7 +72,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       const date = new Date(year, month, day)
       currentWeek.push({
         date: day,
-        dateString: date.toISOString().split('T')[0],
+        dateString: formatDate(date),
         isCurrentMonth: true,
       })
 
@@ -89,7 +90,7 @@ export const Calendar: React.FC<CalendarProps> = ({
         const nextMonthDate = new Date(year, month + 1, i)
         currentWeek.push({
           date: i,
-          dateString: nextMonthDate.toISOString().split('T')[0],
+          dateString: formatDate(nextMonthDate),
           isCurrentMonth: false,
         })
       }
@@ -120,8 +121,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   }
 
   const isToday = (dateString: string): boolean => {
-    const today = new Date().toISOString().split('T')[0]
-    return dateString === today
+    return dateString === formatDate(new Date())
   }
 
   const isSelected = (dateString: string): boolean => {
@@ -135,7 +135,9 @@ export const Calendar: React.FC<CalendarProps> = ({
         <Pressable
           onPress={() => navigateMonth('prev')}
           testID="calendar-prev-month"
-          className="p-2"
+          className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
+          accessibilityLabel="前の月"
+          accessibilityRole="button"
         >
           <IconSymbol name="chevron.left" size={20} color="#666" />
         </Pressable>
@@ -150,7 +152,9 @@ export const Calendar: React.FC<CalendarProps> = ({
         <Pressable
           onPress={() => navigateMonth('next')}
           testID="calendar-next-month"
-          className="p-2"
+          className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
+          accessibilityLabel="次の月"
+          accessibilityRole="button"
         >
           <IconSymbol name="chevron.right" size={20} color="#666" />
         </Pressable>
@@ -189,10 +193,12 @@ export const Calendar: React.FC<CalendarProps> = ({
                   onPress={() => onDateSelect(dayData.dateString)}
                   testID={`calendar-date-${dayData.dateString}`}
                   className="flex-1"
+                  accessibilityLabel={`${dayData.date}日${isToday(dayData.dateString) ? ' 今日' : ''}${completionCount > 0 ? ` ${completionCount}件完了` : ''}`}
+                  accessibilityRole="button"
                 >
                   <Box
                     className={`
-                      h-10 items-center justify-center rounded-md
+                      h-11 items-center justify-center rounded-md
                       ${dayData.isCurrentMonth ? heatmapColor : 'bg-gray-50'}
                       ${
                         isSelected(dayData.dateString)

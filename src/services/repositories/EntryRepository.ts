@@ -1,5 +1,6 @@
 import { Entry } from '../../types'
 import { databaseService, DatabaseError } from '../database'
+import { formatDate } from '../../utils/dateUtils'
 
 export class EntryRepository {
   // Basic CRUD operations
@@ -48,7 +49,7 @@ export class EntryRepository {
       const endDate = new Date(startDate)
       endDate.setDate(startDate.getDate() + 6)
 
-      const weekEndDate = endDate.toISOString().split('T')[0]
+      const weekEndDate = formatDate(endDate)
 
       return await this.findByDateRange(weekStartDate, weekEndDate)
     } catch (error) {
@@ -59,7 +60,7 @@ export class EntryRepository {
   async findEntriesForMonth(year: number, month: number): Promise<Entry[]> {
     try {
       const startDate = `${year}-${month.toString().padStart(2, '0')}-01`
-      const endDate = new Date(year, month, 0).toISOString().split('T')[0] // Last day of month
+      const endDate = formatDate(new Date(year, month, 0)) // Last day of month
 
       return await this.findByDateRange(startDate, endDate)
     } catch (error) {
@@ -262,8 +263,8 @@ export class EntryRepository {
       .filter((word) => word.length > 0).length
   }
 
-  private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0]
+  private formatDateLocal(date: Date): string {
+    return formatDate(date)
   }
 }
 

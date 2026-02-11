@@ -84,7 +84,13 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
           <Text className="text-lg font-semibold text-gray-800">
             Daily Tasks
           </Text>
-          <Pressable onPress={onClose} className="p-2" testID="day-modal-close">
+          <Pressable
+            onPress={onClose}
+            className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
+            testID="day-modal-close"
+            accessibilityLabel="閉じる"
+            accessibilityRole="button"
+          >
             <IconSymbol name="xmark" size={24} color="#666" />
           </Pressable>
         </HStack>

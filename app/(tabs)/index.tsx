@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
@@ -9,6 +10,7 @@ import { useAppStore } from '@/src/stores/app-store'
 export default function CalendarScreen() {
   const [isDayModalVisible, setIsDayModalVisible] = useState(false)
 
+  const insets = useSafeAreaInsets()
   const { selectedDate, selectDate, getAchievementData } = useAppStore()
 
   const achievementData = getAchievementData()
@@ -24,8 +26,8 @@ export default function CalendarScreen() {
 
   return (
     <Box className="flex-1 bg-white" testID="calendar-screen">
-      <VStack className="flex-1">
-        <Box className="px-4 pt-6 pb-2">
+      <VStack className="flex-1" style={{ paddingTop: insets.top }}>
+        <Box className="px-4 pt-4 pb-2">
           <Text
             className="text-gray-600 text-center text-base"
             testID="calendar-description"
