@@ -31,7 +31,8 @@
     "deploy:submit": "node scripts/deploy.js submit",
     "deploy:submit:ios": "node scripts/deploy.js submit:ios",
     "deploy:submit:android": "node scripts/deploy.js submit:android",
-    "deploy:full": "node scripts/deploy.js deploy"
+    "deploy:full": "node scripts/deploy.js deploy",
+    "clean": "rm -rf node_modules pnpm-lock.yaml .expo ios android coverage dist"
   },
   "dependencies": {
     "@expo/html-elements": "^0.13.8",
