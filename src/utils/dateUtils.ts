@@ -2,8 +2,18 @@
  * Date utility functions for the Engage app
  */
 
+/**
+ * Formats a Date object to YYYY-MM-DD string using local timezone.
+ * @param date - The date to format
+ * @returns Local date string in YYYY-MM-DD format
+ * @example
+ * formatDate(new Date(2026, 1, 12)) // => "2026-02-12" (always local, not UTC)
+ */
 export const formatDate = (date: Date): string => {
-  return date.toISOString().split('T')[0]
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 export const parseDate = (dateString: string): Date => {

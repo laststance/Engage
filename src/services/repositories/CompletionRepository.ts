@@ -1,5 +1,6 @@
 import { Completion, Task } from '../../types'
 import { databaseService, DatabaseError } from '../database'
+import { formatDate } from '../../utils/dateUtils'
 
 export interface CompletionStats {
   totalCompletions: number
@@ -88,7 +89,7 @@ export class CompletionRepository {
       const endDate = new Date(startDate)
       endDate.setDate(startDate.getDate() + 6)
 
-      const weekEndDate = endDate.toISOString().split('T')[0]
+      const weekEndDate = formatDate(endDate)
 
       return await this.findByDateRange(weekStartDate, weekEndDate)
     } catch (error) {
@@ -102,7 +103,7 @@ export class CompletionRepository {
   ): Promise<Completion[]> {
     try {
       const startDate = `${year}-${month.toString().padStart(2, '0')}-01`
-      const endDate = new Date(year, month, 0).toISOString().split('T')[0]
+      const endDate = formatDate(new Date(year, month, 0))
 
       return await this.findByDateRange(startDate, endDate)
     } catch (error) {
@@ -188,7 +189,7 @@ export class CompletionRepository {
         date <= end;
         date.setDate(date.getDate() + 1)
       ) {
-        const dateStr = date.toISOString().split('T')[0]
+        const dateStr = formatDate(date)
         const dayCompletions = completionsByDate.get(dateStr) || []
 
         dailyData.push({
@@ -336,7 +337,7 @@ export class CompletionRepository {
       if (month !== undefined) {
         // Get data for specific month
         startDate = `${year}-${month.toString().padStart(2, '0')}-01`
-        endDate = new Date(year, month, 0).toISOString().split('T')[0]
+        endDate = formatDate(new Date(year, month, 0))
       } else {
         // Get data for entire year
         startDate = `${year}-01-01`
@@ -445,8 +446,8 @@ export class CompletionRepository {
     }
   }
 
-  private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0]
+  private formatDateLocal(date: Date): string {
+    return formatDate(date)
   }
 }
 

@@ -155,8 +155,10 @@ export const DaySheet: React.FC<DaySheetProps> = ({
                           <Pressable
                             key={task.id}
                             onPress={() => onTaskToggle(task.id)}
-                            className="flex-row items-center p-3 bg-gray-50 rounded-lg"
+                            className="flex-row items-center py-3 px-3 bg-gray-50 rounded-lg min-h-[44px]"
                             testID={`task-item-${task.id}`}
+                            accessibilityLabel={`${task.title}${completedTaskIds.has(task.id) ? ' 完了' : ' 未完了'}`}
+                            accessibilityRole="button"
                           >
                             <HStack className="items-center flex-1" space="sm">
                               {/* Checkbox */}

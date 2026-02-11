@@ -68,7 +68,13 @@ export const Statistics: React.FC<StatisticsProps> = ({
 
   return (
     <Box className="flex-1 bg-gray-50" testID="statistics-screen">
-      <ScrollView className="flex-1">
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+        nestedScrollEnabled={true}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
         <VStack space="lg" className="p-4">
           {/* Header */}
           <VStack space="md">
@@ -80,10 +86,12 @@ export const Statistics: React.FC<StatisticsProps> = ({
                 onPress={() => setSelectedPeriod('week')}
                 testID="stats-week-toggle"
                 className="flex-1"
+                accessibilityLabel="今週の統計を表示"
+                accessibilityRole="button"
               >
                 <Box
                   className={`
-                    py-2 px-4 rounded-md
+                    py-3 px-4 rounded-md min-h-[44px] justify-center
                     ${selectedPeriod === 'week' ? 'bg-white' : 'bg-transparent'}
                   `}
                 >
@@ -106,10 +114,12 @@ export const Statistics: React.FC<StatisticsProps> = ({
                 onPress={() => setSelectedPeriod('month')}
                 testID="stats-month-toggle"
                 className="flex-1"
+                accessibilityLabel="今月の統計を表示"
+                accessibilityRole="button"
               >
                 <Box
                   className={`
-                    py-2 px-4 rounded-md
+                    py-3 px-4 rounded-md min-h-[44px] justify-center
                     ${
                       selectedPeriod === 'month' ? 'bg-white' : 'bg-transparent'
                     }
@@ -137,14 +147,20 @@ export const Statistics: React.FC<StatisticsProps> = ({
             <Text className="text-xl font-semibold text-gray-800">
               今日の成果
             </Text>
-            <Box className="bg-blue-500 rounded-xl p-6">
+            <Box className="bg-blue-700 rounded-xl p-6">
               <VStack space="sm" className="items-center">
                 <IconSymbol name="star.fill" size={32} color="white" />
                 <Text className="text-white text-2xl font-bold">
                   {currentStats.streakDays}日連続
                 </Text>
-                <Text className="text-white text-center opacity-80">
-                  素晴らしい継続力です！
+                <Text className="text-white text-center opacity-90">
+                  {currentStats.streakDays === 0
+                    ? '今日から始めましょう！'
+                    : currentStats.streakDays < 3
+                      ? 'いい調子です！続けましょう！'
+                      : currentStats.streakDays < 7
+                        ? '素晴らしい継続力です！'
+                        : '驚異的な継続力です！'}
                 </Text>
               </VStack>
             </Box>

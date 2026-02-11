@@ -8,6 +8,7 @@ import {
   performanceMonitor,
   DatabasePerformanceWrapper,
 } from '../utils/performanceMonitor'
+import { formatDate } from '../utils/dateUtils'
 
 interface QueryAnalysis {
   query: string
@@ -387,7 +388,7 @@ export class DatabaseOptimizer {
       const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000)
       data.push({
         id: `test_${i}`,
-        date: date.toISOString().split('T')[0],
+        date: formatDate(date),
         taskId: `task_${i % 10}`,
         createdAt: Date.now(),
       })

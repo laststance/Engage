@@ -1,5 +1,6 @@
 import { Task, Entry, Completion, DayData, StatsData } from '../types'
 import { CompletionStats } from '../services/repositories'
+import { formatDate } from './dateUtils'
 
 /**
  * Transforms raw data into DayData structure for UI consumption
@@ -111,7 +112,7 @@ export function generateDateRange(
     date <= end;
     date.setDate(date.getDate() + 1)
   ) {
-    dates.push(date.toISOString().split('T')[0])
+    dates.push(formatDate(date))
   }
 
   return dates
@@ -136,8 +137,8 @@ export function getWeekDateRange(date: string): {
   endDate.setDate(startDate.getDate() + 6)
 
   return {
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0],
+    startDate: formatDate(startDate),
+    endDate: formatDate(endDate),
   }
 }
 
@@ -149,7 +150,7 @@ export function getMonthDateRange(
   month: number
 ): { startDate: string; endDate: string } {
   const startDate = `${year}-${month.toString().padStart(2, '0')}-01`
-  const endDate = new Date(year, month, 0).toISOString().split('T')[0]
+  const endDate = formatDate(new Date(year, month, 0))
 
   return { startDate, endDate }
 }
@@ -174,7 +175,7 @@ export function formatDateForDisplay(
  */
 export function formatRelativeDate(
   date: string,
-  currentDate: string = new Date().toISOString().split('T')[0]
+  currentDate: string = formatDate(new Date())
 ): string {
   const targetDate = new Date(date)
   const today = new Date(currentDate)
@@ -236,7 +237,7 @@ export function generateCalendarGrid(
     const currentDate = new Date(startOfWeek)
     currentDate.setDate(startOfWeek.getDate() + i)
 
-    const dateString = currentDate.toISOString().split('T')[0]
+    const dateString = formatDate(currentDate)
     const completionCount = heatmapData[dateString] || 0
 
     grid.push({
@@ -256,7 +257,7 @@ export function generateCalendarGrid(
  */
 export function normalizeDate(date: string | Date): string {
   if (date instanceof Date) {
-    return date.toISOString().split('T')[0]
+    return formatDate(date)
   }
 
   // Validate YYYY-MM-DD format
@@ -272,7 +273,7 @@ export function normalizeDate(date: string | Date): string {
  * Gets today's date in YYYY-MM-DD format
  */
 export function getTodayDate(): string {
-  return new Date().toISOString().split('T')[0]
+  return formatDate(new Date())
 }
 
 /**
