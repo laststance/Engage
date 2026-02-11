@@ -16,8 +16,16 @@ export const formatDate = (date: Date): string => {
   return `${year}-${month}-${day}`
 }
 
+/**
+ * Parses a YYYY-MM-DD string into a Date at local midnight.
+ * @param dateString - Date string in YYYY-MM-DD format
+ * @returns Date object set to local midnight
+ * @example
+ * parseDate("2026-02-12") // => Date at 2026-02-12 00:00:00 local time
+ */
 export const parseDate = (dateString: string): Date => {
-  return new Date(dateString + 'T00:00:00.000Z')
+  const [year, month, day] = dateString.split('-').map(Number)
+  return new Date(year, month - 1, day)
 }
 
 export const getCurrentDate = (): string => {

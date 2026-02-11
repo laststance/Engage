@@ -29,6 +29,8 @@ export default function TodayScreen() {
     createCategory,
   } = useAppStore()
 
+  const insets = useSafeAreaInsets()
+
   // Get today's date in YYYY-MM-DD format (local timezone)
   const today = formatDate(new Date())
 
@@ -103,8 +105,6 @@ export default function TodayScreen() {
 
   // Add error boundary
   try {
-    const insets = useSafeAreaInsets()
-
     return (
       <Box className="flex-1 bg-white" testID="today-screen">
         <VStack className="flex-1" style={{ paddingTop: insets.top }}>
