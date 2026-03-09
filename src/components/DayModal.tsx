@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { Modal, SafeAreaView } from 'react-native'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -16,28 +16,26 @@ interface DayModalProps {
 }
 
 export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
-  const {
-    selectedDate,
-    categories,
-    tasks,
-    completions,
-    entries,
-    isTaskPickerVisible,
-    toggleTaskCompletion,
-    updateJournalEntry,
-    setTaskPickerVisible,
-    setPresetEditorVisible,
-    addTasksToDate,
-    updatePresetTasks,
-    createCategory,
-  } = useAppStore()
+  const selectedDate = useAppStore((state) => state.selectedDate)
+  const categories = useAppStore((state) => state.categories)
+  const tasks = useAppStore((state) => state.tasks)
+  const completions = useAppStore((state) => state.completions)
+  const entries = useAppStore((state) => state.entries)
+  const isTaskPickerVisible = useAppStore((state) => state.isTaskPickerVisible)
+  const toggleTaskCompletion = useAppStore((state) => state.toggleTaskCompletion)
+  const updateJournalEntry = useAppStore((state) => state.updateJournalEntry)
+  const setTaskPickerVisible = useAppStore((state) => state.setTaskPickerVisible)
+  const setPresetEditorVisible = useAppStore((state) => state.setPresetEditorVisible)
+  const addTasksToDate = useAppStore((state) => state.addTasksToDate)
+  const updatePresetTasks = useAppStore((state) => state.updatePresetTasks)
+  const createCategory = useAppStore((state) => state.createCategory)
 
-  const dayCompletions = completions[selectedDate] || []
-  const dayEntry = entries[selectedDate] || null
+  const dayCompletions = useMemo(() => completions[selectedDate] || [], [completions, selectedDate])
+  const dayEntry = useMemo(() => entries[selectedDate] || null, [entries, selectedDate])
 
-  const handleTaskToggle = async (taskId: string) => {
-    await toggleTaskCompletion(selectedDate, taskId)
-  }
+  const handleTaskToggle = useCallback((taskId: string) => {
+    toggleTaskCompletion(selectedDate, taskId)
+  }, [selectedDate, toggleTaskCompletion])
 
   const handleJournalUpdate = async (content: string) => {
     await updateJournalEntry(selectedDate, content)

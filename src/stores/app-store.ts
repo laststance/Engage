@@ -215,54 +215,55 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   toggleTaskCompletion: async (date: string, taskId: string) => {
+    const state = get()
+    const previousCompletions = state.completions
+
+    // Optimistic update: update UI immediately
+    const updatedCompletions = { ...previousCompletions }
+    const existingCompletion = (updatedCompletions[date] || []).find(
+      (c) => c.taskId === taskId
+    )
+    const isCompletingTask = !existingCompletion
+
+    if (isCompletingTask) {
+      if (!updatedCompletions[date]) {
+        updatedCompletions[date] = []
+      }
+      const newCompletion: Completion = {
+        id: `temp_${Date.now()}`,
+        date,
+        taskId,
+        createdAt: Date.now(),
+      }
+      updatedCompletions[date] = [...updatedCompletions[date], newCompletion]
+    } else {
+      updatedCompletions[date] = updatedCompletions[date].filter(
+        (c) => c.taskId !== taskId
+      )
+      if (updatedCompletions[date].length === 0) {
+        delete updatedCompletions[date]
+      }
+    }
+
+    // Update UI immediately (single set call, no separate error: null)
+    set({ completions: updatedCompletions, error: null })
+
     try {
-      set({ error: null })
-
-      const toggleOperation = async () => {
-        return await completionRepository.toggle(date, taskId)
-      }
-
-      // Execute toggle operation directly
-      const isCompleted = await toggleOperation()
-
-      // Update local state
-      const state = get()
-      const updatedCompletions = { ...state.completions }
-
-      if (isCompleted) {
-        // Task was completed - add to local state
-        if (!updatedCompletions[date]) {
-          updatedCompletions[date] = []
-        }
-        const newCompletion: Completion = {
-          id: `temp_${Date.now()}`,
-          date,
-          taskId,
-          createdAt: Date.now(),
-        }
-        updatedCompletions[date].push(newCompletion)
-      } else {
-        // Task was uncompleted - remove from local state
-        if (updatedCompletions[date]) {
-          updatedCompletions[date] = updatedCompletions[date].filter(
-            (c) => c.taskId !== taskId
-          )
-          if (updatedCompletions[date].length === 0) {
-            delete updatedCompletions[date]
-          }
-        }
-      }
-
-      set({ completions: updatedCompletions })
+      // Persist to database in background
+      await completionRepository.toggle(date, taskId)
 
       console.log(
         `Task ${taskId} ${
-          isCompleted ? 'completed' : 'uncompleted'
+          isCompletingTask ? 'completed' : 'uncompleted'
         } for ${date}`
       )
     } catch (error) {
+      // Rollback on failure
       console.error('Failed to toggle task completion:', error)
-      set({ error: 'Failed to toggle task completion. Please try again.' })
+      set({
+        completions: previousCompletions,
+        error: 'Failed to toggle task completion. Please try again.',
+      })
     }
   },
 

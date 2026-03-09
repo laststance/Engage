@@ -61,9 +61,9 @@ export default function TodayScreen() {
     categories: categories.length,
   })
 
-  const handleTaskToggle = async (taskId: string) => {
+  const handleTaskToggle = (taskId: string) => {
     console.log('TodayScreen: Toggle task', taskId)
-    await toggleTaskCompletion(today, taskId)
+    toggleTaskCompletion(today, taskId)
   }
 
   const handleJournalUpdate = async (content: string) => {

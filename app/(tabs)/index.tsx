@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -11,9 +11,12 @@ export default function CalendarScreen() {
   const [isDayModalVisible, setIsDayModalVisible] = useState(false)
 
   const insets = useSafeAreaInsets()
-  const { selectedDate, selectDate, getAchievementData } = useAppStore()
+  const selectedDate = useAppStore((state) => state.selectedDate)
+  const selectDate = useAppStore((state) => state.selectDate)
+  const completions = useAppStore((state) => state.completions)
+  const getAchievementData = useAppStore((state) => state.getAchievementData)
 
-  const achievementData = getAchievementData()
+  const achievementData = useMemo(() => getAchievementData(), [completions])
 
   const handleDateSelect = (date: string) => {
     selectDate(date)
