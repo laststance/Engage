@@ -7,6 +7,7 @@ import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useEffect } from 'react'
+import { LogBox } from 'react-native'
 import 'react-native-reanimated'
 
 import { useColorScheme } from '@/hooks/use-color-scheme'
@@ -32,6 +33,11 @@ declare global {
       onCommitFiberUnmount?: any
     }
   }
+}
+
+// Suppress LogBox warning banner that overlays the tab bar in development
+if (__DEV__) {
+  LogBox.ignoreAllLogs(true)
 }
 
 export const unstable_settings = {
