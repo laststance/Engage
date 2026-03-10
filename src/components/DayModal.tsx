@@ -66,7 +66,9 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
     await createCategory({ name })
   }
 
-  // Get currently selected tasks for the day (tasks that are available for completion)
+  // Filter to only tasks assigned to this date (have a completion record)
+  const assignedTaskIds = useMemo(() => new Set(dayCompletions.map((c) => c.taskId)), [dayCompletions])
+  const assignedTasks = useMemo(() => tasks.filter((task) => assignedTaskIds.has(task.id)), [tasks, assignedTaskIds])
   const selectedTaskIds = dayCompletions.map((c) => c.taskId)
 
   return (
@@ -96,7 +98,7 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
         {/* Day Sheet Content */}
         <DaySheet
           date={selectedDate}
-          tasks={tasks}
+          tasks={assignedTasks}
           completions={dayCompletions}
           journalEntry={dayEntry}
           categories={categories}
