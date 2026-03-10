@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import { Modal, SafeAreaView } from 'react-native'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
@@ -6,8 +6,10 @@ import { HStack } from '@/components/ui/hstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
 import { DaySheet } from './DaySheet'
 import { TaskPicker } from './TaskPicker'
+import { PresetTaskEditor } from './PresetTaskEditor'
 import { useAppStore } from '@/src/stores/app-store'
 import { useDayView } from '@/src/hooks/useDayView'
+import { Task } from '@/src/types'
 
 interface DayModalProps {
   isVisible: boolean
@@ -17,10 +19,25 @@ interface DayModalProps {
 export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
   const selectedDate = useAppStore((state) => state.selectedDate)
   const day = useDayView(selectedDate)
+  const [isPresetEditorVisible, setIsPresetEditorVisible] = useState(false)
 
-  const handleEditPresets = () => {
-    // Keep task picker visible, it will handle the preset editor internally
-  }
+  const { handleTaskPickerClose, handleUpdatePresets } = day
+
+  // Close TaskPicker first, then show PresetEditor at DayModal level
+  // to avoid iOS triple-nested Modal issue (DayModal → TaskPicker → PresetEditor)
+  const handleEditPresets = useCallback(() => {
+    handleTaskPickerClose()
+    setIsPresetEditorVisible(true)
+  }, [handleTaskPickerClose])
+
+  const handlePresetEditorSave = useCallback(async (tasks: Task[]) => {
+    await handleUpdatePresets(tasks)
+    setIsPresetEditorVisible(false)
+  }, [handleUpdatePresets])
+
+  const handlePresetEditorCancel = useCallback(() => {
+    setIsPresetEditorVisible(false)
+  }, [])
 
   return (
     <Modal
@@ -58,7 +75,7 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
           onTaskSelectionPress={day.handleTaskSelectionPress}
         />
 
-        {/* Task Picker Modal */}
+        {/* Task Picker Modal (2nd modal level) */}
         <TaskPicker
           isVisible={day.isTaskPickerVisible}
           presetTasks={day.allTasks}
@@ -68,6 +85,16 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
           onClose={day.handleTaskPickerClose}
           onEditPresets={handleEditPresets}
           onUpdatePresets={day.handleUpdatePresets}
+          onCreateCategory={day.handleCreateCategory}
+        />
+
+        {/* Preset Editor rendered at DayModal level (2nd modal, not 3rd) */}
+        <PresetTaskEditor
+          isVisible={isPresetEditorVisible}
+          tasks={day.allTasks}
+          categories={day.categories}
+          onSave={handlePresetEditorSave}
+          onCancel={handlePresetEditorCancel}
           onCreateCategory={day.handleCreateCategory}
         />
       </SafeAreaView>
