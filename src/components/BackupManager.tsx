@@ -210,7 +210,7 @@ export const BackupManager: React.FC = () => {
 
   return (
     <ScrollView className="flex-1 p-4 bg-white">
-      <Text className="text-2xl font-bold mb-6">データバックアップ</Text>
+
 
       {error && (
         <View className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

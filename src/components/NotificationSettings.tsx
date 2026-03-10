@@ -81,8 +81,6 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
 
   return (
     <VStack className="flex-1 p-6 bg-white">
-      <Text className="text-2xl font-bold mb-6 text-gray-900">通知設定</Text>
-
       {/* Enable/Disable Notifications */}
       <VStack className="mb-8">
         <HStack className="justify-between items-center mb-4">

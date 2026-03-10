@@ -38,6 +38,7 @@ import {
   calculateStreakDays,
   calculateProductivityTrends,
 } from '../utils/statisticsEngine'
+import { backupService } from '../services/backupService'
 
 interface AppState {
   // Data
@@ -792,34 +793,33 @@ export const useAppStore = create<AppState>((set, get) => ({
     )
   },
 
-  // Backup methods (stub implementations)
+  // Backup methods (delegating to backupService)
   createBackup: async () => {
-    console.warn('createBackup: Not implemented yet')
-    return { success: false, error: 'Backup functionality not implemented' }
+    return backupService.createBackup()
   },
 
   exportData: async () => {
-    console.warn('exportData: Not implemented yet')
-    return { success: false, error: 'Export functionality not implemented' }
+    return backupService.exportAndShare()
   },
 
-  importBackup: async (file?: any) => {
-    console.warn('importBackup: Not implemented yet', file)
-    return { success: false, error: 'Import functionality not implemented' }
+  importBackup: async () => {
+    const result = await backupService.importBackup()
+    if (result.success) {
+      // Reload app data after successful import
+      await get().loadData()
+    }
+    return result
   },
 
   listBackups: async () => {
-    console.warn('listBackups: Not implemented yet')
-    return []
+    return backupService.listBackups()
   },
 
-  deleteBackup: async (id: string) => {
-    console.warn('deleteBackup: Not implemented yet', id)
-    return false
+  deleteBackup: async (fileName: string) => {
+    return backupService.deleteBackup(fileName)
   },
 
   getBackupStats: async () => {
-    console.warn('getBackupStats: Not implemented yet')
-    return { totalBackups: 0, totalSize: 0, lastBackup: null }
+    return backupService.getBackupStats()
   },
 }))
