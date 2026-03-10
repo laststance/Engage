@@ -1,0 +1,47 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-02: Tab Navigation
+# Verifies navigation between Calendar, Today, and Stats tabs
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Navigate to Today tab
+- tapOn: "today-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "today-screen"
+    timeout: 5000
+
+- assertVisible:
+    text: "Today"
+
+# Navigate to Stats tab
+- tapOn: "stats-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "stats-screen"
+    timeout: 5000
+
+- assertVisible:
+    text: "Achievements"
+
+# Navigate back to Calendar tab
+- tapOn: "calendar-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 5000
+
+- assertVisible:
+    id: "calendar-title"

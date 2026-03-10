@@ -1,0 +1,56 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-03: Task Selection
+# Verifies selecting tasks from TaskPicker and confirming adds them to Today
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Navigate to Today tab
+- tapOn: "today-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "today-screen"
+    timeout: 5000
+
+# Open TaskPicker
+- tapOn:
+    id: "task-selection-button"
+
+- extendedWaitUntil:
+    visible:
+      text: "Select Tasks"
+    timeout: 5000
+
+# Verify TaskPicker elements
+- assertVisible:
+    id: "edit-presets-button"
+- assertVisible:
+    id: "task-picker-cancel"
+- assertVisible:
+    id: "task-picker-confirm"
+
+# Select first task item
+- tapOn:
+    text: "Hobby & Relaxation"
+
+# Confirm selection
+- tapOn:
+    id: "task-picker-confirm"
+
+# Verify task appears on Today screen (counter shows 0/1 = 1 task assigned)
+- extendedWaitUntil:
+    visible:
+      id: "today-screen"
+    timeout: 5000
+
+- assertVisible:
+    text: "0/1"

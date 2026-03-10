@@ -1,0 +1,48 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-09: Settings Navigation
+# Verifies Settings modal opens with expected menu items
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Navigate to Stats tab
+- tapOn: "stats-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "stats-screen"
+    timeout: 5000
+
+# Tap settings button
+- tapOn:
+    id: "settings-button"
+
+- extendedWaitUntil:
+    visible:
+      text: "Settings"
+    timeout: 5000
+
+# Verify all settings menu items
+- assertVisible:
+    id: "settings-notifications"
+- assertVisible:
+    id: "settings-language"
+- assertVisible:
+    id: "settings-backup"
+
+# Close settings
+- tapOn:
+    id: "settings-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "stats-screen"
+    timeout: 5000

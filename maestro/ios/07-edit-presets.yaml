@@ -1,0 +1,55 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-07: Edit Presets
+# Verifies Edit Presets button opens PresetTaskEditor with expected elements
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Navigate to Today tab
+- tapOn: "today-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "today-screen"
+    timeout: 5000
+
+# Open TaskPicker
+- tapOn:
+    id: "task-selection-button"
+
+- extendedWaitUntil:
+    visible:
+      id: "edit-presets-button"
+    timeout: 5000
+
+# Tap Edit Presets
+- tapOn:
+    id: "edit-presets-button"
+
+- extendedWaitUntil:
+    visible:
+      text: "Edit Preset Tasks"
+    timeout: 5000
+
+# Verify PresetTaskEditor elements
+- assertVisible:
+    id: "add-task-button"
+- assertVisible:
+    id: "preset-editor-close"
+
+# Close PresetTaskEditor
+- tapOn:
+    id: "preset-editor-close"
+
+# Handle discard dialog if it appears
+- tapOn:
+    text: "Discard"
+    optional: true

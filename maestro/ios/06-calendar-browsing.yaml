@@ -1,0 +1,55 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-06: Calendar Browsing
+# Verifies month navigation and date tap opening DayModal
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Tap previous month
+- tapOn:
+    id: "calendar-prev-month"
+
+# Wait for calendar to update - verify month changed
+- extendedWaitUntil:
+    visible:
+      id: "calendar-title"
+    timeout: 5000
+
+# Tap next month to go back
+- tapOn:
+    id: "calendar-next-month"
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-title"
+    timeout: 5000
+
+# Tap on the first day of the month to open DayModal
+- tapOn:
+    id: "calendar-date-.*-01"
+    retryTapIfNoChange: false
+
+- extendedWaitUntil:
+    visible:
+      id: "day-modal-close"
+    timeout: 5000
+
+- assertVisible:
+    text: "Daily Tasks"
+
+# Close DayModal
+- tapOn:
+    id: "day-modal-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 5000

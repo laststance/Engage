@@ -1,0 +1,45 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-08: Statistics
+# Verifies Stats screen renders and week/month toggle works
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Navigate to Stats tab
+- tapOn: "stats-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "stats-screen"
+    timeout: 5000
+
+- assertVisible:
+    text: "Achievements"
+
+# Verify toggle buttons exist
+- assertVisible:
+    id: "stats-week-toggle"
+- assertVisible:
+    id: "stats-month-toggle"
+
+# Tap Month toggle
+- tapOn:
+    id: "stats-month-toggle"
+
+- assertVisible:
+    text: "This Month Stats"
+
+# Tap Week toggle
+- tapOn:
+    id: "stats-week-toggle"
+
+- assertVisible:
+    text: "This Week Stats"

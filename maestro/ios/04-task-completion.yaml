@@ -1,0 +1,54 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-04: Task Completion
+# Verifies tapping a task item toggles its completion state
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Navigate to Today tab
+- tapOn: "today-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "today-screen"
+    timeout: 5000
+
+# Add tasks first
+- tapOn:
+    id: "task-selection-button"
+
+- extendedWaitUntil:
+    visible:
+      text: "Select Tasks"
+    timeout: 5000
+
+- tapOn:
+    text: "Hobby & Relaxation"
+
+- tapOn:
+    id: "task-picker-confirm"
+
+- extendedWaitUntil:
+    visible:
+      id: "today-screen"
+    timeout: 5000
+
+# Verify task is assigned (counter shows 0/1)
+- assertVisible:
+    text: "0/1"
+
+# Tap task to complete it (match dynamic task-item testID)
+- tapOn:
+    id: "task-item-.*"
+
+# Verify completion counter changes to 1/1
+- assertVisible:
+    text: "1/1"

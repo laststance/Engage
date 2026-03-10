@@ -1,0 +1,70 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-10: Data Persistence
+# Verifies completed task state survives app restart
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Navigate to Today tab
+- tapOn: "today-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "today-screen"
+    timeout: 5000
+
+# Add a task
+- tapOn:
+    id: "task-selection-button"
+
+- extendedWaitUntil:
+    visible:
+      text: "Select Tasks"
+    timeout: 5000
+
+- tapOn:
+    text: "Hobby & Relaxation"
+
+- tapOn:
+    id: "task-picker-confirm"
+
+- extendedWaitUntil:
+    visible:
+      id: "today-screen"
+    timeout: 5000
+
+# Complete the task (match dynamic task-item testID)
+- tapOn:
+    id: "task-item-.*"
+
+# Verify it's completed (counter changes)
+- assertVisible:
+    text: "1/1"
+
+# Relaunch app WITHOUT clearing state
+- launchApp
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Navigate to Today tab
+- tapOn: "today-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "today-screen"
+    timeout: 5000
+
+# Verify task is still completed (counter preserved)
+- assertVisible:
+    text: "1/1"

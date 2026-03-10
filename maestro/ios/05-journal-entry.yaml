@@ -1,0 +1,43 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-05: Journal Entry
+# Verifies journal text input and character count
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Navigate to Today tab
+- tapOn: "today-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "today-screen"
+    timeout: 5000
+
+# Verify journal section exists
+- assertVisible:
+    text: "Today's Reflection"
+
+# Verify journal input is visible
+- assertVisible:
+    id: "journal-text-input"
+
+# Tap journal input
+- tapOn:
+    id: "journal-text-input"
+
+# Type journal entry
+- inputText: "Hello"
+
+# Verify auto-save triggers (the "Saved" or "Auto-saved" label appears)
+- extendedWaitUntil:
+    visible:
+      text: "Auto-saved"
+    timeout: 5000

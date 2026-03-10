@@ -1,0 +1,26 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-01: App Launch
+# Verifies app launches without crash and Calendar screen is visible
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+- assertVisible:
+    id: "calendar-title"
+
+- assertVisible:
+    text: "Select a date to manage tasks and reflections"
+
+- assertVisible:
+    id: "calendar-prev-month"
+
+- assertVisible:
+    id: "calendar-next-month"
