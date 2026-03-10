@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
@@ -13,31 +14,35 @@ interface CalendarProps {
   achievementData: Record<string, number> // date -> completion count
 }
 
-const DAYS_OF_WEEK = ['日', '月', '火', '水', '木', '金', '土']
-const MONTHS = [
-  '1月',
-  '2月',
-  '3月',
-  '4月',
-  '5月',
-  '6月',
-  '7月',
-  '8月',
-  '9月',
-  '10月',
-  '11月',
-  '12月',
-]
-
 export const Calendar: React.FC<CalendarProps> = ({
   selectedDate,
   onDateSelect,
   achievementData,
 }) => {
+  const { t, i18n: i18nInstance } = useTranslation()
+
   const [currentMonth, setCurrentMonth] = useState(() => {
     const date = new Date(selectedDate)
     return new Date(date.getFullYear(), date.getMonth(), 1)
   })
+
+  /**
+   * Generate localized narrow weekday labels using Intl.DateTimeFormat.
+   * Uses a reference week starting from Sunday (2024-01-07).
+   * @returns Array of 7 narrow weekday strings
+   * @example
+   * // ja: ['日', '月', '火', '水', '木', '金', '土']
+   * // en: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+   */
+  const daysOfWeek = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(i18nInstance.language, {
+      weekday: 'narrow',
+    })
+    // Sunday 2024-01-07 through Saturday 2024-01-13
+    return Array.from({ length: 7 }, (_, i) =>
+      formatter.format(new Date(2024, 0, 7 + i))
+    )
+  }, [i18nInstance.language])
 
   const calendarData = useMemo(() => {
     const year = currentMonth.getFullYear()
@@ -128,6 +133,33 @@ export const Calendar: React.FC<CalendarProps> = ({
     return dateString === selectedDate
   }
 
+  /**
+   * Build an accessibility label for a calendar date cell.
+   * @param day - Day number
+   * @param dateString - YYYY-MM-DD date string
+   * @param completionCount - Number of completed tasks
+   * @returns Localized accessibility label
+   * @example
+   * getDateA11yLabel(15, '2026-03-15', 3) // => '15日 3件完了' (ja)
+   */
+  const getDateA11yLabel = (
+    day: number,
+    dateString: string,
+    completionCount: number
+  ): string => {
+    const today = isToday(dateString)
+    if (today && completionCount > 0) {
+      return t('calendar.dateA11yTodayCompleted', { day, count: completionCount })
+    }
+    if (today) {
+      return t('calendar.dateA11yToday', { day })
+    }
+    if (completionCount > 0) {
+      return t('calendar.dateA11yCompleted', { day, count: completionCount })
+    }
+    return t('calendar.dateA11y', { day })
+  }
+
   return (
     <Box className="flex-1 bg-white" testID="calendar-component">
       {/* Header with month navigation - matching Figma design */}
@@ -136,7 +168,7 @@ export const Calendar: React.FC<CalendarProps> = ({
           onPress={() => navigateMonth('prev')}
           testID="calendar-prev-month"
           className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
-          accessibilityLabel="前の月"
+          accessibilityLabel={t('calendar.prevMonth')}
           accessibilityRole="button"
         >
           <IconSymbol name="chevron.left" size={20} color="#666" />
@@ -146,14 +178,17 @@ export const Calendar: React.FC<CalendarProps> = ({
           className="text-lg font-semibold text-gray-800"
           testID="calendar-title"
         >
-          {currentMonth.getFullYear()}年{currentMonth.getMonth() + 1}月
+          {t('calendar.monthFormat', {
+            year: currentMonth.getFullYear(),
+            month: currentMonth.getMonth() + 1,
+          })}
         </Text>
 
         <Pressable
           onPress={() => navigateMonth('next')}
           testID="calendar-next-month"
           className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
-          accessibilityLabel="次の月"
+          accessibilityLabel={t('calendar.nextMonth')}
           accessibilityRole="button"
         >
           <IconSymbol name="chevron.right" size={20} color="#666" />
@@ -162,8 +197,8 @@ export const Calendar: React.FC<CalendarProps> = ({
 
       {/* Days of week header - matching Figma spacing */}
       <HStack className="px-4 mb-3">
-        {DAYS_OF_WEEK.map((day, index) => (
-          <Box key={day} className="flex-1 items-center">
+        {daysOfWeek.map((day, index) => (
+          <Box key={`${day}-${index}`} className="flex-1 items-center">
             <Text
               className={`text-sm font-medium ${
                 index === 0
@@ -193,7 +228,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                   onPress={() => onDateSelect(dayData.dateString)}
                   testID={`calendar-date-${dayData.dateString}`}
                   className="flex-1"
-                  accessibilityLabel={`${dayData.date}日${isToday(dayData.dateString) ? ' 今日' : ''}${completionCount > 0 ? ` ${completionCount}件完了` : ''}`}
+                  accessibilityLabel={getDateA11yLabel(dayData.date, dayData.dateString, completionCount)}
                   accessibilityRole="button"
                 >
                   <Box
@@ -236,12 +271,12 @@ export const Calendar: React.FC<CalendarProps> = ({
 
       {/* Legend - matching Figma design with proper spacing */}
       <HStack className="items-center justify-center mt-8 px-4">
-        <Text className="text-xs text-gray-500 mr-3">少ない</Text>
+        <Text className="text-xs text-gray-500 mr-3">{t('calendar.legendLess')}</Text>
         <Box className="w-3 h-3 bg-gray-100 rounded-sm mx-1" />
         <Box className="w-3 h-3 bg-green-200 rounded-sm mx-1" />
         <Box className="w-3 h-3 bg-green-400 rounded-sm mx-1" />
         <Box className="w-3 h-3 bg-green-600 rounded-sm mx-1" />
-        <Text className="text-xs text-gray-500 ml-3">多い</Text>
+        <Text className="text-xs text-gray-500 ml-3">{t('calendar.legendMore')}</Text>
       </HStack>
     </Box>
   )

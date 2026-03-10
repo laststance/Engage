@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Modal, Pressable, Dimensions } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
@@ -41,6 +42,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   showSkip = false,
   onSkip,
 }) => {
+  const { t } = useTranslation()
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 })
 
   useEffect(() => {
@@ -135,7 +137,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
                     onPress={onPrevious}
                     testID="tooltip-previous"
                   >
-                    <Text className="text-footnote text-system-blue">戻る</Text>
+                    <Text className="text-footnote text-system-blue">{t('common.back')}</Text>
                   </EnhancedPressable>
                 )}
               </HStack>
@@ -149,7 +151,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
                     testID="tooltip-skip"
                   >
                     <Text className="text-footnote text-tertiary-label">
-                      スキップ
+                      {t('common.skip')}
                     </Text>
                   </EnhancedPressable>
                 )}
@@ -162,7 +164,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
                     testID="tooltip-next"
                   >
                     <Text className="text-footnote text-white font-medium">
-                      次へ
+                      {t('common.next')}
                     </Text>
                   </EnhancedPressable>
                 ) : (
@@ -173,7 +175,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
                     testID="tooltip-close"
                   >
                     <Text className="text-footnote text-white font-medium">
-                      完了
+                      {t('common.done')}
                     </Text>
                   </EnhancedPressable>
                 )}

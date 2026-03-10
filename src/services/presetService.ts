@@ -2,6 +2,7 @@ import { Task, Category } from '../types'
 import { taskRepository } from './repositories/TaskRepository'
 import { categoryRepository } from './repositories/CategoryRepository'
 import { DatabaseError } from './database'
+import i18n from '@/src/i18n/config'
 
 export interface DefaultTaskData {
   title: string
@@ -19,72 +20,87 @@ export interface PresetInitializationResult {
  * Service for managing preset tasks and categories initialization
  */
 export class PresetService {
-  // Default categories that should be available on first launch
-  private readonly defaultCategories: Category[] = [
-    { id: 'business', name: '事業' },
-    { id: 'life', name: '生活' },
-  ]
+  /**
+   * Default categories resolved at runtime via i18n
+   * @returns Translated category list
+   */
+  private get defaultCategories(): Category[] {
+    return [
+      { id: 'business', name: i18n.t('preset.categories.business') },
+      { id: 'life', name: i18n.t('preset.categories.life') },
+    ]
+  }
 
-  // Default tasks for each category
-  private readonly defaultTasks: DefaultTaskData[] = [
-    // Business category tasks
-    {
-      title: 'ネットワーキング',
-      categoryId: 'business',
-    },
-    {
-      title: 'スキル学習 (30分)',
-      categoryId: 'business',
-      defaultMinutes: 30,
-    },
-    {
-      title: 'アイデア記録',
-      categoryId: 'business',
-    },
+  /**
+   * Default tasks resolved at runtime via i18n
+   * @returns Translated default task list
+   */
+  private get defaultTasks(): DefaultTaskData[] {
+    return [
+      // Business category tasks
+      {
+        title: i18n.t('preset.tasks.networking'),
+        categoryId: 'business',
+      },
+      {
+        title: i18n.t('preset.tasks.skillLearning'),
+        categoryId: 'business',
+        defaultMinutes: 30,
+      },
+      {
+        title: i18n.t('preset.tasks.ideaRecording'),
+        categoryId: 'business',
+      },
 
-    // Life category tasks
-    {
-      title: '運動 (20分以上)',
-      categoryId: 'life',
-      defaultMinutes: 20,
-    },
-    {
-      title: '読書・勉強',
-      categoryId: 'life',
-    },
-    {
-      title: '家族との時間',
-      categoryId: 'life',
-    },
-    {
-      title: '健康的な食事',
-      categoryId: 'life',
-    },
-    {
-      title: '十分な睡眠 (7時間)',
-      categoryId: 'life',
-      defaultMinutes: 420, // 7 hours in minutes
-    },
-    {
-      title: '整理整頓',
-      categoryId: 'life',
-    },
-    {
-      title: '財務管理',
-      categoryId: 'life',
-    },
-    {
-      title: '趣味・リラックス',
-      categoryId: 'life',
-    },
-  ]
+      // Life category tasks
+      {
+        title: i18n.t('preset.tasks.exercise'),
+        categoryId: 'life',
+        defaultMinutes: 20,
+      },
+      {
+        title: i18n.t('preset.tasks.readingStudy'),
+        categoryId: 'life',
+      },
+      {
+        title: i18n.t('preset.tasks.familyTime'),
+        categoryId: 'life',
+      },
+      {
+        title: i18n.t('preset.tasks.healthyEating'),
+        categoryId: 'life',
+      },
+      {
+        title: i18n.t('preset.tasks.sleep'),
+        categoryId: 'life',
+        defaultMinutes: 420, // 7 hours in minutes
+      },
+      {
+        title: i18n.t('preset.tasks.organization'),
+        categoryId: 'life',
+      },
+      {
+        title: i18n.t('preset.tasks.finance'),
+        categoryId: 'life',
+      },
+      {
+        title: i18n.t('preset.tasks.hobbyRelax'),
+        categoryId: 'life',
+      },
+    ]
+  }
 
-  // Recommended tasks for first-time users (3 tasks as per requirements)
-  private readonly recommendedTaskTitles = [
-    '運動 (20分以上)', // Life - easy to achieve
-    'ネットワーキング', // Business - important for growth
-    '読書・勉強', // Life - personal development
-  ]
+  /**
+   * Recommended task titles resolved at runtime via i18n
+   * @returns Translated recommended task title list
+   */
+  private get recommendedTaskTitles(): string[] {
+    return [
+      i18n.t('preset.tasks.exercise'), // Life - easy to achieve
+      i18n.t('preset.tasks.networking'), // Business - important for growth
+      i18n.t('preset.tasks.readingStudy'), // Life - personal development
+    ]
+  }
 
   /**
    * Initialize default categories and tasks if they don't exist

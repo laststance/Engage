@@ -6,6 +6,7 @@ import { Entry } from '../types'
 import { entryRepository } from './repositories/EntryRepository'
 import { validateJournalEntry } from '../utils/businessLogic'
 import { formatDate } from '../utils/dateUtils'
+import i18n from '@/src/i18n/config'
 
 export interface JournalValidationResult {
   isValid: boolean
@@ -46,15 +47,15 @@ export class JournalService {
 
     // Additional validations
     if (content.trim().length === 0) {
-      warnings.push('空の日記エントリーです')
+      warnings.push(i18n.t('journalValidation.emptyEntry'))
     }
 
     if (content.length < 10 && content.trim().length > 0) {
-      warnings.push('短い日記エントリーです。もう少し詳しく書いてみませんか？')
+      warnings.push(i18n.t('journalValidation.shortEntry'))
     }
 
     if (content.length > 800) {
-      warnings.push('長い日記エントリーです。読みやすさを考慮してください')
+      warnings.push(i18n.t('journalValidation.longEntry'))
     }
 
     // Check for potentially sensitive content (basic patterns)
@@ -62,7 +63,7 @@ export class JournalService {
 
     for (const pattern of sensitivePatterns) {
       if (pattern.test(content)) {
-        warnings.push('機密情報が含まれている可能性があります')
+        warnings.push(i18n.t('journalValidation.sensitiveContent'))
         break
       }
     }
@@ -147,7 +148,7 @@ export class JournalService {
   async searchEntries(searchTerm: string): Promise<Entry[]> {
     try {
       if (searchTerm.trim().length < 2) {
-        throw new Error('検索語は2文字以上で入力してください')
+        throw new Error(i18n.t('journalValidation.searchMinLength'))
       }
 
       return await entryRepository.searchByContent(searchTerm.trim())
@@ -374,19 +375,19 @@ export class JournalService {
    */
   getSuggestedPrompts(hasCompletions: boolean = false): string[] {
     const basePrompts = [
-      '今日はどんな気持ちでしたか？',
-      '今日学んだことは何ですか？',
-      '明日に向けて何を準備しますか？',
-      '今日の一番の出来事は？',
-      '感謝したいことはありますか？',
+      i18n.t('journalPrompts.happiest'),
+      i18n.t('journalPrompts.learned'),
+      i18n.t('journalPrompts.hopes'),
+      i18n.t('journalPrompts.challenge'),
+      i18n.t('journalPrompts.gratitude'),
     ]
 
     const completionPrompts = [
-      '達成したタスクについてどう感じますか？',
-      'タスクを完了して得られたものは？',
-      '今日の成果を振り返ってみましょう',
-      'うまくいったことと改善点は？',
-      '今日の頑張りを褒めてあげましょう',
+      i18n.t('journalPrompts.celebrate'),
+      i18n.t('journalPrompts.achievement'),
+      i18n.t('journalPrompts.howAchieved'),
+      i18n.t('journalPrompts.consistency'),
+      i18n.t('journalPrompts.motivation'),
     ]
 
     return hasCompletions ? completionPrompts : basePrompts

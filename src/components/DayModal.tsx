@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Modal, SafeAreaView } from 'react-native'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
@@ -17,6 +18,7 @@ interface DayModalProps {
 }
 
 export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
+  const { t } = useTranslation()
   const selectedDate = useAppStore((state) => state.selectedDate)
   const day = useDayView(selectedDate)
   const [isPresetEditorVisible, setIsPresetEditorVisible] = useState(false)
@@ -50,13 +52,13 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
         {/* Header */}
         <HStack className="items-center justify-between p-4 border-b border-gray-200">
           <Text className="text-lg font-semibold text-gray-800">
-            Daily Tasks
+            {t('dayModal.title')}
           </Text>
           <Pressable
             onPress={onClose}
             className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
             testID="day-modal-close"
-            accessibilityLabel="閉じる"
+            accessibilityLabel={t('common.close')}
             accessibilityRole="button"
           >
             <IconSymbol name="xmark" size={24} color="#666" />

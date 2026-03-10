@@ -1,5 +1,6 @@
 import React from 'react'
 import { ScrollView } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
@@ -9,6 +10,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol'
 import { JournalInput } from './JournalInput'
 import { Task, Entry, Completion, Category } from '@/src/types'
 import { useAppStore } from '@/src/stores/app-store'
+import i18n, { getCategoryDisplayName } from '@/src/i18n/config'
 
 interface DaySheetProps {
   date: string
@@ -31,6 +33,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
   onJournalUpdate,
   onTaskSelectionPress,
 }) => {
+  const { t } = useTranslation()
   // const { getJournalPlaceholder } = useAppStore()
 
   // Create a map of completed task IDs for quick lookup
@@ -63,8 +66,8 @@ export const DaySheet: React.FC<DaySheetProps> = ({
     if (!category) return 'bg-gray-500'
 
     // Default colors for preset categories
-    if (category.name === '事業') return 'bg-blue-500'
-    if (category.name === '生活') return 'bg-green-500'
+    if (category.id === 'business') return 'bg-blue-500'
+    if (category.id === 'life') return 'bg-green-500'
 
     // Generate colors for custom categories
     const colors = [
@@ -78,16 +81,23 @@ export const DaySheet: React.FC<DaySheetProps> = ({
     return colors[index]
   }
 
+  /**
+   * Format a date string using Intl.DateTimeFormat and i18n translation.
+   * @param dateString - YYYY-MM-DD date string
+   * @returns Localized formatted date string
+   * @example
+   * formatDate('2026-03-15') // => '3月15日 (日)' (ja) or 'Sun, Mar 15' (en)
+   */
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()]
-    return `${month}月${day}日 (${dayOfWeek})`
+    const dateObj = new Date(dateString)
+    const month = dateObj.getMonth() + 1
+    const day = dateObj.getDate()
+    const dayOfWeek = new Intl.DateTimeFormat(i18n.language, {
+      weekday: 'narrow',
+    }).format(dateObj)
+    return t('daySheet.dateFormat', { month, day, dayOfWeek })
   }
 
-  // Get dynamic placeholder text based on completion status
-  const hasCompletions = completions.some((c) => c.completed)
   // const placeholder = getJournalPlaceholder(date)
 
   return (
@@ -114,7 +124,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
             testID="task-selection-button"
           >
             <HStack className="items-center justify-between">
-              <Text className="text-blue-600 font-medium">表示するタスクを選択</Text>
+              <Text className="text-blue-600 font-medium">{t('daySheet.selectTasks')}</Text>
               <IconSymbol name="plus.circle" size={24} color="#2563eb" />
             </HStack>
           </Pressable>
@@ -138,7 +148,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
                           className={`w-3 h-3 rounded-full ${categoryColor}`}
                         />
                         <Text className="font-semibold text-gray-800">
-                          {category?.name || 'Unknown Category'}
+                          {category ? getCategoryDisplayName(category) : 'Unknown Category'}
                         </Text>
                       </HStack>
                       <Text className="text-sm text-gray-500">
@@ -157,7 +167,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
                             onPress={() => onTaskToggle(task.id)}
                             className="flex-row items-center py-3 px-3 bg-gray-50 rounded-lg min-h-[44px]"
                             testID={`task-item-${task.id}`}
-                            accessibilityLabel={`${task.title}${completedTaskIds.has(task.id) ? ' 完了' : ' 未完了'}`}
+                            accessibilityLabel={`${task.title}${completedTaskIds.has(task.id) ? ` ${t('daySheet.completed')}` : ` ${t('daySheet.notCompleted')}`}`}
                             accessibilityRole="button"
                           >
                             <HStack className="items-center flex-1" space="sm">
@@ -206,7 +216,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
         ) : (
           <Box className="p-8 items-center">
             <Text className="text-gray-500 text-center">
-              表示するタスクを選択してください
+              {t('daySheet.noTasksMessage')}
             </Text>
           </Box>
         )}

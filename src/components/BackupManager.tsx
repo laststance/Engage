@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, ScrollView, Alert } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { useAppStore } from '../stores/app-store'
+import i18n from '@/src/i18n/config'
 
 interface BackupInfo {
   fileName: string
@@ -23,6 +25,7 @@ interface BackupStats {
  * Component for managing data backups and exports
  */
 export const BackupManager: React.FC = () => {
+  const { t } = useTranslation()
   const [backups, setBackups] = useState<BackupInfo[]>([])
   const [stats, setStats] = useState<BackupStats | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -67,16 +70,14 @@ export const BackupManager: React.FC = () => {
 
       if (result.success) {
         Alert.alert(
-          'バックアップ作成完了',
-          `バックアップが正常に作成されました。\n\nファイル名: ${
-            result.fileName
-          }\nサイズ: ${formatFileSize(result.size || 0)}`,
-          [{ text: 'OK' }]
+          t('backup.createSuccessTitle'),
+          t('backup.createSuccessMessage', { fileName: result.fileName, size: formatFileSize(result.size || 0) }),
+          [{ text: t('common.ok') }]
         )
         await loadBackupData()
       } else {
-        Alert.alert('バックアップ作成失敗', result.errors.join('\n'), [
-          { text: 'OK' },
+        Alert.alert(t('backup.createFailTitle'), result.errors.join('\n'), [
+          { text: t('common.ok') },
         ])
       }
     } catch (error) {
@@ -95,13 +96,13 @@ export const BackupManager: React.FC = () => {
 
       if (result.success) {
         Alert.alert(
-          'データエクスポート完了',
-          'データが正常にエクスポートされ、共有されました。',
-          [{ text: 'OK' }]
+          t('backup.exportSuccessTitle'),
+          t('backup.exportSuccessMessage'),
+          [{ text: t('common.ok') }]
         )
       } else {
-        Alert.alert('エクスポート失敗', result.errors.join('\n'), [
-          { text: 'OK' },
+        Alert.alert(t('backup.exportFailTitle'), result.errors.join('\n'), [
+          { text: t('common.ok') },
         ])
       }
     } catch (error) {
@@ -113,12 +114,12 @@ export const BackupManager: React.FC = () => {
 
   const handleImportBackup = async () => {
     Alert.alert(
-      'データインポート',
-      'この操作により、現在のデータがすべて置き換えられます。続行しますか？',
+      t('backup.importConfirmTitle'),
+      t('backup.importConfirmMessage'),
       [
-        { text: 'キャンセル', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: '続行',
+          text: t('common.continue'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -129,19 +130,20 @@ export const BackupManager: React.FC = () => {
 
               if (result.success) {
                 Alert.alert(
-                  'インポート完了',
-                  `データが正常にインポートされました。\n\n` +
-                    `カテゴリ: ${result.recordsImported.categories}\n` +
-                    `タスク: ${result.recordsImported.tasks}\n` +
-                    `エントリ: ${result.recordsImported.entries}\n` +
-                    `完了記録: ${result.recordsImported.completions}\n` +
-                    `設定: ${result.recordsImported.settings}`,
-                  [{ text: 'OK' }]
+                  t('backup.importSuccessTitle'),
+                  t('backup.importSuccessMessage', {
+                    categories: result.recordsImported.categories,
+                    tasks: result.recordsImported.tasks,
+                    entries: result.recordsImported.entries,
+                    completions: result.recordsImported.completions,
+                    settings: result.recordsImported.settings,
+                  }),
+                  [{ text: t('common.ok') }]
                 )
                 await loadBackupData()
               } else {
-                Alert.alert('インポート失敗', result.errors.join('\n'), [
-                  { text: 'OK' },
+                Alert.alert(t('backup.importFailTitle'), result.errors.join('\n'), [
+                  { text: t('common.ok') },
                 ])
               }
             } catch (error) {
@@ -157,12 +159,12 @@ export const BackupManager: React.FC = () => {
 
   const handleDeleteBackup = async (fileName: string) => {
     Alert.alert(
-      'バックアップ削除',
-      `バックアップファイル「${fileName}」を削除しますか？`,
+      t('backup.deleteConfirmTitle'),
+      t('backup.deleteConfirmMessage', { fileName }),
       [
-        { text: 'キャンセル', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: '削除',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -170,13 +172,13 @@ export const BackupManager: React.FC = () => {
               const success = await deleteBackup(fileName)
 
               if (success) {
-                Alert.alert('削除完了', 'バックアップが削除されました。', [
-                  { text: 'OK' },
+                Alert.alert(t('backup.deleteSuccessTitle'), t('backup.deleteSuccessMessage'), [
+                  { text: t('common.ok') },
                 ])
                 await loadBackupData()
               } else {
-                Alert.alert('削除失敗', 'バックアップの削除に失敗しました。', [
-                  { text: 'OK' },
+                Alert.alert(t('backup.deleteFailTitle'), t('backup.deleteFailMessage'), [
+                  { text: t('common.ok') },
                 ])
               }
             } catch (error) {
@@ -199,7 +201,7 @@ export const BackupManager: React.FC = () => {
   }
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('ja-JP', {
+    return date.toLocaleDateString(i18n.language, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -220,7 +222,7 @@ export const BackupManager: React.FC = () => {
 
       {/* Backup Actions */}
       <View className="mb-6">
-        <Text className="text-lg font-semibold mb-3">バックアップ操作</Text>
+        <Text className="text-lg font-semibold mb-3">{t('backup.operations')}</Text>
 
         <View className="space-y-3">
           <Button
@@ -229,7 +231,7 @@ export const BackupManager: React.FC = () => {
             className="w-full"
           >
             <Text className="text-white font-medium">
-              {isLoading ? 'バックアップ作成中...' : 'バックアップを作成'}
+              {isLoading ? t('backup.creating') : t('backup.create')}
             </Text>
           </Button>
 
@@ -240,7 +242,7 @@ export const BackupManager: React.FC = () => {
             className="w-full"
           >
             <Text className="font-medium">
-              {isLoading ? 'エクスポート中...' : 'データをエクスポート・共有'}
+              {isLoading ? t('backup.exporting') : t('backup.export')}
             </Text>
           </Button>
 
@@ -251,7 +253,7 @@ export const BackupManager: React.FC = () => {
             className="w-full"
           >
             <Text className="font-medium">
-              {isLoading ? 'インポート中...' : 'バックアップをインポート'}
+              {isLoading ? t('backup.importing') : t('backup.import')}
             </Text>
           </Button>
         </View>
@@ -260,22 +262,22 @@ export const BackupManager: React.FC = () => {
       {/* Backup Statistics */}
       {stats && (
         <View className="mb-6">
-          <Text className="text-lg font-semibold mb-3">バックアップ統計</Text>
+          <Text className="text-lg font-semibold mb-3">{t('backup.statistics')}</Text>
           <View className="bg-gray-50 p-4 rounded-lg">
-            <Text className="mb-2">総バックアップ数: {stats.totalBackups}</Text>
+            <Text className="mb-2">{t('backup.totalBackups')} {stats.totalBackups}</Text>
             <Text className="mb-2">
-              有効なバックアップ: {stats.validBackups}
+              {t('backup.validBackups')} {stats.validBackups}
             </Text>
             <Text className="mb-2">
-              総サイズ: {formatFileSize(stats.totalSize)}
+              {t('backup.totalSize')} {formatFileSize(stats.totalSize)}
             </Text>
             {stats.newestBackup && (
               <Text className="mb-2">
-                最新バックアップ: {formatDate(stats.newestBackup)}
+                {t('backup.latestBackup')} {formatDate(stats.newestBackup)}
               </Text>
             )}
             {stats.oldestBackup && (
-              <Text>最古バックアップ: {formatDate(stats.oldestBackup)}</Text>
+              <Text>{t('backup.oldestBackup')} {formatDate(stats.oldestBackup)}</Text>
             )}
           </View>
         </View>
@@ -284,13 +286,13 @@ export const BackupManager: React.FC = () => {
       {/* Backup List */}
       <View>
         <Text className="text-lg font-semibold mb-3">
-          バックアップファイル ({backups.length})
+          {t('backup.files', { count: backups.length })}
         </Text>
 
         {backups.length === 0 ? (
           <View className="bg-gray-50 p-4 rounded-lg">
             <Text className="text-gray-600 text-center">
-              バックアップファイルがありません
+              {t('backup.noFiles')}
             </Text>
           </View>
         ) : (
@@ -311,17 +313,17 @@ export const BackupManager: React.FC = () => {
                       <View className="w-2 h-2 bg-red-500 rounded-full mr-2" />
                     )}
                     <Text className="text-xs text-gray-600">
-                      {backup.isValid ? '有効' : '無効'}
+                      {backup.isValid ? t('backup.valid') : t('backup.invalid')}
                     </Text>
                   </View>
                 </View>
 
                 <Text className="text-sm text-gray-600 mb-2">
-                  作成日時: {formatDate(backup.createdAt)}
+                  {t('backup.createdAt')} {formatDate(backup.createdAt)}
                 </Text>
 
                 <Text className="text-sm text-gray-600 mb-3">
-                  サイズ: {formatFileSize(backup.size)}
+                  {t('backup.size')} {formatFileSize(backup.size)}
                 </Text>
 
                 <Button
@@ -331,7 +333,7 @@ export const BackupManager: React.FC = () => {
                   size="sm"
                   className="self-start"
                 >
-                  <Text className="text-red-600 text-sm">削除</Text>
+                  <Text className="text-red-600 text-sm">{t('common.delete')}</Text>
                 </Button>
               </View>
             ))}

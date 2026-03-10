@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Modal, SafeAreaView, ScrollView, Alert, TextInput } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
@@ -7,6 +8,7 @@ import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
 import { Task, Category } from '@/src/types'
+import { getCategoryDisplayName } from '@/src/i18n/config'
 
 interface PresetTaskEditorProps {
   isVisible: boolean
@@ -34,6 +36,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   onCancel,
   onCreateCategory,
 }) => {
+  const { t } = useTranslation()
   const [editingTasks, setEditingTasks] = useState<EditingTask[]>([])
   const [isLoading, setSaving] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
@@ -55,14 +58,11 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     }
   }, [isVisible, tasks])
 
-  // Get category color
+  // Get category color (lookup by category ID)
   const getCategoryColor = (categoryId: string) => {
-    const category = categories.find((c) => c.id === categoryId)
-    if (!category) return 'bg-gray-500'
-
     // Default colors for preset categories
-    if (category.name === '事業') return 'bg-blue-500'
-    if (category.name === '生活') return 'bg-green-500'
+    if (categoryId === 'business') return 'bg-blue-500'
+    if (categoryId === 'life') return 'bg-green-500'
 
     // Generate colors for custom categories
     const colors = [
@@ -96,10 +96,10 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   const deleteTask = (index: number) => {
     const task = editingTasks[index]
 
-    Alert.alert('タスクを削除', `「${task.title}」を削除しますか？`, [
-      { text: 'キャンセル', style: 'cancel' },
+    Alert.alert(t('presetEditor.deleteTask'), t('presetEditor.deleteTaskConfirm', { title: task.title }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: '削除',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: () => {
           setEditingTasks((prev) => prev.filter((_, i) => i !== index))
@@ -116,7 +116,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       setNewCategoryName('')
       setShowNewCategoryInput(false)
     } catch (error) {
-      Alert.alert('エラー', 'カテゴリーの作成に失敗しました')
+      Alert.alert(t('common.error'), t('presetEditor.createCategoryFailed'))
     }
   }
 
@@ -125,7 +125,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     const validTasks = editingTasks.filter((task) => task.title.trim() !== '')
 
     if (validTasks.length === 0) {
-      Alert.alert('エラー', '少なくとも1つのタスクが必要です')
+      Alert.alert(t('common.error'), t('presetEditor.atLeastOneTask'))
       return
     }
 
@@ -139,7 +139,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     })
 
     if (duplicates.length > 0) {
-      Alert.alert('エラー', '同じカテゴリー内で重複するタスク名があります')
+      Alert.alert(t('common.error'), t('presetEditor.duplicateTaskInCategory'))
       return
     }
 
@@ -162,16 +162,16 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
 
       await onSave(tasksToSave)
     } catch (error) {
-      Alert.alert('エラー', 'タスクの保存に失敗しました')
+      Alert.alert(t('common.error'), t('presetEditor.saveFailed'))
     } finally {
       setSaving(false)
     }
   }
 
   const handleCancel = () => {
-    Alert.alert('変更を破棄', '編集内容が失われますが、よろしいですか？', [
-      { text: 'キャンセル', style: 'cancel' },
-      { text: '破棄', style: 'destructive', onPress: onCancel },
+    Alert.alert(t('presetEditor.discardChangesTitle'), t('presetEditor.discardChangesMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('presetEditor.discard'), style: 'destructive', onPress: onCancel },
     ])
   }
 
@@ -196,7 +196,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
         <VStack space="md" className="p-4 border-b border-gray-200">
           <HStack className="items-center justify-between">
             <Text className="text-lg font-semibold text-gray-800">
-              プリセットタスク編集
+              {t('presetEditor.title')}
             </Text>
             <Pressable
               onPress={handleCancel}
@@ -215,7 +215,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
           >
             <HStack className="items-center justify-center" space="sm">
               <IconSymbol name="plus" size={20} color="white" />
-              <Text className="text-white font-medium">新しいタスクを追加</Text>
+              <Text className="text-white font-medium">{t('presetEditor.addTask')}</Text>
             </HStack>
           </Pressable>
         </VStack>
@@ -237,7 +237,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                           className={`w-4 h-4 rounded-full ${categoryColor}`}
                         />
                         <Text className="text-lg font-semibold text-gray-800">
-                          {category?.name || 'Unknown Category'}
+                          {category ? getCategoryDisplayName(category) : 'Unknown Category'}
                         </Text>
                       </HStack>
                     </HStack>
@@ -253,14 +253,14 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                             {/* Task Title */}
                             <VStack space="xs">
                               <Text className="text-sm font-medium text-gray-700">
-                                タスク名
+                                {t('presetEditor.taskName')}
                               </Text>
                               <TextInput
                                 value={task.title}
                                 onChangeText={(text) =>
                                   updateTask(task.index, { title: text })
                                 }
-                                placeholder="タスク名を入力"
+                                placeholder={t('presetEditor.taskNamePlaceholder')}
                                 className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800"
                                 testID={`task-title-input-${task.index}`}
                               />
@@ -269,7 +269,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                             {/* Category Selection */}
                             <VStack space="xs">
                               <Text className="text-sm font-medium text-gray-700">
-                                カテゴリー
+                                {t('presetEditor.category')}
                               </Text>
                               <ScrollView
                                 horizontal
@@ -309,7 +309,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                                               : 'text-gray-700'
                                           }`}
                                         >
-                                          {cat.name}
+                                          {getCategoryDisplayName(cat)}
                                         </Text>
                                       </Pressable>
                                     )
@@ -321,7 +321,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                             {/* Default Minutes */}
                             <VStack space="xs">
                               <Text className="text-sm font-medium text-gray-700">
-                                目安時間（分）
+                                {t('presetEditor.estimatedMinutes')}
                               </Text>
                               <TextInput
                                 value={task.defaultMinutes?.toString() || ''}
@@ -335,7 +335,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                                       : minutes,
                                   })
                                 }}
-                                placeholder="例: 30"
+                                placeholder={t('presetEditor.estimatedMinutesPlaceholder')}
                                 keyboardType="numeric"
                                 className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800"
                                 testID={`task-minutes-input-${task.index}`}
@@ -356,7 +356,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                                     color="white"
                                   />
                                   <Text className="text-white text-sm font-medium">
-                                    削除
+                                    {t('common.delete')}
                                   </Text>
                                 </HStack>
                               </Pressable>
@@ -374,7 +374,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
             <VStack space="sm">
               <HStack className="items-center justify-between">
                 <Text className="text-lg font-semibold text-gray-800">
-                  カテゴリー管理
+                  {t('presetEditor.categoryManagement')}
                 </Text>
                 <Pressable
                   onPress={() => setShowNewCategoryInput(!showNewCategoryInput)}
@@ -384,7 +384,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                   <HStack className="items-center" space="xs">
                     <IconSymbol name="plus" size={16} color="white" />
                     <Text className="text-white text-sm font-medium">
-                      カテゴリー追加
+                      {t('presetEditor.addCategory')}
                     </Text>
                   </HStack>
                 </Pressable>
@@ -395,7 +395,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                   <TextInput
                     value={newCategoryName}
                     onChangeText={setNewCategoryName}
-                    placeholder="新しいカテゴリー名"
+                    placeholder={t('presetEditor.newCategoryPlaceholder')}
                     className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800"
                     testID="new-category-input"
                   />
@@ -404,7 +404,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                     className="bg-green-500 rounded-lg px-4 py-2"
                     testID="create-category-button"
                   >
-                    <Text className="text-white font-medium">作成</Text>
+                    <Text className="text-white font-medium">{t('common.create')}</Text>
                   </Pressable>
                 </HStack>
               )}
@@ -413,10 +413,10 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
             {editingTasks.length === 0 && (
               <Box className="p-8 items-center">
                 <Text className="text-gray-500 text-center mb-4">
-                  タスクがありません
+                  {t('presetEditor.noTasks')}
                 </Text>
                 <Text className="text-gray-400 text-center text-sm">
-                  「新しいタスクを追加」ボタンでタスクを作成してください
+                  {t('presetEditor.noTasksHint')}
                 </Text>
               </Box>
             )}
@@ -432,7 +432,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
               testID="preset-editor-cancel"
             >
               <Text className="text-gray-700 font-medium text-center">
-                キャンセル
+                {t('common.cancel')}
               </Text>
             </Pressable>
 
@@ -445,7 +445,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
               testID="preset-editor-save"
             >
               <Text className="text-white font-medium text-center">
-                {isLoading ? '保存中...' : '保存'}
+                {isLoading ? t('common.saving') : t('common.save')}
               </Text>
             </Pressable>
           </HStack>

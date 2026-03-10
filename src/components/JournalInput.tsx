@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { TextInput, Keyboard } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
@@ -19,9 +20,10 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   date,
   entry,
   onUpdate,
-  placeholder = '日記を書いてみましょう...',
+  placeholder,
   maxLength = 1000,
 }) => {
+  const { t } = useTranslation()
   const [text, setText] = useState(entry?.note || '')
   const [isFocused, setIsFocused] = useState(false)
   const [isAutoSaving, setIsAutoSaving] = useState(false)
@@ -86,16 +88,18 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()]
-    return `${month}月${day}日 (${dayOfWeek})`
+    const d = new Date(dateString)
+    const formatter = new Intl.DateTimeFormat(undefined, {
+      month: 'long',
+      day: 'numeric',
+      weekday: 'short',
+    })
+    return formatter.format(d)
   }
 
   const getStatusText = () => {
     if (isAutoSaving) {
-      return '保存中...'
+      return t('common.saving')
     }
     if (lastSaved) {
       const now = new Date()
@@ -103,12 +107,12 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       const diffMinutes = Math.floor(diffMs / 60000)
 
       if (diffMinutes < 1) {
-        return '保存済み'
+        return t('journal.saved')
       } else if (diffMinutes < 60) {
-        return `${diffMinutes}分前に保存`
+        return t('journal.savedMinutesAgo', { minutes: diffMinutes })
       } else {
         const diffHours = Math.floor(diffMinutes / 60)
-        return `${diffHours}時間前に保存`
+        return t('journal.savedHoursAgo', { hours: diffHours })
       }
     }
     return ''
@@ -122,7 +126,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       {/* Header */}
       <HStack className="items-center justify-between">
         <Text className="text-lg font-semibold text-gray-800">
-          今日の振り返り
+          {t('journal.title')}
         </Text>
         <HStack className="items-center" space="xs">
           {isAutoSaving && (
@@ -151,7 +155,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
           onChangeText={handleTextChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          placeholder={placeholder}
+          placeholder={placeholder ?? t('journal.placeholder')}
           placeholderTextColor="#9CA3AF"
           multiline
           textAlignVertical="top"
@@ -169,8 +173,8 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       <HStack className="items-center justify-between">
         <Text className="text-xs text-gray-500">
           {text.length === 0
-            ? `${formatDate(date)}の振り返りを書いてみましょう`
-            : '自動保存されます'}
+            ? t('journal.reflectionPrompt', { date: formatDate(date) })
+            : t('journal.autoSave')}
         </Text>
         <Text
           className={`
@@ -193,7 +197,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       {text.length === 0 && !isFocused && (
         <Box className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
           <Text className="text-sm text-blue-700 text-center">
-            💭 今日の気持ちや学んだことを一言でも書いてみませんか？
+            {t('journal.encouragement')}
           </Text>
         </Box>
       )}
@@ -203,8 +207,8 @@ export const JournalInput: React.FC<JournalInputProps> = ({
         <Box className="mt-2 p-3 bg-orange-50 rounded-lg border border-orange-100">
           <Text className="text-sm text-orange-700 text-center">
             {isAtLimit
-              ? '文字数の上限に達しました'
-              : `あと${maxLength - characterCount}文字まで入力できます`}
+              ? t('journal.characterLimitReached')
+              : t('journal.charactersRemaining', { count: maxLength - characterCount })}
           </Text>
         </Box>
       )}

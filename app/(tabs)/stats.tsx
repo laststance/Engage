@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Box } from '@/components/ui/box'
@@ -11,6 +12,7 @@ import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 
 export default function StatsScreen() {
+  const { t } = useTranslation()
   const insets = useSafeAreaInsets()
   const { categories, getStatsForPeriod } = useAppStore()
 
@@ -27,14 +29,14 @@ export default function StatsScreen() {
                 className="text-2xl font-bold text-gray-800 text-center"
                 testID="stats-title"
               >
-                Stats
+                {t('stats.title')}
               </Text>
             </Box>
             <TouchableOpacity
               onPress={() => router.push('/modal')}
               className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
               testID="settings-button"
-              accessibilityLabel="設定"
+              accessibilityLabel={t('stats.settingsLabel')}
               accessibilityRole="button"
             >
               <Ionicons name="settings-outline" size={24} color="#6B7280" />
@@ -44,7 +46,7 @@ export default function StatsScreen() {
             className="text-gray-600 text-center text-sm"
             testID="stats-description"
           >
-            習慣の達成状況と統計を確認しましょう
+            {t('stats.description')}
           </Text>
         </Box>
 

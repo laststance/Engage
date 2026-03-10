@@ -345,15 +345,15 @@ describe('JournalService', () => {
     it('should return base prompts when no completions', () => {
       const prompts = journalService.getSuggestedPrompts(false)
 
-      expect(prompts).toContain('今日はどんな気持ちでしたか？')
-      expect(prompts).toContain('今日学んだことは何ですか？')
+      expect(prompts).toContain('今日一番嬉しかったことは何ですか？')
+      expect(prompts).toContain('今日学んだことを書いてみましょう')
     })
 
     it('should return completion prompts when has completions', () => {
       const prompts = journalService.getSuggestedPrompts(true)
 
-      expect(prompts).toContain('達成したタスクについてどう感じますか？')
-      expect(prompts).toContain('タスクを完了して得られたものは？')
+      expect(prompts).toContain('今日のタスク完了を祝いましょう！')
+      expect(prompts).toContain('達成感を感じていることを書いてみましょう')
     })
   })
 })

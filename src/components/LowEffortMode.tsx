@@ -4,6 +4,7 @@
  */
 
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
@@ -17,41 +18,33 @@ interface LowEffortModeProps {
   onQuickWin: () => void
 }
 
-const encouragingMessages = [
-  '今日は小さな一歩でも十分です',
-  '完璧でなくても、続けることが大切',
-  '今日できることから始めましょう',
-  '少しでも前進すれば成功です',
-  '無理をせず、自分のペースで',
-  '今日の小さな努力が明日につながります',
-]
-
-const quickWinSuggestions = [
-  { icon: 'book', title: '5分読書', description: '好きな本を少しだけ' },
-  { icon: 'figure.walk', title: '散歩', description: '外の空気を吸いに' },
-  {
-    icon: 'cup.and.saucer',
-    title: 'お茶タイム',
-    description: 'ゆっくり一息つく',
-  },
-  { icon: 'heart', title: '深呼吸', description: '3回深く呼吸する' },
-  {
-    icon: 'music.note',
-    title: '好きな音楽',
-    description: '1曲聴いてリラックス',
-  },
-  { icon: 'sun.max', title: '日光浴', description: '窓際で日光を浴びる' },
-]
-
 export const LowEffortMode: React.FC<LowEffortModeProps> = ({
   isActive,
   onToggle,
   onQuickWin,
 }) => {
-  const todayMessage =
-    encouragingMessages[new Date().getDay() % encouragingMessages.length]
-  const todayQuickWin =
-    quickWinSuggestions[new Date().getDay() % quickWinSuggestions.length]
+  const { t } = useTranslation()
+
+  const encouragingMessageKeys = [
+    'lowEffort.encouragement1',
+    'lowEffort.encouragement2',
+    'lowEffort.encouragement3',
+    'lowEffort.encouragement4',
+    'lowEffort.encouragement5',
+    'lowEffort.encouragement6',
+  ] as const
+
+  const quickWinSuggestions = [
+    { icon: 'book', titleKey: 'lowEffort.quickReading', descKey: 'lowEffort.quickReadingDesc' },
+    { icon: 'figure.walk', titleKey: 'lowEffort.quickWalk', descKey: 'lowEffort.quickWalkDesc' },
+    { icon: 'cup.and.saucer', titleKey: 'lowEffort.quickTea', descKey: 'lowEffort.quickTeaDesc' },
+    { icon: 'heart', titleKey: 'lowEffort.quickBreathing', descKey: 'lowEffort.quickBreathingDesc' },
+    { icon: 'music.note', titleKey: 'lowEffort.quickMusic', descKey: 'lowEffort.quickMusicDesc' },
+    { icon: 'sun.max', titleKey: 'lowEffort.quickSun', descKey: 'lowEffort.quickSunDesc' },
+  ] as const
+
+  const todayMessage = t(encouragingMessageKeys[new Date().getDay() % encouragingMessageKeys.length])
+  const todayQuickWin = quickWinSuggestions[new Date().getDay() % quickWinSuggestions.length]
 
   if (!isActive) {
     return (
@@ -59,10 +52,10 @@ export const LowEffortMode: React.FC<LowEffortModeProps> = ({
         <HStack className="items-center justify-between">
           <VStack className="flex-1" space="xs">
             <Text className="text-callout font-medium text-label">
-              今日は調子が出ませんか？
+              {t('lowEffort.notFeelingIt')}
             </Text>
             <Text className="text-footnote text-secondary-label">
-              低負荷モードで無理なく続けましょう
+              {t('lowEffort.enableDescription')}
             </Text>
           </VStack>
 
@@ -75,7 +68,7 @@ export const LowEffortMode: React.FC<LowEffortModeProps> = ({
             <HStack className="items-center" space="xs">
               <IconSymbol name="heart" size={16} color="#007AFF" />
               <Text className="text-footnote text-system-blue font-medium">
-                有効にする
+                {t('lowEffort.enable')}
               </Text>
             </HStack>
           </EnhancedPressable>
@@ -94,7 +87,7 @@ export const LowEffortMode: React.FC<LowEffortModeProps> = ({
               <IconSymbol name="heart.fill" size={20} color="white" />
             </Box>
             <Text className="text-headline font-semibold text-label">
-              低負荷モード
+              {t('lowEffort.title')}
             </Text>
           </HStack>
 
@@ -118,7 +111,7 @@ export const LowEffortMode: React.FC<LowEffortModeProps> = ({
         {/* Quick Win Suggestion */}
         <VStack space="sm">
           <Text className="text-subhead font-medium text-label">
-            今日のおすすめアクション
+            {t('lowEffort.todayRecommended')}
           </Text>
 
           <EnhancedPressable
@@ -138,10 +131,10 @@ export const LowEffortMode: React.FC<LowEffortModeProps> = ({
 
               <VStack className="flex-1" space="xs">
                 <Text className="text-callout font-medium text-label">
-                  {todayQuickWin.title}
+                  {t(todayQuickWin.titleKey)}
                 </Text>
                 <Text className="text-footnote text-secondary-label">
-                  {todayQuickWin.description}
+                  {t(todayQuickWin.descKey)}
                 </Text>
               </VStack>
 
@@ -153,10 +146,10 @@ export const LowEffortMode: React.FC<LowEffortModeProps> = ({
         {/* Gentle Reminders */}
         <VStack space="xs">
           <Text className="text-footnote text-tertiary-label text-center">
-            💡 完璧を目指さず、継続を大切に
+            {t('lowEffort.tipPerfection')}
           </Text>
           <Text className="text-footnote text-tertiary-label text-center">
-            🌱 小さな積み重ねが大きな変化を生みます
+            {t('lowEffort.tipSmallSteps')}
           </Text>
         </VStack>
       </VStack>

@@ -8,19 +8,19 @@ import { DesignSystem } from '@/constants/design-system'
 /**
  * Get category color classes for Tailwind CSS
  */
-export const getCategoryColorClasses = (categoryName: string) => {
+export const getCategoryColorClasses = (categoryId: string) => {
   const colorMap: Record<string, string> = {
-    事業: 'business',
-    生活: 'life',
-    勉強: 'study',
-    健康: 'health',
-    財務: 'finance',
-    趣味: 'hobby',
-    仕事: 'work',
-    個人: 'personal',
+    business: 'business',
+    life: 'life',
+    study: 'study',
+    health: 'health',
+    finance: 'finance',
+    hobby: 'hobby',
+    work: 'work',
+    personal: 'personal',
   }
 
-  const colorKey = colorMap[categoryName] || 'business'
+  const colorKey = colorMap[categoryId] || 'business'
 
   return {
     background: `bg-${colorKey}`,

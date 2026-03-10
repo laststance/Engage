@@ -3,6 +3,7 @@
  */
 
 import { Task, Completion, Entry, Category } from '../types'
+import i18n from '@/src/i18n/config'
 
 export interface TaskSelectionResult {
   selectedTasks: Task[]
@@ -160,9 +161,9 @@ export const validateJournalEntry = (
  */
 export const getJournalPlaceholder = (hasCompletions: boolean): string => {
   if (hasCompletions) {
-    return '今日達成したことについて振り返ってみましょう...'
+    return i18n.t('motivational.reflectJournal')
   }
-  return '日記を書いてみましょう...'
+  return i18n.t('motivational.defaultJournal')
 }
 
 /**
@@ -218,19 +219,19 @@ export const hasCompletedDailyFlow = (
  */
 export const getMotivationalMessage = (progress: DayProgress): string => {
   if (progress.completedTasks === 0) {
-    return 'タスクを選んで今日を始めましょう！'
+    return i18n.t('motivational.startDay')
   }
 
   if (progress.completionRate === 100) {
     if (progress.hasJournalEntry) {
-      return '素晴らしい！今日も完璧な一日でした！'
+      return i18n.t('motivational.perfectDay')
     }
-    return 'タスク完了！日記を書いて一日を振り返りましょう'
+    return i18n.t('motivational.allTasksDone')
   }
 
   if (progress.completionRate >= 50) {
-    return '順調に進んでいます！この調子で続けましょう'
+    return i18n.t('motivational.halfwayThere')
   }
 
-  return 'もう少し頑張りましょう！'
+  return i18n.t('motivational.keepGoing')
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { View, Text } from 'react-native'
 import { useAppStore } from '../stores/app-store'
 
@@ -12,6 +13,7 @@ interface OfflineIndicatorProps {
 export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
   className = '',
 }) => {
+  const { t } = useTranslation()
   const isOffline = useAppStore((state) => state.isOffline)
   const offlineCapabilities = useAppStore((state) => state.offlineCapabilities)
   const dataIntegrityStatus = useAppStore((state) => state.dataIntegrityStatus)
@@ -28,14 +30,14 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
         <View className="flex-row items-center mb-2">
           <View className="w-2 h-2 bg-orange-500 rounded-full mr-2" />
           <Text className="text-orange-800 text-sm font-medium">
-            オフラインモード
+            {t('offline.label')}
           </Text>
         </View>
       )}
 
       {isOffline && (
         <Text className="text-orange-700 text-xs mb-2">
-          インターネット接続がありませんが、すべての機能は正常に動作します。データはローカルに保存されます。
+          {t('offline.description')}
         </Text>
       )}
 
@@ -43,7 +45,7 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
         <View className="flex-row items-center">
           <View className="w-2 h-2 bg-red-500 rounded-full mr-2" />
           <Text className="text-red-800 text-sm font-medium">
-            データの整合性に問題があります
+            {t('offline.dataIntegrityIssue')}
           </Text>
         </View>
       )}
@@ -52,7 +54,7 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
         <View className="flex-row items-center">
           <View className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse" />
           <Text className="text-blue-800 text-sm font-medium">
-            データの整合性を確認中...
+            {t('offline.dataIntegrityChecking')}
           </Text>
         </View>
       )}

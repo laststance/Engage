@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -8,6 +9,7 @@ import { DayModal } from '@/src/components/DayModal'
 import { useAppStore } from '@/src/stores/app-store'
 
 export default function CalendarScreen() {
+  const { t } = useTranslation()
   const [isDayModalVisible, setIsDayModalVisible] = useState(false)
 
   const insets = useSafeAreaInsets()
@@ -35,7 +37,7 @@ export default function CalendarScreen() {
             className="text-gray-600 text-center text-base"
             testID="calendar-description"
           >
-            日付を選択してタスクや振り返りを管理しましょう
+            {t('calendar.description')}
           </Text>
         </Box>
 

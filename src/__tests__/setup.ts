@@ -77,9 +77,27 @@ jest.mock('react-native-safe-area-context', () => ({
 // Mock @react-native-async-storage/async-storage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
-  getItem: jest.fn(),
+  getItem: jest.fn(() => Promise.resolve(null)),
   removeItem: jest.fn(),
   clear: jest.fn(),
+}))
+
+// Mock expo-localization (required by i18n/config.ts)
+jest.mock('expo-localization', () => ({
+  getLocales: jest.fn(() => [{ languageCode: 'ja' }]),
+  getCalendars: jest.fn(() => []),
+}))
+
+// Mock react-i18next
+jest.mock('react-i18next', () => ({
+  initReactI18next: {
+    type: '3rdParty',
+    init: jest.fn(),
+  },
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { changeLanguage: jest.fn() },
+  }),
 }))
 
 // Global test timeout

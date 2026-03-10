@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { Modal, SafeAreaView, ScrollView } from 'react-native'
+import { Modal, ScrollView } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
@@ -7,6 +9,7 @@ import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
 import { Task, Category } from '@/src/types'
+import { getCategoryDisplayName } from '@/src/i18n/config'
 import { PresetTaskEditor } from './PresetTaskEditor'
 
 interface TaskPickerProps {
@@ -32,6 +35,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
   onUpdatePresets,
   onCreateCategory,
 }) => {
+  const { t } = useTranslation()
   const [localSelectedTasks, setLocalSelectedTasks] =
     useState<string[]>(selectedTasks)
   const [isPresetEditorVisible, setIsPresetEditorVisible] = useState(false)
@@ -45,24 +49,20 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
     return acc
   }, {} as Record<string, Task[]>)
 
-  // Get category color using design system
+  // Get category color using design system (lookup by category ID)
   const getCategoryColor = (categoryId: string) => {
-    const category = categories.find((c) => c.id === categoryId)
-    if (!category) return 'bg-system-gray'
-
-    // Use design system category colors
     const colorMap: Record<string, string> = {
-      事業: 'bg-business',
-      生活: 'bg-life',
-      勉強: 'bg-study',
-      健康: 'bg-health',
-      財務: 'bg-finance',
-      趣味: 'bg-hobby',
-      仕事: 'bg-work',
-      個人: 'bg-personal',
+      business: 'bg-business',
+      life: 'bg-life',
+      study: 'bg-study',
+      health: 'bg-health',
+      finance: 'bg-finance',
+      hobby: 'bg-hobby',
+      work: 'bg-work',
+      personal: 'bg-personal',
     }
 
-    return colorMap[category.name] || 'bg-business'
+    return colorMap[categoryId] || 'bg-business'
   }
 
   const toggleTaskSelection = (taskId: string) => {
@@ -110,7 +110,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
         {/* Header */}
         <VStack space="md" className="p-4 border-b border-gray-200">
           <HStack className="items-center justify-between">
-            <Text className="text-headline text-label">表示するタスクを選択</Text>
+            <Text className="text-headline text-label">{t('daySheet.selectTasks')}</Text>
             <Pressable
               onPress={handleCancel}
               className="p-2"
@@ -129,7 +129,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
             <HStack className="items-center justify-center" space="sm">
               <IconSymbol name="pencil" size={20} color="#666" />
               <Text className="text-callout text-secondary-label font-medium">
-                プリセットを編集
+                {t('taskPicker.editPresetsShort')}
               </Text>
             </HStack>
           </Pressable>
@@ -151,7 +151,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
                         className={`w-4 h-4 rounded-full ${categoryColor}`}
                       />
                       <Text className="text-headline text-label">
-                        {category?.name || 'Unknown Category'}
+                        {category ? getCategoryDisplayName(category) : 'Unknown Category'}
                       </Text>
                     </HStack>
 
@@ -190,7 +190,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
                                 </Text>
                                 {task.defaultMinutes && (
                                   <Text className="text-footnote text-tertiary-label">
-                                    目安時間: {task.defaultMinutes}分
+                                    {t('taskPicker.estimatedTime', { minutes: task.defaultMinutes })}
                                   </Text>
                                 )}
                               </VStack>
@@ -227,14 +227,14 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
             {Object.keys(tasksByCategory).length === 0 && (
               <Box className="p-8 items-center">
                 <Text className="text-tertiary-label text-center mb-4 text-body">
-                  プリセットタスクがありません
+                  {t('taskPicker.noPresetTasks')}
                 </Text>
                 <Pressable
                   onPress={handleEditPresets}
                   className="bg-system-blue rounded-lg px-6 py-3 touch-target-minimum"
                 >
                   <Text className="text-white font-medium text-callout">
-                    タスクを追加
+                    {t('presetEditor.addTask')}
                   </Text>
                 </Pressable>
               </Box>
@@ -251,7 +251,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
               testID="task-picker-cancel"
             >
               <Text className="text-secondary-label font-medium text-center text-callout">
-                キャンセル
+                {t('common.cancel')}
               </Text>
             </Pressable>
 
@@ -261,7 +261,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
               testID="task-picker-confirm"
             >
               <Text className="text-white font-medium text-center text-callout">
-                確定 ({localSelectedTasks.length}個)
+                {t('taskPicker.confirm', { count: localSelectedTasks.length })}
               </Text>
             </Pressable>
           </HStack>

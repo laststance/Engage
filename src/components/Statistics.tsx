@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { ScrollView } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
@@ -7,6 +8,7 @@ import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
 import { StatsData, Category } from '@/src/types'
+import { getCategoryDisplayName } from '@/src/i18n/config'
 
 interface StatisticsProps {
   weeklyStats: StatsData
@@ -19,6 +21,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
   monthlyStats,
   categories,
 }) => {
+  const { t } = useTranslation()
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month'>('week')
 
   const currentStats = selectedPeriod === 'week' ? weeklyStats : monthlyStats
@@ -29,8 +32,8 @@ export const Statistics: React.FC<StatisticsProps> = ({
     if (!category) return 'bg-gray-500'
 
     // Default colors for preset categories
-    if (category.name === '事業') return 'bg-blue-500'
-    if (category.name === '生活') return 'bg-green-500'
+    if (category.id === 'business') return 'bg-blue-500'
+    if (category.id === 'life') return 'bg-green-500'
 
     // Generate colors for custom categories
     const colors = [
@@ -66,6 +69,21 @@ export const Statistics: React.FC<StatisticsProps> = ({
     </Box>
   )
 
+  /**
+   * Get localized streak encouragement message based on streak count.
+   * @param streakDays - Number of consecutive streak days
+   * @returns Translated encouragement string
+   * @example
+   * getStreakEncouragement(0) // => '今日から始めましょう！' (ja)
+   * getStreakEncouragement(5) // => '素晴らしい継続力です！' (ja)
+   */
+  const getStreakEncouragement = (streakDays: number): string => {
+    if (streakDays === 0) return t('stats.streakEncourageStart')
+    if (streakDays < 3) return t('stats.streakEncourageGood')
+    if (streakDays < 7) return t('stats.streakEncourageGreat')
+    return t('stats.streakEncourageAmazing')
+  }
+
   return (
     <Box className="flex-1 bg-gray-50" testID="statistics-screen">
       <ScrollView
@@ -78,7 +96,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
         <VStack space="lg" className="p-4">
           {/* Header */}
           <VStack space="md">
-            <Text className="text-3xl font-bold text-gray-800">実績</Text>
+            <Text className="text-3xl font-bold text-gray-800">{t('stats.title')}</Text>
 
             {/* Period Toggle */}
             <HStack className="bg-gray-200 rounded-lg p-1">
@@ -86,7 +104,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                 onPress={() => setSelectedPeriod('week')}
                 testID="stats-week-toggle"
                 className="flex-1"
-                accessibilityLabel="今週の統計を表示"
+                accessibilityLabel={t('stats.showWeekStats')}
                 accessibilityRole="button"
               >
                 <Box
@@ -105,7 +123,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                       }
                     `}
                   >
-                    今週
+                    {t('stats.thisWeek')}
                   </Text>
                 </Box>
               </Pressable>
@@ -114,7 +132,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                 onPress={() => setSelectedPeriod('month')}
                 testID="stats-month-toggle"
                 className="flex-1"
-                accessibilityLabel="今月の統計を表示"
+                accessibilityLabel={t('stats.showMonthStats')}
                 accessibilityRole="button"
               >
                 <Box
@@ -135,7 +153,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                       }
                     `}
                   >
-                    今月
+                    {t('stats.thisMonth')}
                   </Text>
                 </Box>
               </Pressable>
@@ -145,22 +163,16 @@ export const Statistics: React.FC<StatisticsProps> = ({
           {/* Today's Achievements */}
           <VStack space="sm">
             <Text className="text-xl font-semibold text-gray-800">
-              今日の成果
+              {t('stats.todayAchievements')}
             </Text>
             <Box className="bg-blue-700 rounded-xl p-6">
               <VStack space="sm" className="items-center">
                 <IconSymbol name="star.fill" size={32} color="white" />
                 <Text className="text-white text-2xl font-bold">
-                  {currentStats.streakDays}日連続
+                  {t('stats.streakConsecutive', { count: currentStats.streakDays })}
                 </Text>
                 <Text className="text-white text-center opacity-90">
-                  {currentStats.streakDays === 0
-                    ? '今日から始めましょう！'
-                    : currentStats.streakDays < 3
-                      ? 'いい調子です！続けましょう！'
-                      : currentStats.streakDays < 7
-                        ? '素晴らしい継続力です！'
-                        : '驚異的な継続力です！'}
+                  {getStreakEncouragement(currentStats.streakDays)}
                 </Text>
               </VStack>
             </Box>
@@ -169,7 +181,9 @@ export const Statistics: React.FC<StatisticsProps> = ({
           {/* Key Metrics */}
           <VStack space="sm">
             <Text className="text-xl font-semibold text-gray-800">
-              {selectedPeriod === 'week' ? '今週の統計' : '今月の統計'}
+              {t('stats.periodStats', {
+                period: selectedPeriod === 'week' ? t('stats.thisWeek') : t('stats.thisMonth'),
+              })}
             </Text>
 
             <VStack space="md">
@@ -177,15 +191,15 @@ export const Statistics: React.FC<StatisticsProps> = ({
               <HStack space="md">
                 <Box className="flex-1">
                   <StatCard
-                    title="完了率"
+                    title={t('stats.completionRate')}
                     value={formatPercentage(currentStats.completionRate)}
                     color="text-green-600"
                   />
                 </Box>
                 <Box className="flex-1">
                   <StatCard
-                    title="アクティブ日数"
-                    value={`${currentStats.activeDays}日`}
+                    title={t('stats.activeDays')}
+                    value={t('stats.activeDaysValue', { count: currentStats.activeDays })}
                     color="text-blue-600"
                   />
                 </Box>
@@ -195,15 +209,15 @@ export const Statistics: React.FC<StatisticsProps> = ({
               <HStack space="md">
                 <Box className="flex-1">
                   <StatCard
-                    title="総タスク数"
+                    title={t('stats.totalTasks')}
                     value={currentStats.totalTasks}
                     color="text-purple-600"
                   />
                 </Box>
                 <Box className="flex-1">
                   <StatCard
-                    title="1日平均"
-                    value={`${currentStats.dailyAverage.toFixed(1)}個`}
+                    title={t('stats.dailyAverage')}
+                    value={t('stats.dailyAverageValue', { value: currentStats.dailyAverage.toFixed(1) })}
                     color="text-orange-600"
                   />
                 </Box>
@@ -211,12 +225,14 @@ export const Statistics: React.FC<StatisticsProps> = ({
 
               {/* Journal Days */}
               <StatCard
-                title="日記を書いた日数"
-                value={`${currentStats.journalDays}日`}
-                subtitle={`全体の${formatPercentage(
-                  currentStats.journalDays /
-                    Math.max(currentStats.activeDays, 1)
-                )}`}
+                title={t('stats.journalDays')}
+                value={t('stats.journalDaysValue', { count: currentStats.journalDays })}
+                subtitle={t('stats.journalDaysSubtitle', {
+                  percentage: formatPercentage(
+                    currentStats.journalDays /
+                      Math.max(currentStats.activeDays, 1)
+                  ),
+                })}
                 color="text-indigo-600"
               />
             </VStack>
@@ -225,7 +241,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
           {/* Category Breakdown */}
           <VStack space="sm">
             <Text className="text-xl font-semibold text-gray-800">
-              カテゴリー別実績
+              {t('stats.categoryBreakdown')}
             </Text>
 
             <VStack space="xs">
@@ -248,7 +264,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                               className={`w-4 h-4 rounded-full ${categoryColor}`}
                             />
                             <Text className="font-medium text-gray-800">
-                              {category?.name || 'Unknown Category'}
+                              {category ? getCategoryDisplayName(category) : 'Unknown Category'}
                             </Text>
                           </HStack>
                           <Text className="text-sm text-gray-600">
@@ -265,7 +281,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                         </Box>
 
                         <Text className="text-xs text-gray-500">
-                          完了率: {formatPercentage(completionRate)}
+                          {t('stats.categoryCompletionRate', { rate: formatPercentage(completionRate) })}
                         </Text>
                       </VStack>
                     </Box>
@@ -278,10 +294,10 @@ export const Statistics: React.FC<StatisticsProps> = ({
                   <VStack className="items-center" space="sm">
                     <IconSymbol name="chart.bar" size={32} color="#9CA3AF" />
                     <Text className="text-gray-500 text-center">
-                      まだデータがありません
+                      {t('stats.categoryNoData')}
                     </Text>
                     <Text className="text-gray-400 text-sm text-center">
-                      タスクを完了すると統計が表示されます
+                      {t('stats.categoryNoDataHint')}
                     </Text>
                   </VStack>
                 </Box>

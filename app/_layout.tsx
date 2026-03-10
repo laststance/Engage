@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useEffect } from 'react'
 import { LogBox } from 'react-native'
 import 'react-native-reanimated'
+import '@/src/i18n/config'
 
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useAppStore } from '@/src/stores/app-store'

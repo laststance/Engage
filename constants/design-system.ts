@@ -398,21 +398,21 @@ export const Animation = {
  * Get category color by category name or ID
  */
 export const getCategoryColor = (
-  categoryName: string
+  categoryId: string
 ): (typeof CategoryColors)[keyof typeof CategoryColors] => {
-  // Map category names to color keys
+  // Map category IDs to color keys (locale-agnostic)
   const categoryMap: Record<string, keyof typeof CategoryColors> = {
-    事業: 'business',
-    生活: 'life',
-    勉強: 'study',
-    健康: 'health',
-    財務: 'finance',
-    趣味: 'hobby',
-    仕事: 'work',
-    個人: 'personal',
+    business: 'business',
+    life: 'life',
+    study: 'study',
+    health: 'health',
+    finance: 'finance',
+    hobby: 'hobby',
+    work: 'work',
+    personal: 'personal',
   }
 
-  const colorKey = categoryMap[categoryName] || 'business'
+  const colorKey = categoryMap[categoryId] || 'business'
   return CategoryColors[colorKey]
 }
 

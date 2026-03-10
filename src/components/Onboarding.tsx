@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Modal, SafeAreaView, ScrollView } from 'react-native'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -13,6 +14,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol'
 import { EnhancedPressable } from './ui/enhanced-pressable'
 import { Task, Category } from '@/src/types'
 import { DesignSystemUtils } from '@/src/utils/designSystem'
+import { getCategoryDisplayName } from '@/src/i18n/config'
 
 interface OnboardingProps {
   isVisible: boolean
@@ -48,50 +50,51 @@ export const Onboarding: React.FC<OnboardingProps> = ({
   onComplete,
   onSkip,
 }) => {
+  const { t } = useTranslation()
   const [selectedTasks, setSelectedTasks] = useState<string[]>([])
   const [currentStep, setCurrentStep] = useState(0)
 
   const steps = [
     {
-      title: 'Engageへようこそ',
-      subtitle: '毎日の習慣を継続するためのシンプルなアプリです',
+      title: t('onboarding.welcome'),
+      subtitle: t('onboarding.welcomeSubtitle'),
       content: (
         <VStack space="lg" className="px-4">
           <OnboardingStep
             icon="calendar"
-            title="カレンダーで進捗を確認"
-            description="毎日の達成状況をヒートマップで視覚的に確認できます"
+            title={t('onboarding.taskManagement')}
+            description={t('onboarding.taskManagementDesc')}
             color="bg-system-blue"
           />
           <OnboardingStep
             icon="checkmark.circle"
-            title="タスクを選んで実行"
-            description="事業と生活のバランスを保ちながら、継続的な成長を目指します"
+            title={t('onboarding.statsStreaks')}
+            description={t('onboarding.statsStreaksDesc')}
             color="bg-system-green"
           />
           <OnboardingStep
             icon="chart.bar"
-            title="統計で成果を実感"
-            description="継続日数や完了率を確認して、モチベーションを維持します"
+            title={t('onboarding.journalFeature')}
+            description={t('onboarding.journalFeatureDesc')}
             color="bg-system-orange"
           />
         </VStack>
       ),
     },
     {
-      title: 'おすすめタスクを選択',
-      subtitle: '最初の3つのタスクを選んで始めましょう',
+      title: t('onboarding.selectTasksPrompt', { count: 3 }),
+      subtitle: t('onboarding.welcomeSubtitle'),
       content: (
         <VStack space="md" className="px-4">
           <Text className="text-callout text-secondary-label text-center mb-4">
-            継続しやすいタスクから始めることをお勧めします
+            {t('onboarding.taskManagementDesc')}
           </Text>
 
           {recommendedTasks.map((task) => {
             const category = categories.find((c) => c.id === task.categoryId)
             const isSelected = selectedTasks.includes(task.id)
             const categoryColors = DesignSystemUtils.getCategoryColorClasses(
-              category?.name || '事業'
+              category?.id || 'business'
             )
 
             return (
@@ -128,10 +131,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({
                           isSelected ? 'text-white/80' : 'text-tertiary-label'
                         }`}
                       >
-                        {category?.name} •{' '}
+                        {category ? getCategoryDisplayName(category) : ''} •{' '}
                         {task.defaultMinutes
-                          ? `${task.defaultMinutes}分`
-                          : '時間自由'}
+                          ? t('onboarding.minutesFormat', { minutes: task.defaultMinutes })
+                          : t('onboarding.flexibleTime')}
                       </Text>
                     </VStack>
                   </HStack>
@@ -145,7 +148,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({
           })}
 
           <Text className="text-caption-1 text-tertiary-label text-center mt-4">
-            選択済み: {selectedTasks.length}/3
+            {t('onboarding.taskSelectionCounter', { current: selectedTasks.length, total: 3 })}
           </Text>
         </VStack>
       ),
@@ -220,7 +223,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({
               testID="onboarding-next"
             >
               <Text className="text-callout font-semibold text-white">
-                {currentStep === steps.length - 1 ? '始める' : '次へ'}
+                {currentStep === steps.length - 1 ? t('common.done') : t('common.continue')}
               </Text>
             </EnhancedPressable>
 
@@ -232,7 +235,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({
                   onPress={handleBack}
                   testID="onboarding-back"
                 >
-                  <Text className="text-callout text-system-blue">戻る</Text>
+                  <Text className="text-callout text-system-blue">{t('common.back')}</Text>
                 </EnhancedPressable>
               ) : (
                 <Box />
@@ -244,7 +247,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({
                 testID="onboarding-skip"
               >
                 <Text className="text-callout text-tertiary-label">
-                  スキップ
+                  {t('common.cancel')}
                 </Text>
               </EnhancedPressable>
             </HStack>

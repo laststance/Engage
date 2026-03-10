@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -10,6 +11,7 @@ import { useDayView } from '@/src/hooks/useDayView'
 import { formatDate } from '@/src/utils/dateUtils'
 
 export default function TodayScreen() {
+  const { t } = useTranslation()
   const selectedDate = useAppStore((state) => state.selectedDate)
   const selectDate = useAppStore((state) => state.selectDate)
   const setTaskPickerVisible = useAppStore((state) => state.setTaskPickerVisible)
@@ -41,13 +43,13 @@ export default function TodayScreen() {
               className="text-2xl font-bold text-gray-800 text-center mb-2"
               testID="today-title"
             >
-              Today
+              {t('today.title')}
             </Text>
             <Text
               className="text-gray-600 text-center text-sm"
               testID="today-description"
             >
-              今日のタスクと振り返りを管理しましょう
+              {t('today.description')}
             </Text>
           </Box>
 
@@ -82,7 +84,7 @@ export default function TodayScreen() {
       <Box className="flex-1 bg-white" testID="today-screen">
         <VStack className="flex-1 justify-center items-center p-4">
           <Text className="text-red-600 text-center">
-            Error loading Today screen
+            {t('today.errorLoading')}
           </Text>
           <Text className="text-gray-600 text-center text-sm mt-2">
             {error?.toString()}
