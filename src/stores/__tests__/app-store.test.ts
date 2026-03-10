@@ -78,6 +78,7 @@ const mockCompletions = [
     id: 'comp1',
     date: '2025-01-15',
     taskId: 'task1',
+    completed: true,
     createdAt: Date.now(),
   },
 ]
@@ -152,10 +153,11 @@ describe('useAppStore', () => {
       const state = useAppStore.getState()
       expect(state.completions['2025-01-15']).toHaveLength(1)
       expect(state.completions['2025-01-15'][0].taskId).toBe('task1')
+      expect(state.completions['2025-01-15'][0].completed).toBe(true)
     })
 
     it('should handle uncompleting tasks', async () => {
-      // Setup initial state with completion
+      // Setup initial state with completed task
       useAppStore.setState({
         completions: {
           '2025-01-15': [mockCompletions[0]],
@@ -167,7 +169,9 @@ describe('useAppStore', () => {
       await store.toggleTaskCompletion('2025-01-15', 'task1')
 
       const state = useAppStore.getState()
-      expect(state.completions['2025-01-15']).toBeUndefined()
+      // Record still exists but completed is flipped to false
+      expect(state.completions['2025-01-15']).toHaveLength(1)
+      expect(state.completions['2025-01-15'][0].completed).toBe(false)
     })
   })
 

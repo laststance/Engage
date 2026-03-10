@@ -110,7 +110,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
         {/* Header */}
         <VStack space="md" className="p-4 border-b border-gray-200">
           <HStack className="items-center justify-between">
-            <Text className="text-headline text-label">タスクを選択</Text>
+            <Text className="text-headline text-label">表示するタスクを選択</Text>
             <Pressable
               onPress={handleCancel}
               className="p-2"

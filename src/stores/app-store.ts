@@ -218,14 +218,20 @@ export const useAppStore = create<AppState>((set, get) => ({
     const state = get()
     const previousCompletions = state.completions
 
-    // Optimistic update: update UI immediately
+    // Optimistic update: flip completed field
     const updatedCompletions = { ...previousCompletions }
-    const existingCompletion = (updatedCompletions[date] || []).find(
+    const dayCompletions = updatedCompletions[date] || []
+    const existingCompletion = dayCompletions.find(
       (c) => c.taskId === taskId
     )
-    const isCompletingTask = !existingCompletion
 
-    if (isCompletingTask) {
+    if (existingCompletion) {
+      // Toggle completed status
+      updatedCompletions[date] = dayCompletions.map((c) =>
+        c.taskId === taskId ? { ...c, completed: !c.completed } : c
+      )
+    } else {
+      // Create new completion (marked as completed)
       if (!updatedCompletions[date]) {
         updatedCompletions[date] = []
       }
@@ -233,19 +239,13 @@ export const useAppStore = create<AppState>((set, get) => ({
         id: `temp_${Date.now()}`,
         date,
         taskId,
+        completed: true,
         createdAt: Date.now(),
       }
       updatedCompletions[date] = [...updatedCompletions[date], newCompletion]
-    } else {
-      updatedCompletions[date] = updatedCompletions[date].filter(
-        (c) => c.taskId !== taskId
-      )
-      if (updatedCompletions[date].length === 0) {
-        delete updatedCompletions[date]
-      }
     }
 
-    // Update UI immediately (single set call, no separate error: null)
+    // Update UI immediately
     set({ completions: updatedCompletions, error: null })
 
     try {
@@ -253,9 +253,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       await completionRepository.toggle(date, taskId)
 
       console.log(
-        `Task ${taskId} ${
-          isCompletingTask ? 'completed' : 'uncompleted'
-        } for ${date}`
+        `Task ${taskId} toggled for ${date}`
       )
     } catch (error) {
       // Rollback on failure
@@ -307,39 +305,55 @@ export const useAppStore = create<AppState>((set, get) => ({
       const existingTaskIds = new Set(
         existingCompletions.map((c) => c.taskId)
       )
+      const selectedTaskIds = new Set(taskIds)
 
-      // Filter out tasks that already have completions for this date
+      // Tasks to add (not yet assigned)
       const newTaskIds = taskIds.filter((id) => !existingTaskIds.has(id))
 
-      if (newTaskIds.length === 0) {
-        console.log(`All tasks already added to ${date}`)
+      // Tasks to remove (deselected by user)
+      const removedTaskIds = existingCompletions
+        .filter((c) => !selectedTaskIds.has(c.taskId))
+        .map((c) => c.taskId)
+
+      if (newTaskIds.length === 0 && removedTaskIds.length === 0) {
+        console.log(`No changes to tasks for ${date}`)
         return
       }
 
-      // Create completion records for new tasks
+      // Create uncompleted assignment records for new tasks
       const completionsToCreate = newTaskIds.map((taskId) => ({
         date,
         taskId,
+        completed: false,
       }))
 
-      const createdCompletions = await completionRepository.createMultiple(
-        completionsToCreate
-      )
+      const createdCompletions = completionsToCreate.length > 0
+        ? await completionRepository.createMultiple(completionsToCreate)
+        : []
+
+      // Remove deselected tasks
+      for (const taskId of removedTaskIds) {
+        await completionRepository.delete(date, taskId)
+      }
 
       // Update local state
       const updatedCompletions = { ...state.completions }
-      if (!updatedCompletions[date]) {
-        updatedCompletions[date] = []
-      }
+      const remainingCompletions = existingCompletions.filter(
+        (c) => selectedTaskIds.has(c.taskId)
+      )
       updatedCompletions[date] = [
-        ...updatedCompletions[date],
+        ...remainingCompletions,
         ...createdCompletions,
       ]
+
+      if (updatedCompletions[date].length === 0) {
+        delete updatedCompletions[date]
+      }
 
       set({ completions: updatedCompletions })
 
       console.log(
-        `${createdCompletions.length} tasks added to ${date}: ${newTaskIds.join(', ')}`
+        `Tasks updated for ${date}: +${createdCompletions.length} -${removedTaskIds.length}`
       )
     } catch (error) {
       console.error('Failed to add tasks to date:', error)
@@ -655,7 +669,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   getJournalPlaceholder: (date: string) => {
     const state = get()
     const completions = state.completions[date] || []
-    return getJournalPlaceholder(completions.length > 0)
+    return getJournalPlaceholder(completions.some((c) => c.completed))
   },
 
   getMotivationalMessage: (date: string) => {

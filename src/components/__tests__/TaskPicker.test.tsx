@@ -75,7 +75,7 @@ describe('TaskPicker', () => {
   it('renders correctly when visible', () => {
     const { getByText, getByTestId } = render(<TaskPicker {...defaultProps} />)
 
-    expect(getByText('タスクを選択')).toBeTruthy()
+    expect(getByText('表示するタスクを選択')).toBeTruthy()
     expect(getByTestId('task-picker-confirm')).toBeTruthy()
     expect(getByTestId('task-picker-cancel')).toBeTruthy()
   })
@@ -85,7 +85,7 @@ describe('TaskPicker', () => {
       <TaskPicker {...defaultProps} isVisible={false} />
     )
 
-    expect(queryByText('タスクを選択')).toBeNull()
+    expect(queryByText('表示するタスクを選択')).toBeNull()
   })
 
   it('displays tasks grouped by category', () => {

@@ -34,7 +34,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
   // const { getJournalPlaceholder } = useAppStore()
 
   // Create a map of completed task IDs for quick lookup
-  const completedTaskIds = new Set(completions.map((c) => c.taskId))
+  const completedTaskIds = new Set(completions.filter((c) => c.completed).map((c) => c.taskId))
 
   // Group tasks by category
   const tasksByCategory = tasks.reduce((acc, task) => {
@@ -87,7 +87,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
   }
 
   // Get dynamic placeholder text based on completion status
-  const hasCompletions = completions.length > 0
+  const hasCompletions = completions.some((c) => c.completed)
   // const placeholder = getJournalPlaceholder(date)
 
   return (
@@ -114,7 +114,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
             testID="task-selection-button"
           >
             <HStack className="items-center justify-between">
-              <Text className="text-blue-600 font-medium">タスクを選択</Text>
+              <Text className="text-blue-600 font-medium">表示するタスクを選択</Text>
               <IconSymbol name="plus.circle" size={24} color="#2563eb" />
             </HStack>
           </Pressable>
@@ -206,7 +206,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
         ) : (
           <Box className="p-8 items-center">
             <Text className="text-gray-500 text-center">
-              タスクを選択してください
+              表示するタスクを選択してください
             </Text>
           </Box>
         )}

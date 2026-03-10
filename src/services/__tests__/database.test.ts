@@ -392,23 +392,25 @@ describe('DatabaseService', () => {
 
         expect(result).toBe(true)
         expect(mockDb.runAsync).toHaveBeenCalledWith(
-          'INSERT INTO completions (id, date, task_id, minutes, created_at) VALUES (?, ?, ?, ?, ?)',
+          'INSERT INTO completions (id, date, task_id, minutes, completed, created_at) VALUES (?, ?, ?, ?, ?, ?)',
           expect.arrayContaining([
             expect.any(String),
             '2024-01-15',
             'task1',
             30,
+            1,
             expect.any(Number),
           ])
         )
       })
 
-      it('should remove completion when it exists', async () => {
+      it('should toggle completed status when completion exists', async () => {
         const existingCompletion = {
           id: 'completion1',
           date: '2024-01-15',
           task_id: 'task1',
           minutes: 30,
+          completed: 1,
           created_at: Date.now(),
         }
 
@@ -420,10 +422,10 @@ describe('DatabaseService', () => {
           'task1'
         )
 
-        expect(result).toBe(false)
+        expect(result).toBe(false) // Was completed (1), now uncompleted (0)
         expect(mockDb.runAsync).toHaveBeenCalledWith(
-          'DELETE FROM completions WHERE date = ? AND task_id = ?',
-          ['2024-01-15', 'task1']
+          'UPDATE completions SET completed = ? WHERE date = ? AND task_id = ?',
+          [0, '2024-01-15', 'task1']
         )
       })
     })
@@ -436,6 +438,7 @@ describe('DatabaseService', () => {
             date: '2024-01-15',
             task_id: 'task1',
             minutes: 30,
+            completed: 1,
             created_at: Date.now(),
           },
           {
@@ -443,6 +446,7 @@ describe('DatabaseService', () => {
             date: '2024-01-16',
             task_id: 'task2',
             minutes: 45,
+            completed: 1,
             created_at: Date.now(),
           },
         ]

@@ -37,18 +37,18 @@ const mockTasks: Task[] = [
 
 const mockCompletions: Record<string, Completion[]> = {
   '2025-01-15': [
-    { id: 'c1', date: '2025-01-15', taskId: 'task1', createdAt: Date.now() },
-    { id: 'c2', date: '2025-01-15', taskId: 'task2', createdAt: Date.now() },
+    { id: 'c1', date: '2025-01-15', taskId: 'task1', completed: true, createdAt: Date.now() },
+    { id: 'c2', date: '2025-01-15', taskId: 'task2', completed: true, createdAt: Date.now() },
   ],
   '2025-01-16': [
-    { id: 'c3', date: '2025-01-16', taskId: 'task1', createdAt: Date.now() },
+    { id: 'c3', date: '2025-01-16', taskId: 'task1', completed: true, createdAt: Date.now() },
   ],
   '2025-01-17': [
-    { id: 'c4', date: '2025-01-17', taskId: 'task2', createdAt: Date.now() },
+    { id: 'c4', date: '2025-01-17', taskId: 'task2', completed: true, createdAt: Date.now() },
   ],
   // Gap on 2025-01-18
   '2025-01-19': [
-    { id: 'c5', date: '2025-01-19', taskId: 'task1', createdAt: Date.now() },
+    { id: 'c5', date: '2025-01-19', taskId: 'task1', completed: true, createdAt: Date.now() },
   ],
 }
 
@@ -100,6 +100,7 @@ describe('statisticsEngine', () => {
             id: 'c1',
             date: '2025-01-15',
             taskId: 'task1',
+            completed: true,
             createdAt: Date.now(),
           },
         ],
@@ -108,6 +109,7 @@ describe('statisticsEngine', () => {
             id: 'c2',
             date: '2025-01-16',
             taskId: 'task1',
+            completed: true,
             createdAt: Date.now(),
           },
         ],
@@ -116,6 +118,7 @@ describe('statisticsEngine', () => {
             id: 'c3',
             date: '2025-01-17',
             taskId: 'task1',
+            completed: true,
             createdAt: Date.now(),
           },
         ],

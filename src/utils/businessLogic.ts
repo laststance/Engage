@@ -76,7 +76,8 @@ export const calculateDayProgress = (
   categories: Category[]
 ): DayProgress => {
   const dayCompletions = completions.filter((c) => c.date === date)
-  const completedTaskIds = new Set(dayCompletions.map((c) => c.taskId))
+  const completedTaskIds = new Set(dayCompletions.filter((c) => c.completed).map((c) => c.taskId))
+  const completedCount = completedTaskIds.size
 
   // Calculate category progress
   const categoryProgress: Record<string, { completed: number; total: number }> =
@@ -97,9 +98,9 @@ export const calculateDayProgress = (
   return {
     date,
     totalTasks: tasks.length,
-    completedTasks: dayCompletions.length,
+    completedTasks: completedCount,
     completionRate:
-      tasks.length > 0 ? (dayCompletions.length / tasks.length) * 100 : 0,
+      tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0,
     hasJournalEntry: entry !== null && entry.note.trim().length > 0,
     categoryProgress,
   }
@@ -113,7 +114,7 @@ export const isTaskCompleted = (
   date: string,
   completions: Completion[]
 ): boolean => {
-  return completions.some((c) => c.taskId === taskId && c.date === date)
+  return completions.some((c) => c.taskId === taskId && c.date === date && c.completed)
 }
 
 /**
@@ -206,7 +207,7 @@ export const hasCompletedDailyFlow = (
   entry: Entry | null
 ): boolean => {
   const dayCompletions = completions.filter((c) => c.date === date)
-  const hasAtLeastOneCompletion = dayCompletions.length > 0
+  const hasAtLeastOneCompletion = dayCompletions.some((c) => c.completed)
   const hasJournalEntry = entry !== null && entry.note.trim().length > 0
 
   return hasAtLeastOneCompletion && hasJournalEntry

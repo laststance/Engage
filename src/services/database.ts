@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite'
 import { Task, Entry, Completion, Category } from '../types'
 
 // Database version for migration management
-const DATABASE_VERSION = 2
+const DATABASE_VERSION = 3
 
 // Migration interface
 interface Migration {
@@ -127,6 +127,19 @@ class DatabaseService {
         `CREATE INDEX idx_tasks_category_id ON tasks(category_id)`,
         `CREATE INDEX idx_tasks_archived ON tasks(archived)`,
         `CREATE INDEX idx_tasks_category_id_archived ON tasks(category_id, archived)`,
+      ],
+    },
+    {
+      version: 3,
+      up: [
+        // Add completed column to completions table (separates task assignment from completion)
+        `ALTER TABLE completions ADD COLUMN completed INTEGER NOT NULL DEFAULT 0`,
+
+        // Existing records are already completed tasks
+        `UPDATE completions SET completed = 1`,
+
+        // Index for filtering by completed status
+        `CREATE INDEX idx_completions_completed ON completions(completed)`,
       ],
     },
   ]
@@ -708,20 +721,21 @@ class DatabaseService {
       )
 
       if (existing) {
-        // Remove completion
+        // Toggle completed status
+        const newCompleted = existing.completed ? 0 : 1
         await this.executeUpdate(
-          'DELETE FROM completions WHERE date = ? AND task_id = ?',
-          [date, taskId]
+          'UPDATE completions SET completed = ? WHERE date = ? AND task_id = ?',
+          [newCompleted, date, taskId]
         )
-        return false
+        return Boolean(newCompleted)
       } else {
-        // Add completion
+        // Create new completion (marked as completed)
         const id = `completion_${Date.now()}_${Math.random()
           .toString(36)
           .substr(2, 9)}`
         await this.executeUpdate(
-          'INSERT INTO completions (id, date, task_id, minutes, created_at) VALUES (?, ?, ?, ?, ?)',
-          [id, date, taskId, minutes || null, Date.now()]
+          'INSERT INTO completions (id, date, task_id, minutes, completed, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+          [id, date, taskId, minutes || null, 1, Date.now()]
         )
         return true
       }
@@ -748,12 +762,13 @@ class DatabaseService {
       }
 
       await this.executeUpdate(
-        'INSERT INTO completions (id, date, task_id, minutes, created_at) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO completions (id, date, task_id, minutes, completed, created_at) VALUES (?, ?, ?, ?, ?, ?)',
         [
           newCompletion.id,
           newCompletion.date,
           newCompletion.taskId,
           newCompletion.minutes || null,
+          newCompletion.completed ? 1 : 0,
           newCompletion.createdAt,
         ]
       )
@@ -884,6 +899,7 @@ class DatabaseService {
       date: row.date,
       taskId: row.task_id,
       minutes: row.minutes,
+      completed: Boolean(row.completed),
       createdAt: row.created_at,
     }
   }
@@ -1024,12 +1040,13 @@ class DatabaseService {
           if (data.completions) {
             for (const completion of data.completions) {
               await this.executeUpdate(
-                'INSERT INTO completions (id, date, task_id, minutes, created_at) VALUES (?, ?, ?, ?, ?)',
+                'INSERT INTO completions (id, date, task_id, minutes, completed, created_at) VALUES (?, ?, ?, ?, ?, ?)',
                 [
                   completion.id,
                   completion.date,
                   completion.taskId,
                   completion.minutes || null,
+                  completion.completed ? 1 : 0,
                   completion.createdAt,
                 ]
               )

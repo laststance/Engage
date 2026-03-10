@@ -442,6 +442,7 @@ export class CompletionRepository {
       date: row.date,
       taskId: row.task_id,
       minutes: row.minutes,
+      completed: Boolean(row.completed),
       createdAt: row.created_at,
     }
   }

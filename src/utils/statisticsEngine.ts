@@ -37,9 +37,9 @@ export const calculateStreakDays = (
   completions: Record<string, Completion[]>,
   currentDate: string = getCurrentDate()
 ): StreakCalculationResult => {
-  // Get all dates with completions, sorted in descending order
+  // Get all dates with completed tasks, sorted in descending order
   const completionDates = Object.keys(completions)
-    .filter((date) => completions[date].length > 0)
+    .filter((date) => completions[date].some((c) => c.completed))
     .sort((a, b) => b.localeCompare(a))
 
   if (completionDates.length === 0) {
@@ -111,7 +111,7 @@ export const calculateCompletionRate = (
 ): number => {
   const daysInRange = getDaysInRange(startDate, endDate)
   const daysWithCompletions = daysInRange.filter(
-    (date) => completions[date] && completions[date].length > 0
+    (date) => completions[date] && completions[date].some((c) => c.completed)
   ).length
 
   return daysInRange.length > 0
@@ -135,10 +135,10 @@ export const calculateCategoryBreakdown = (
   categories.forEach((category) => {
     const categoryTasks = tasks.filter((t) => t.categoryId === category.id)
 
-    // Count completions for this category
+    // Count completions for this category (only completed tasks)
     let totalCompletions = 0
     daysInRange.forEach((date) => {
-      const dayCompletions = completions[date] || []
+      const dayCompletions = (completions[date] || []).filter((c) => c.completed)
       const categoryCompletions = dayCompletions.filter((completion) =>
         categoryTasks.some((task) => task.id === completion.taskId)
       )
@@ -209,13 +209,13 @@ export const calculateWeeklyStats = (
 ): WeeklyStats => {
   const daysInRange = getDaysInRange(weekStartDate, weekEndDate)
 
-  // Calculate basic stats
+  // Calculate basic stats (only count completed tasks)
   const totalCompletions = daysInRange.reduce((total, date) => {
-    return total + (completions[date]?.length || 0)
+    return total + (completions[date]?.filter((c) => c.completed).length || 0)
   }, 0)
 
   const activeDays = daysInRange.filter(
-    (date) => completions[date] && completions[date].length > 0
+    (date) => completions[date] && completions[date].some((c) => c.completed)
   ).length
 
   const completionRate = calculateCompletionRate(
@@ -284,13 +284,13 @@ export const calculateMonthlyStats = (
 ): MonthlyStats => {
   const daysInRange = getDaysInRange(monthStartDate, monthEndDate)
 
-  // Calculate basic stats
+  // Calculate basic stats (only count completed tasks)
   const totalCompletions = daysInRange.reduce((total, date) => {
-    return total + (completions[date]?.length || 0)
+    return total + (completions[date]?.filter((c) => c.completed).length || 0)
   }, 0)
 
   const activeDays = daysInRange.filter(
-    (date) => completions[date] && completions[date].length > 0
+    (date) => completions[date] && completions[date].some((c) => c.completed)
   ).length
 
   const completionRate = calculateCompletionRate(
@@ -361,7 +361,10 @@ export const calculateAchievementData = (
     if (startDate && date < startDate) return
     if (endDate && date > endDate) return
 
-    achievementData[date] = dayCompletions.length
+    const completedCount = dayCompletions.filter((c) => c.completed).length
+    if (completedCount > 0) {
+      achievementData[date] = completedCount
+    }
   })
 
   return achievementData
@@ -383,10 +386,10 @@ export const calculateProductivityTrends = (
 } => {
   const daysInRange = getDaysInRange(startDate, endDate)
 
-  // Daily completions
+  // Daily completions (only count completed tasks)
   const dailyCompletions = daysInRange.map((date) => ({
     date,
-    completions: completions[date]?.length || 0,
+    completions: completions[date]?.filter((c) => c.completed).length || 0,
   }))
 
   // Find best day

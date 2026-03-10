@@ -60,6 +60,7 @@ const mockCompletions: Completion[] = [
     id: 'comp1',
     date: '2025-01-15',
     taskId: 'task1',
+    completed: true,
     createdAt: Date.now(),
   },
   {
@@ -67,6 +68,7 @@ const mockCompletions: Completion[] = [
     date: '2025-01-15',
     taskId: 'task3',
     minutes: 25,
+    completed: true,
     createdAt: Date.now(),
   },
 ]
@@ -267,24 +269,28 @@ describe('businessLogic utils', () => {
           id: 'c1',
           date: '2025-01-15',
           taskId: 'task1',
+          completed: true,
           createdAt: Date.now(),
         },
         {
           id: 'c2',
           date: '2025-01-15',
           taskId: 'task2',
+          completed: true,
           createdAt: Date.now(),
         },
         {
           id: 'c3',
           date: '2025-01-15',
           taskId: 'task3',
+          completed: true,
           createdAt: Date.now(),
         },
         {
           id: 'c4',
           date: '2025-01-15',
           taskId: 'task4',
+          completed: true,
           createdAt: Date.now(),
         },
       ]
@@ -305,24 +311,28 @@ describe('businessLogic utils', () => {
           id: 'c1',
           date: '2025-01-15',
           taskId: 'task1',
+          completed: true,
           createdAt: Date.now(),
         },
         {
           id: 'c2',
           date: '2025-01-15',
           taskId: 'task2',
+          completed: true,
           createdAt: Date.now(),
         },
         {
           id: 'c3',
           date: '2025-01-15',
           taskId: 'task3',
+          completed: true,
           createdAt: Date.now(),
         },
         {
           id: 'c4',
           date: '2025-01-15',
           taskId: 'task4',
+          completed: true,
           createdAt: Date.now(),
         },
       ]

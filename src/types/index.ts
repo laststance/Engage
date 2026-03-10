@@ -26,6 +26,7 @@ export interface Completion {
   date: string // YYYY-MM-DD
   taskId: string
   minutes?: number
+  completed: boolean
   createdAt: number
 }
 
