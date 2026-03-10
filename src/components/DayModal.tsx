@@ -1,6 +1,5 @@
-import React, { useCallback, useMemo } from 'react'
+import React from 'react'
 import { Modal, SafeAreaView } from 'react-native'
-import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
 import { HStack } from '@/components/ui/hstack'
@@ -8,7 +7,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol'
 import { DaySheet } from './DaySheet'
 import { TaskPicker } from './TaskPicker'
 import { useAppStore } from '@/src/stores/app-store'
-import { Task } from '@/src/types'
+import { useDayView } from '@/src/hooks/useDayView'
 
 interface DayModalProps {
   isVisible: boolean
@@ -17,59 +16,11 @@ interface DayModalProps {
 
 export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
   const selectedDate = useAppStore((state) => state.selectedDate)
-  const categories = useAppStore((state) => state.categories)
-  const tasks = useAppStore((state) => state.tasks)
-  const completions = useAppStore((state) => state.completions)
-  const entries = useAppStore((state) => state.entries)
-  const isTaskPickerVisible = useAppStore((state) => state.isTaskPickerVisible)
-  const toggleTaskCompletion = useAppStore((state) => state.toggleTaskCompletion)
-  const updateJournalEntry = useAppStore((state) => state.updateJournalEntry)
-  const setTaskPickerVisible = useAppStore((state) => state.setTaskPickerVisible)
-  const setPresetEditorVisible = useAppStore((state) => state.setPresetEditorVisible)
-  const addTasksToDate = useAppStore((state) => state.addTasksToDate)
-  const updatePresetTasks = useAppStore((state) => state.updatePresetTasks)
-  const createCategory = useAppStore((state) => state.createCategory)
-
-  const dayCompletions = useMemo(() => completions[selectedDate] || [], [completions, selectedDate])
-  const dayEntry = useMemo(() => entries[selectedDate] || null, [entries, selectedDate])
-
-  const handleTaskToggle = useCallback((taskId: string) => {
-    toggleTaskCompletion(selectedDate, taskId)
-  }, [selectedDate, toggleTaskCompletion])
-
-  const handleJournalUpdate = async (content: string) => {
-    await updateJournalEntry(selectedDate, content)
-  }
-
-  const handleTaskSelectionPress = () => {
-    setTaskPickerVisible(true)
-  }
-
-  const handleTaskPickerClose = () => {
-    setTaskPickerVisible(false)
-  }
-
-  const handleTaskSelect = async (taskIds: string[]) => {
-    await addTasksToDate(selectedDate, taskIds)
-    setTaskPickerVisible(false)
-  }
+  const day = useDayView(selectedDate)
 
   const handleEditPresets = () => {
     // Keep task picker visible, it will handle the preset editor internally
   }
-
-  const handleUpdatePresets = async (tasks: Task[]) => {
-    await updatePresetTasks(tasks)
-  }
-
-  const handleCreateCategory = async (name: string) => {
-    await createCategory({ name })
-  }
-
-  // Filter to only tasks assigned to this date (have a completion record)
-  const assignedTaskIds = useMemo(() => new Set(dayCompletions.map((c) => c.taskId)), [dayCompletions])
-  const assignedTasks = useMemo(() => tasks.filter((task) => assignedTaskIds.has(task.id)), [tasks, assignedTaskIds])
-  const selectedTaskIds = dayCompletions.map((c) => c.taskId)
 
   return (
     <Modal
@@ -98,26 +49,26 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
         {/* Day Sheet Content */}
         <DaySheet
           date={selectedDate}
-          tasks={assignedTasks}
-          completions={dayCompletions}
-          journalEntry={dayEntry}
-          categories={categories}
-          onTaskToggle={handleTaskToggle}
-          onJournalUpdate={handleJournalUpdate}
-          onTaskSelectionPress={handleTaskSelectionPress}
+          tasks={day.assignedTasks}
+          completions={day.dayCompletions}
+          journalEntry={day.dayEntry}
+          categories={day.categories}
+          onTaskToggle={day.handleTaskToggle}
+          onJournalUpdate={day.handleJournalUpdate}
+          onTaskSelectionPress={day.handleTaskSelectionPress}
         />
 
         {/* Task Picker Modal */}
         <TaskPicker
-          isVisible={isTaskPickerVisible}
-          presetTasks={tasks}
-          categories={categories}
-          selectedTasks={selectedTaskIds}
-          onTaskSelect={handleTaskSelect}
-          onClose={handleTaskPickerClose}
+          isVisible={day.isTaskPickerVisible}
+          presetTasks={day.allTasks}
+          categories={day.categories}
+          selectedTasks={day.selectedTaskIds}
+          onTaskSelect={day.handleTaskSelect}
+          onClose={day.handleTaskPickerClose}
           onEditPresets={handleEditPresets}
-          onUpdatePresets={handleUpdatePresets}
-          onCreateCategory={handleCreateCategory}
+          onUpdatePresets={day.handleUpdatePresets}
+          onCreateCategory={day.handleCreateCategory}
         />
       </SafeAreaView>
     </Modal>

@@ -15,12 +15,8 @@ import {
   type JournalSaveResult,
 } from '../services/journalService'
 import {
-  getSuggestedTasks,
-  groupTasksByCategory,
   calculateDayProgress,
-  isTaskCompleted,
   getTaskCompletionStatus,
-  validateJournalEntry,
   getJournalPlaceholder,
   getTaskRecommendations,
   hasCompletedDailyFlow,
@@ -30,13 +26,10 @@ import {
 } from '../utils/businessLogic'
 import {
   formatDate,
-  getCurrentDate,
   getWeekStartDate,
   getWeekEndDate,
   getMonthStartDate,
   getMonthEndDate,
-  getDaysInRange,
-  isToday,
 } from '../utils/dateUtils'
 import {
   calculateWeeklyStats,
