@@ -10,7 +10,6 @@ import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
 import { Task, Category } from '@/src/types'
 import { getCategoryDisplayName } from '@/src/i18n/config'
-import { PresetTaskEditor } from './PresetTaskEditor'
 
 interface TaskPickerProps {
   isVisible: boolean
@@ -20,8 +19,6 @@ interface TaskPickerProps {
   onTaskSelect: (taskIds: string[]) => void
   onClose: () => void
   onEditPresets: () => void
-  onUpdatePresets: (tasks: Task[]) => Promise<void>
-  onCreateCategory: (name: string) => Promise<void>
 }
 
 export const TaskPicker: React.FC<TaskPickerProps> = ({
@@ -32,14 +29,10 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
   onTaskSelect,
   onClose,
   onEditPresets,
-  onUpdatePresets,
-  onCreateCategory,
 }) => {
   const { t } = useTranslation()
   const [localSelectedTasks, setLocalSelectedTasks] =
     useState<string[]>(selectedTasks)
-  const [isPresetEditorVisible, setIsPresetEditorVisible] = useState(false)
-
   // Group tasks by category
   const tasksByCategory = presetTasks.reduce((acc, task) => {
     if (!acc[task.categoryId]) {
@@ -86,17 +79,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
   }
 
   const handleEditPresets = () => {
-    setIsPresetEditorVisible(true)
     onEditPresets()
-  }
-
-  const handlePresetEditorSave = async (tasks: Task[]) => {
-    await onUpdatePresets(tasks)
-    setIsPresetEditorVisible(false)
-  }
-
-  const handlePresetEditorCancel = () => {
-    setIsPresetEditorVisible(false)
   }
 
   return (
@@ -267,15 +250,6 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
           </HStack>
         </Box>
 
-        {/* Preset Task Editor Modal */}
-        <PresetTaskEditor
-          isVisible={isPresetEditorVisible}
-          tasks={presetTasks}
-          categories={categories}
-          onSave={handlePresetEditorSave}
-          onCancel={handlePresetEditorCancel}
-          onCreateCategory={onCreateCategory}
-        />
       </SafeAreaView>
     </Modal>
   )

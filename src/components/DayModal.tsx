@@ -86,8 +86,6 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
           onTaskSelect={day.handleTaskSelect}
           onClose={day.handleTaskPickerClose}
           onEditPresets={handleEditPresets}
-          onUpdatePresets={day.handleUpdatePresets}
-          onCreateCategory={day.handleCreateCategory}
         />
 
         {/* Preset Editor rendered at DayModal level (2nd modal, not 3rd) */}

@@ -6,7 +6,9 @@ import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { DaySheet } from '@/src/components/DaySheet'
 import { TaskPicker } from '@/src/components/TaskPicker'
+import { PresetTaskEditor } from '@/src/components/PresetTaskEditor'
 import { useAppStore } from '@/src/stores/app-store'
+import { Task } from '@/src/types'
 import { useDayView } from '@/src/hooks/useDayView'
 import { formatDate } from '@/src/utils/dateUtils'
 
@@ -14,7 +16,10 @@ export default function TodayScreen() {
   const { t } = useTranslation()
   const selectedDate = useAppStore((state) => state.selectedDate)
   const selectDate = useAppStore((state) => state.selectDate)
-  const setTaskPickerVisible = useAppStore((state) => state.setTaskPickerVisible)
+  const isPresetEditorVisible = useAppStore(
+    (state) => state.isPresetEditorVisible,
+  )
+
   const setPresetEditorVisible = useAppStore((state) => state.setPresetEditorVisible)
 
   const insets = useSafeAreaInsets()
@@ -28,10 +33,20 @@ export default function TodayScreen() {
     }
   }, [today, selectedDate, selectDate])
 
-  // TodayScreen-specific: hide TaskPicker and show PresetEditor separately
+  // Close TaskPicker first, then show PresetEditor at TodayScreen level
+  // to avoid iOS triple-nested Modal issue
   const handleEditPresets = () => {
-    setTaskPickerVisible(false)
+    day.handleTaskPickerClose()
     setPresetEditorVisible(true)
+  }
+
+  const handlePresetEditorSave = async (tasks: Task[]) => {
+    await day.handleUpdatePresets(tasks)
+    setPresetEditorVisible(false)
+  }
+
+  const handlePresetEditorCancel = () => {
+    setPresetEditorVisible(false)
   }
 
   try {
@@ -73,7 +88,15 @@ export default function TodayScreen() {
           onTaskSelect={day.handleTaskSelect}
           onClose={day.handleTaskPickerClose}
           onEditPresets={handleEditPresets}
-          onUpdatePresets={day.handleUpdatePresets}
+        />
+
+        {/* Preset Editor rendered at TodayScreen level (not inside TaskPicker) */}
+        <PresetTaskEditor
+          isVisible={isPresetEditorVisible}
+          tasks={day.allTasks}
+          categories={day.categories}
+          onSave={handlePresetEditorSave}
+          onCancel={handlePresetEditorCancel}
           onCreateCategory={day.handleCreateCategory}
         />
       </Box>
