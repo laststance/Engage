@@ -20,13 +20,13 @@
         "REACT_NATIVE_NO_DEVTOOLS": "1"
       },
       "ios": {
-        "resourceClass": "large",
+        "resourceClass": "medium",
         "buildConfiguration": "Release",
         "scheme": "engage"
       },
       "android": {
         "resourceClass": "medium",
-        "buildType": "aab"
+        "buildType": "app-bundle"
       }
     },
     "e2e-production": {
@@ -50,9 +50,12 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "your-apple-id@example.com",
-        "ascAppId": "placeholder-app-store-connect-id",
-        "appleTeamId": "placeholder-team-id"
+        "appleId": "ryota.murakami@laststance.io",
+        "ascAppId": "6760552941",
+        "appleTeamId": "895TNMSCMH",
+        "ascApiKeyPath": "./keys/AuthKey_JF49D52FPN.p8",
+        "ascApiKeyIssuerId": "d949da9a-ad00-4191-82b0-551a00d4e320",
+        "ascApiKeyId": "JF49D52FPN"
       },
       "android": {
         "serviceAccountKeyPath": "path/to/service-account-key.json",

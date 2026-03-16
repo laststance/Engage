@@ -1,7 +1,10 @@
 diff --git a/dist/css-to-rn/parseDeclaration.js b/dist/css-to-rn/parseDeclaration.js
+index 59ea66e459dbf6922bcd80a6ac014408ca13c2af..f586ca5f4cbd1eb9a3f89a0b1b634c6d6b02a558 100644
 --- a/dist/css-to-rn/parseDeclaration.js
 +++ b/dist/css-to-rn/parseDeclaration.js
-@@ -1759,13 +1759,17 @@
+@@ -1757,17 +1757,19 @@ function parseDisplay(display, options) {
+     }
+ }
  function parseAspectRatio(aspectRatio) {
 -    if (aspectRatio.auto) {
 +    if (!aspectRatio || aspectRatio.auto) {
@@ -20,10 +23,16 @@ diff --git a/dist/css-to-rn/parseDeclaration.js b/dist/css-to-rn/parseDeclaratio
          }
      }
 +    return "auto";
+ }
+ function parseDimension({ unit, value }, options) {
+     switch (unit) {
 diff --git a/src/css-to-rn/parseDeclaration.ts b/src/css-to-rn/parseDeclaration.ts
+index bf095a5b430d24f791b8478f5b513d703bd1a02a..772ad2b039ce677006e9bdd6aa5d8f505de91488 100644
 --- a/src/css-to-rn/parseDeclaration.ts
 +++ b/src/css-to-rn/parseDeclaration.ts
-@@ -2641,12 +2641,16 @@
+@@ -2639,15 +2639,18 @@ function parseAspectRatio(
+   // This is missing types
+   aspectRatio: any,
  ): RuntimeValueDescriptor {
 -  if (aspectRatio.auto) {
 +  if (!aspectRatio || aspectRatio.auto) {
@@ -42,3 +51,5 @@ diff --git a/src/css-to-rn/parseDeclaration.ts b/src/css-to-rn/parseDeclaration.
    }
 +  return "auto";
  }
+ 
+ function parseDimension(

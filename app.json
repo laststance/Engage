@@ -13,7 +13,7 @@
     ],
     "description": "A minimal habit tracker focused on building consistent daily routines through task tracking, streak visualization, and reflective journaling.",
     "android": {
-      "package": "com.anonymous.engage",
+      "package": "com.laststance.engage",
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -29,9 +29,9 @@
       ]
     },
     "ios": {
-      "bundleIdentifier": "com.anonymous.engage",
+      "bundleIdentifier": "com.laststance.engage",
       "buildNumber": "1",
-      "supportsTablet": true,
+      "supportsTablet": false,
       "requireFullScreen": false,
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "この アプリは毎日の習慣を継続するためのリマインダー通知を送信します。通知は設定から無効にできます。",
@@ -72,6 +72,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0b3684ee-284f-4366-9053-388508c4c35d"
+      }
     }
   }
 }
