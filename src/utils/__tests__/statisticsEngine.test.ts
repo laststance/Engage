@@ -139,8 +139,8 @@ describe('statisticsEngine', () => {
         '2025-01-19'
       )
 
-      // 4 days with completions out of 5 total days = 80%
-      expect(rate).toBe(80)
+      // 4 days with completions out of 5 total days = 0.8
+      expect(rate).toBe(0.8)
     })
 
     it('should handle no completions', () => {
@@ -154,7 +154,7 @@ describe('statisticsEngine', () => {
         '2025-01-15',
         '2025-01-15'
       )
-      expect(rate).toBe(100) // 1 day with completions out of 1 day
+      expect(rate).toBe(1) // 1 day with completions out of 1 day
     })
   })
 

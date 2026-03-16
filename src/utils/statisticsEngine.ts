@@ -115,7 +115,7 @@ export const calculateCompletionRate = (
   ).length
 
   return daysInRange.length > 0
-    ? (daysWithCompletions / daysInRange.length) * 100
+    ? daysWithCompletions / daysInRange.length
     : 0
 }
 
@@ -225,8 +225,8 @@ export const calculateWeeklyStats = (
   )
   const dailyAverage = activeDays > 0 ? totalCompletions / activeDays : 0
 
-  // Calculate streak
-  const streakResult = calculateStreakDays(completions, weekEndDate)
+  // Calculate streak (always from today, not period end date which may be in the future)
+  const streakResult = calculateStreakDays(completions)
 
   // Calculate category breakdown
   const categoryBreakdown = calculateCategoryBreakdown(
@@ -258,7 +258,7 @@ export const calculateWeeklyStats = (
 
   return {
     streakDays: streakResult.currentStreak,
-    completionRate: Math.round(completionRate * 100) / 100,
+    completionRate,
     activeDays,
     totalTasks: totalCompletions,
     dailyAverage: Math.round(dailyAverage * 100) / 100,
@@ -300,8 +300,8 @@ export const calculateMonthlyStats = (
   )
   const dailyAverage = activeDays > 0 ? totalCompletions / activeDays : 0
 
-  // Calculate streak
-  const streakResult = calculateStreakDays(completions, monthEndDate)
+  // Calculate streak (always from today, not period end date which may be in the future)
+  const streakResult = calculateStreakDays(completions)
 
   // Calculate category breakdown
   const categoryBreakdown = calculateCategoryBreakdown(
@@ -333,7 +333,7 @@ export const calculateMonthlyStats = (
 
   return {
     streakDays: streakResult.currentStreak,
-    completionRate: Math.round(completionRate * 100) / 100,
+    completionRate,
     activeDays,
     totalTasks: totalCompletions,
     dailyAverage: Math.round(dailyAverage * 100) / 100,
