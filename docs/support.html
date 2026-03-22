@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engage - Support / サポート</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.8;
+      color: #1d1d1f;
+      background: #f5f5f7;
+      padding: 0;
+    }
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .header .subtitle {
+      font-size: 14px;
+      color: #86868b;
+    }
+    .lang-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 40px;
+    }
+    .lang-toggle button {
+      padding: 8px 20px;
+      border: 1px solid #d2d2d7;
+      border-radius: 20px;
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lang-toggle button.active {
+      background: #1d1d1f;
+      color: white;
+      border-color: #1d1d1f;
+    }
+    section {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #1d1d1f;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      color: #1d1d1f;
+    }
+    p, li {
+      font-size: 15px;
+      color: #424245;
+      margin-bottom: 8px;
+    }
+    ul, ol {
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+    li { margin-bottom: 4px; }
+    .highlight {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+    }
+    .highlight p {
+      color: #2e7d32;
+      font-weight: 500;
+      margin: 0;
+    }
+    .faq-item {
+      border-top: 1px solid #f0f0f0;
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+    .faq-item:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .faq-q {
+      font-weight: 600;
+      color: #1d1d1f;
+      margin-bottom: 4px;
+    }
+    .faq-a {
+      color: #424245;
+    }
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .contact-email {
+      display: inline-block;
+      background: #f5f5f7;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+    .footer {
+      text-align: center;
+      padding: 24px;
+      color: #86868b;
+      font-size: 13px;
+    }
+    .footer a {
+      color: #86868b;
+      text-decoration: underline;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Engage</h1>
+      <p class="subtitle">Support / サポート</p>
+    </div>
+
+    <div class="lang-toggle">
+      <button id="btn-ja" class="active" onclick="switchLang('ja')">日本語</button>
+      <button id="btn-en" onclick="switchLang('en')">English</button>
+    </div>
+
+    <!-- Japanese -->
+    <div id="content-ja">
+      <section>
+        <div class="highlight">
+          <p>Engage は、毎日の習慣づくりをサポートするシンプルな習慣トラッカーアプリです。</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>アプリについて</h2>
+        <p>Engage は日々のタスク完了、ストリーク追跡、振り返りジャーナルに特化した習慣トラッカーです。すべてのデータはお使いのデバイスにローカル保存され、アカウント登録やインターネット接続は不要です。</p>
+      </section>
+
+      <section>
+        <h2>使い方</h2>
+        <ol>
+          <li><strong>タスクを追加</strong> — 「今日」タブからタスクを選択して、その日の目標を設定します</li>
+          <li><strong>タスクを完了</strong> — 完了したタスクをタップしてチェックを入れます</li>
+          <li><strong>振り返りを記録</strong> — ジャーナルにその日の感想や気づきを書きます</li>
+          <li><strong>統計を確認</strong> — 「統計」タブで達成率やストリークを確認します</li>
+          <li><strong>カレンダーで振り返り</strong> — カレンダーから過去の日付をタップして記録を見返します</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>よくある質問</h2>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. データはどこに保存されますか？</p>
+          <p class="faq-a">A. すべてのデータはデバイス内の SQLite データベースに保存されます。外部サーバーへの送信は一切ありません。</p>
+        </div>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. データのバックアップはできますか？</p>
+          <p class="faq-a">A. はい。アプリ内のバックアップ機能を使って、データのエクスポートとインポートができます。</p>
+        </div>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. アカウント登録は必要ですか？</p>
+          <p class="faq-a">A. いいえ。Engage は完全にオフラインで動作し、アカウント登録やログインは不要です。</p>
+        </div>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. 通知が届きません</p>
+          <p class="faq-a">A. iPhoneの「設定」→「Engage」→「通知」で通知が許可されているか確認してください。また、アプリ内の設定でリマインダーが有効になっているかもご確認ください。</p>
+        </div>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. データをリセットしたい場合は？</p>
+          <p class="faq-a">A. アプリを削除して再インストールすると、すべてのデータがリセットされます。リセット前にバックアップを取ることをお勧めします。</p>
+        </div>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. プリセットタスクを編集できますか？</p>
+          <p class="faq-a">A. はい。タスク選択画面の「プリセット編集」ボタンから、プリセットタスクの追加・編集・削除ができます。</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>お問い合わせ</h2>
+        <p>ご質問、不具合の報告、ご要望がありましたら、以下のメールアドレスまでお気軽にお問い合わせください。</p>
+        <p class="contact-email">📧 <a href="mailto:ryota.murakami@laststance.io">ryota.murakami@laststance.io</a></p>
+        <p style="margin-top: 12px; font-size: 13px; color: #86868b;">通常 2〜3 営業日以内に返信いたします。</p>
+      </section>
+    </div>
+
+    <!-- English -->
+    <div id="content-en" class="hidden">
+      <section>
+        <div class="highlight">
+          <p>Engage is a simple habit tracker app designed to help you build better daily routines.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>About the App</h2>
+        <p>Engage is a habit tracker focused on daily task completion, streak tracking, and reflective journaling. All data is stored locally on your device — no account registration or internet connection required.</p>
+      </section>
+
+      <section>
+        <h2>Getting Started</h2>
+        <ol>
+          <li><strong>Add tasks</strong> — From the "Today" tab, select tasks to set your daily goals</li>
+          <li><strong>Complete tasks</strong> — Tap on completed tasks to check them off</li>
+          <li><strong>Write reflections</strong> — Use the journal to record thoughts and observations</li>
+          <li><strong>View statistics</strong> — Check the "Stats" tab to see your completion rate and streaks</li>
+          <li><strong>Review past days</strong> — Tap any date on the calendar to review your records</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Frequently Asked Questions</h2>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. Where is my data stored?</p>
+          <p class="faq-a">A. All data is stored in a local SQLite database on your device. Nothing is ever sent to external servers.</p>
+        </div>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. Can I backup my data?</p>
+          <p class="faq-a">A. Yes. Use the in-app backup feature to export and import your data.</p>
+        </div>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. Do I need to create an account?</p>
+          <p class="faq-a">A. No. Engage works completely offline and requires no account registration or login.</p>
+        </div>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. Notifications are not working</p>
+          <p class="faq-a">A. Go to iPhone Settings → Engage → Notifications and make sure notifications are enabled. Also check that reminders are turned on in the app's settings.</p>
+        </div>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. How do I reset my data?</p>
+          <p class="faq-a">A. Delete and reinstall the app to reset all data. We recommend creating a backup before resetting.</p>
+        </div>
+
+        <div class="faq-item">
+          <p class="faq-q">Q. Can I edit preset tasks?</p>
+          <p class="faq-a">A. Yes. Use the "Edit Presets" button on the task selection screen to add, edit, or delete preset tasks.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Contact Us</h2>
+        <p>If you have questions, want to report a bug, or have feature requests, please feel free to reach out.</p>
+        <p class="contact-email">📧 <a href="mailto:ryota.murakami@laststance.io">ryota.murakami@laststance.io</a></p>
+        <p style="margin-top: 12px; font-size: 13px; color: #86868b;">We typically respond within 2–3 business days.</p>
+      </section>
+    </div>
+
+    <div class="footer">
+      <p>Engage — Laststance.io</p>
+      <p><a href="privacy-policy.html">Privacy Policy / プライバシーポリシー</a></p>
+      <p>Last updated: March 23, 2026</p>
+    </div>
+  </div>
+
+  <script>
+    function switchLang(lang) {
+      document.getElementById('content-ja').classList.toggle('hidden', lang !== 'ja');
+      document.getElementById('content-en').classList.toggle('hidden', lang !== 'en');
+      document.getElementById('btn-ja').classList.toggle('active', lang === 'ja');
+      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    }
+  </script>
+</body>
+</html>
