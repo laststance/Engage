@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Box } from '@/components/ui/box'
@@ -14,8 +14,6 @@ import { formatDate } from '@/src/utils/dateUtils'
 
 export default function TodayScreen() {
   const { t } = useTranslation()
-  const selectedDate = useAppStore((state) => state.selectedDate)
-  const selectDate = useAppStore((state) => state.selectDate)
   const isPresetEditorVisible = useAppStore(
     (state) => state.isPresetEditorVisible,
   )
@@ -25,13 +23,6 @@ export default function TodayScreen() {
   const insets = useSafeAreaInsets()
   const today = formatDate(new Date())
   const day = useDayView(today)
-
-  // Ensure today's date is selected when component mounts
-  useEffect(() => {
-    if (selectedDate !== today) {
-      selectDate(today)
-    }
-  }, [today, selectedDate, selectDate])
 
   // Close TaskPicker first, then show PresetEditor at TodayScreen level
   // to avoid iOS triple-nested Modal issue
