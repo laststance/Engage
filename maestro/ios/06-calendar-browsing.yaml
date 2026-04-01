@@ -53,3 +53,43 @@ tags:
     visible:
       id: "calendar-screen"
     timeout: 5000
+
+# REGRESSION: Verify non-today date selection shows correct date in DayModal
+# Bug: App Store rejection 2026-03-27 — DayModal always showed today's date
+# regardless of which date was tapped on Calendar.
+# Root cause: TodayScreen useEffect was resetting selectedDate to today.
+
+# Navigate to previous month (all dates guaranteed not today)
+- tapOn:
+    id: "calendar-prev-month"
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-title"
+    timeout: 5000
+
+# Tap the 15th of the previous month
+- tapOn:
+    id: "calendar-date-.*-15"
+    retryTapIfNoChange: false
+
+- extendedWaitUntil:
+    visible:
+      id: "day-modal-close"
+    timeout: 5000
+
+# Verify DayModal renders the selected date (not today)
+- assertVisible:
+    id: "day-sheet-date"
+
+- assertVisible:
+    text: "Daily Tasks"
+
+# Close DayModal
+- tapOn:
+    id: "day-modal-close"
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 5000
