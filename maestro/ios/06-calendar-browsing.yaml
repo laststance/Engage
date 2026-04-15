@@ -78,9 +78,10 @@ tags:
       id: "day-modal-close"
     timeout: 5000
 
-# Verify DayModal renders the selected date (not today)
+# Verify DayModal renders the 15th (not today) — would fail on pre-fix build
 - assertVisible:
     id: "day-sheet-date"
+    text: ".*15.*"
 
 - assertVisible:
     text: "Daily Tasks"
