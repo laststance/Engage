@@ -371,14 +371,14 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
             )}
 
             {/* New Category Section */}
-            <VStack space="sm">
+            <VStack space="sm" className="mb-4">
               <HStack className="items-center justify-between">
                 <Text className="text-lg font-semibold text-gray-800">
                   {t('presetEditor.categoryManagement')}
                 </Text>
                 <Pressable
                   onPress={() => setShowNewCategoryInput(!showNewCategoryInput)}
-                  className="bg-green-500 rounded-lg px-3 py-2"
+                  className="bg-green-500 rounded-lg px-3 py-2 touch-target-minimum"
                   testID="add-category-button"
                 >
                   <HStack className="items-center" space="xs">
