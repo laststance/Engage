@@ -49,9 +49,19 @@ jest.mock('@react-native-community/netinfo', () => ({
 
 // Mock expo-file-system
 jest.mock('expo-file-system', () => ({
+  Paths: {
+    document: {
+      uri: 'file://mock/',
+    },
+  },
   documentDirectory: 'file://mock/',
+}))
+
+// Mock expo-file-system legacy API used by backup service
+jest.mock('expo-file-system/legacy', () => ({
   writeAsStringAsync: jest.fn(),
   readAsStringAsync: jest.fn(),
+  readDirectoryAsync: jest.fn(),
   deleteAsync: jest.fn(),
   getInfoAsync: jest.fn(),
   makeDirectoryAsync: jest.fn(),

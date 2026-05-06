@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system'
+import * as FileSystem from 'expo-file-system/legacy'
 import { Paths } from 'expo-file-system'
 import * as Sharing from 'expo-sharing'
 import * as DocumentPicker from 'expo-document-picker'
@@ -61,7 +61,7 @@ export interface BackupValidationResult {
  */
 export class BackupService {
   private readonly BACKUP_VERSION = '1.0'
-  private readonly BACKUP_DIRECTORY = `${Paths.document}backups/`
+  private readonly BACKUP_DIRECTORY = `${Paths.document.uri}backups/`
   private readonly MAX_BACKUP_FILES = 10 // Keep only last 10 backups
 
   constructor(private databaseService: DatabaseService) {}

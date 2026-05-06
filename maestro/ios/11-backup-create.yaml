@@ -1,0 +1,51 @@
+appId: com.anonymous.engage
+tags:
+  - ios
+---
+# QA-11: Backup Creation
+# Verifies backup creation succeeds without Expo FileSystem deprecation errors.
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Navigate to Settings > Data Backup
+- tapOn: "stats-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "stats-screen"
+    timeout: 5000
+
+- tapOn:
+    id: "settings-button"
+
+- extendedWaitUntil:
+    visible:
+      text: "Settings"
+    timeout: 5000
+
+- tapOn:
+    id: "settings-backup"
+
+- extendedWaitUntil:
+    visible:
+      text: "Data Backup"
+    timeout: 5000
+
+# Create a local backup and assert the success alert appears.
+- tapOn: "Create Backup"
+
+- extendedWaitUntil:
+    visible:
+      text: "Backup Created"
+    timeout: 10000
+
+- assertNotVisible:
+    text: "Backup Failed"
+
+- tapOn: "OK"
