@@ -30,7 +30,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.laststance.engage",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "supportsTablet": false,
       "requireFullScreen": false,
       "infoPlist": {
