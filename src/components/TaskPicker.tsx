@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { Modal, ScrollView } from 'react-native'
+import { Modal, ScrollView, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
+import { DesignSystem } from '@/constants/design-system'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { Pressable } from '@/components/ui/pressable'
@@ -243,7 +244,10 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
               className="flex-1 bg-system-blue rounded-lg py-3 touch-target-minimum"
               testID="task-picker-confirm"
             >
-              <Text className="text-white font-medium text-center text-callout">
+              <Text
+                className="text-white font-medium text-center text-callout"
+                style={styles.primaryActionLabel}
+              >
                 {t('taskPicker.confirm', { count: localSelectedTasks.length })}
               </Text>
             </Pressable>
@@ -254,3 +258,9 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
     </Modal>
   )
 }
+
+const styles = StyleSheet.create({
+  primaryActionLabel: {
+    color: DesignSystem.colors.system.systemBackground,
+  },
+})
