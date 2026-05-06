@@ -9,8 +9,8 @@ import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
 import { JournalInput } from './JournalInput'
 import { Task, Entry, Completion, Category } from '@/src/types'
-import { useAppStore } from '@/src/stores/app-store'
 import i18n, { getCategoryDisplayName } from '@/src/i18n/config'
+import { parseDate } from '@/src/utils/dateUtils'
 
 interface DaySheetProps {
   date: string
@@ -23,6 +23,20 @@ interface DaySheetProps {
   onTaskSelectionPress: () => void
 }
 
+type DaySheetDateFormatValues = {
+  month: number | string
+  day: number
+  dayOfWeek: string
+}
+
+type TranslateDaySheetDate = (
+  key: string,
+  values: DaySheetDateFormatValues
+) => string
+
+const JAPANESE_LANGUAGE_PREFIX = 'ja'
+const MONTH_INDEX_OFFSET = 1
+
 export const DaySheet: React.FC<DaySheetProps> = ({
   date,
   tasks,
@@ -34,7 +48,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
   onTaskSelectionPress,
 }) => {
   const { t } = useTranslation()
-  // const { getJournalPlaceholder } = useAppStore()
+  const formattedDate = formatDaySheetDate(date, i18n.language, t)
 
   // Create a map of completed task IDs for quick lookup
   const completedTaskIds = new Set(completions.filter((c) => c.completed).map((c) => c.taskId))
@@ -81,25 +95,6 @@ export const DaySheet: React.FC<DaySheetProps> = ({
     return colors[index]
   }
 
-  /**
-   * Format a date string using Intl.DateTimeFormat and i18n translation.
-   * @param dateString - YYYY-MM-DD date string
-   * @returns Localized formatted date string
-   * @example
-   * formatDate('2026-03-15') // => '3月15日 (日)' (ja) or 'Sun, Mar 15' (en)
-   */
-  const formatDate = (dateString: string) => {
-    const dateObj = new Date(dateString)
-    const month = dateObj.getMonth() + 1
-    const day = dateObj.getDate()
-    const dayOfWeek = new Intl.DateTimeFormat(i18n.language, {
-      weekday: 'narrow',
-    }).format(dateObj)
-    return t('daySheet.dateFormat', { month, day, dayOfWeek })
-  }
-
-  // const placeholder = getJournalPlaceholder(date)
-
   return (
     <Box className="flex-1 bg-white" testID="day-sheet">
       <ScrollView
@@ -114,7 +109,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
             className="text-2xl font-bold text-gray-800"
             testID="day-sheet-date"
           >
-            {formatDate(date)}
+            {formattedDate}
           </Text>
 
           {/* Task Selection Button */}
@@ -231,4 +226,37 @@ export const DaySheet: React.FC<DaySheetProps> = ({
       </ScrollView>
     </Box>
   )
+}
+
+/**
+ * Formats the date label shown at the top of the day sheet.
+ * @param dateString - Local calendar date in YYYY-MM-DD format.
+ * @param language - Active i18n language code.
+ * @param translate - Translation function used to apply the locale template.
+ * @returns
+ * - Japanese: numeric month/day with a narrow weekday, such as "5月6日 (水)".
+ * - English: short weekday/month names, such as "Wed, May 6".
+ * @example
+ * formatDaySheetDate(
+ *   '2026-05-06',
+ *   'en',
+ *   (_key, values) => `${values.dayOfWeek}, ${values.month} ${values.day}`
+ * ) // => 'Wed, May 6'
+ */
+const formatDaySheetDate = (
+  dateString: string,
+  language: string,
+  translate: TranslateDaySheetDate
+): string => {
+  const dateObj = parseDate(dateString)
+  const usesJapaneseDateParts = language.startsWith(JAPANESE_LANGUAGE_PREFIX)
+  const day = dateObj.getDate()
+  const dayOfWeek = new Intl.DateTimeFormat(language, {
+    weekday: usesJapaneseDateParts ? 'narrow' : 'short',
+  }).format(dateObj)
+  const month = usesJapaneseDateParts
+    ? dateObj.getMonth() + MONTH_INDEX_OFFSET
+    : new Intl.DateTimeFormat(language, { month: 'short' }).format(dateObj)
+
+  return translate('daySheet.dateFormat', { month, day, dayOfWeek })
 }

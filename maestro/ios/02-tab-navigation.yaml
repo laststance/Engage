@@ -24,6 +24,10 @@ tags:
 - assertVisible:
     text: "Today"
 
+- assertVisible:
+    id: "day-sheet-date"
+    text: "^[A-Z][a-z]{2}, [A-Z][a-z]{2} [0-9]{1,2}$"
+
 # Navigate to Stats tab
 - tapOn: "stats-tab"
 
