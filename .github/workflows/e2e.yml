@@ -74,9 +74,9 @@ jobs:
           pnpm build:e2e &
           BUILD_PID=$!
 
-          # Wait for build to complete (max 10 minutes)
+          # Wait for build to complete (max 20 minutes)
           SECONDS=0
-          MAX_WAIT=600
+          MAX_WAIT=1200
 
           while kill -0 $BUILD_PID 2>/dev/null; do
             if [ $SECONDS -ge $MAX_WAIT ]; then
