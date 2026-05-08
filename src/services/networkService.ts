@@ -1,13 +1,12 @@
 import NetInfo from '@react-native-community/netinfo'
-import { DatabaseError } from './database'
 
-export interface NetworkState {
+interface NetworkState {
   isConnected: boolean
   isInternetReachable: boolean | null
   type: string
 }
 
-export interface NetworkServiceConfig {
+interface NetworkServiceConfig {
   enableLogging?: boolean
   retryAttempts?: number
   retryDelay?: number
@@ -16,7 +15,7 @@ export interface NetworkServiceConfig {
 /**
  * Service for managing network connectivity detection and offline handling
  */
-export class NetworkService {
+class NetworkService {
   private isConnected: boolean = true
   private isInternetReachable: boolean | null = null
   private listeners: ((state: NetworkState) => void)[] = []

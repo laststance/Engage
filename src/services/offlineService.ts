@@ -1,15 +1,14 @@
 import { DatabaseService, DatabaseError } from './database'
 import { networkService, NetworkError } from './networkService'
-import { Task, Entry, Completion, Category } from '../types'
 
-export interface OfflineConfig {
+interface OfflineConfig {
   enableDataValidation?: boolean
   enableIntegrityChecks?: boolean
   enableLogging?: boolean
   maxRetryAttempts?: number
 }
 
-export interface DataIntegrityResult {
+interface DataIntegrityResult {
   isValid: boolean
   errors: string[]
   warnings: string[]
@@ -21,7 +20,7 @@ export interface DataIntegrityResult {
   }
 }
 
-export interface OfflineCapabilities {
+interface OfflineCapabilities {
   canCreateTasks: boolean
   canUpdateTasks: boolean
   canDeleteTasks: boolean
@@ -35,7 +34,7 @@ export interface OfflineCapabilities {
 /**
  * Service for managing offline functionality and data consistency
  */
-export class OfflineService {
+class OfflineService {
   private config: Required<OfflineConfig>
   private databaseService: DatabaseService
 
@@ -91,8 +90,6 @@ export class OfflineService {
    * Get current offline capabilities based on network state and data integrity
    */
   getOfflineCapabilities(): OfflineCapabilities {
-    const isOnline = networkService.isOnline()
-
     // All core features should work offline since we use local SQLite
     return {
       canCreateTasks: true,
@@ -497,7 +494,7 @@ export class OfflineService {
 /**
  * Custom error class for offline-related errors
  */
-export class OfflineError extends Error {
+class OfflineError extends Error {
   constructor(
     message: string,
     public originalError?: any,

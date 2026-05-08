@@ -1,7 +1,7 @@
 import { Category } from '../../types'
 import { databaseService, DatabaseError } from '../database'
 
-export class CategoryRepository {
+class CategoryRepository {
   // Basic CRUD operations
   async findAll(): Promise<Category[]> {
     return await databaseService.getAllCategories()
@@ -134,7 +134,7 @@ export class CategoryRepository {
     try {
       const category = await this.findById(id)
       return category !== null
-    } catch (error) {
+    } catch {
       return false
     }
   }
@@ -146,7 +146,7 @@ export class CategoryRepository {
         [id]
       )
       return (result?.count || 0) === 0
-    } catch (error) {
+    } catch {
       return false
     }
   }

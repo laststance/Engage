@@ -11,6 +11,7 @@ import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
 import { Task, Category } from '@/src/types'
 import { getCategoryDisplayName } from '@/src/i18n/config'
+import { groupTasksByCategory } from '@/src/utils/businessLogic'
 
 interface TaskPickerProps {
   isVisible: boolean
@@ -34,14 +35,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
   const { t } = useTranslation()
   const [localSelectedTasks, setLocalSelectedTasks] =
     useState<string[]>(selectedTasks)
-  // Group tasks by category
-  const tasksByCategory = presetTasks.reduce((acc, task) => {
-    if (!acc[task.categoryId]) {
-      acc[task.categoryId] = []
-    }
-    acc[task.categoryId].push(task)
-    return acc
-  }, {} as Record<string, Task[]>)
+  const tasksByCategory = groupTasksByCategory(presetTasks, categories)
 
   // Get category color using design system (lookup by category ID)
   const getCategoryColor = (categoryId: string) => {

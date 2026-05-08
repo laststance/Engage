@@ -8,7 +8,7 @@ import { validateJournalEntry } from '../utils/businessLogic'
 import { formatDate } from '../utils/dateUtils'
 import i18n from '@/src/i18n/config'
 
-export interface JournalValidationResult {
+interface JournalValidationResult {
   isValid: boolean
   errors: string[]
   warnings: string[]
@@ -20,7 +20,7 @@ export interface JournalSaveResult {
   errors: string[]
 }
 
-export interface JournalStats {
+interface JournalStats {
   totalEntries: number
   nonEmptyEntries: number
   averageLength: number
@@ -30,7 +30,7 @@ export interface JournalStats {
   entriesThisMonth: number
 }
 
-export class JournalService {
+class JournalService {
   /**
    * Validate journal entry content with enhanced checks
    */

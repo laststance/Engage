@@ -1,8 +1,13 @@
 import { Entry } from '../../types'
 import { databaseService, DatabaseError } from '../database'
-import { formatDate } from '../../utils/dateUtils'
+import {
+  formatDate,
+  getMonthEndDate,
+  getMonthStartDate,
+  getWeekEndDate,
+} from '../../utils/dateUtils'
 
-export class EntryRepository {
+class EntryRepository {
   // Basic CRUD operations
   async findByDate(date: string): Promise<Entry | null> {
     return await databaseService.getEntry(date)
@@ -44,12 +49,7 @@ export class EntryRepository {
   // Weekly and monthly queries
   async findEntriesForWeek(weekStartDate: string): Promise<Entry[]> {
     try {
-      // Calculate week end date (6 days after start)
-      const startDate = new Date(weekStartDate)
-      const endDate = new Date(startDate)
-      endDate.setDate(startDate.getDate() + 6)
-
-      const weekEndDate = formatDate(endDate)
+      const weekEndDate = getWeekEndDate(new Date(weekStartDate))
 
       return await this.findByDateRange(weekStartDate, weekEndDate)
     } catch (error) {
@@ -59,8 +59,9 @@ export class EntryRepository {
 
   async findEntriesForMonth(year: number, month: number): Promise<Entry[]> {
     try {
-      const startDate = `${year}-${month.toString().padStart(2, '0')}-01`
-      const endDate = formatDate(new Date(year, month, 0)) // Last day of month
+      const targetMonth = new Date(year, month - 1, 1)
+      const startDate = getMonthStartDate(targetMonth)
+      const endDate = getMonthEndDate(targetMonth)
 
       return await this.findByDateRange(startDate, endDate)
     } catch (error) {

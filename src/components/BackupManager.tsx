@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -41,11 +41,7 @@ export const BackupManager: React.FC = () => {
     clearError,
   } = useAppStore()
 
-  useEffect(() => {
-    loadBackupData()
-  }, [])
-
-  const loadBackupData = async () => {
+  const loadBackupData = useCallback(async () => {
     try {
       setIsLoading(true)
       const [backupList, backupStats] = await Promise.all([
@@ -59,7 +55,11 @@ export const BackupManager: React.FC = () => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [getBackupStats, listBackups])
+
+  useEffect(() => {
+    loadBackupData()
+  }, [loadBackupData])
 
   const handleCreateBackup = async () => {
     try {
@@ -343,5 +343,3 @@ export const BackupManager: React.FC = () => {
     </ScrollView>
   )
 }
-
-export default BackupManager

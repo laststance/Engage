@@ -1,14 +1,10 @@
-import { Task, Category } from '../../types'
+import { Task } from '../../types'
 import { databaseService, DatabaseError } from '../database'
 
 export class TaskRepository {
   // Basic CRUD operations
   async findAll(): Promise<Task[]> {
     return await databaseService.getAllTasks()
-  }
-
-  async findById(id: string): Promise<Task | null> {
-    return await databaseService.getTaskById(id)
   }
 
   async create(
@@ -26,10 +22,6 @@ export class TaskRepository {
 
   async delete(id: string): Promise<void> {
     return await databaseService.deleteTask(id)
-  }
-
-  async archive(id: string): Promise<void> {
-    return await databaseService.archiveTask(id)
   }
 
   // Category-specific queries
@@ -60,16 +52,6 @@ export class TaskRepository {
     }
   }
 
-  async findTasksWithCategories(): Promise<
-    (Task & { categoryName: string })[]
-  > {
-    try {
-      return await databaseService.getTasksWithCategories()
-    } catch (error) {
-      throw new DatabaseError('Failed to find tasks with categories', error)
-    }
-  }
-
   // Search and filtering
   async searchByTitle(searchTerm: string): Promise<Task[]> {
     try {
@@ -80,17 +62,6 @@ export class TaskRepository {
       return result.map(this.mapRowToTask)
     } catch (error) {
       throw new DatabaseError('Failed to search tasks by title', error)
-    }
-  }
-
-  async findArchivedTasks(): Promise<Task[]> {
-    try {
-      const result = await databaseService.executeQuery<any>(
-        'SELECT * FROM tasks WHERE archived = 1 ORDER BY updated_at DESC'
-      )
-      return result.map(this.mapRowToTask)
-    } catch (error) {
-      throw new DatabaseError('Failed to find archived tasks', error)
     }
   }
 
@@ -143,18 +114,6 @@ export class TaskRepository {
       return createdTasks
     } catch (error) {
       throw new DatabaseError('Failed to create multiple tasks', error)
-    }
-  }
-
-  async archiveMultiple(ids: string[]): Promise<void> {
-    try {
-      await databaseService.executeTransaction(
-        ids.map((id) => async () => {
-          await this.archive(id)
-        })
-      )
-    } catch (error) {
-      throw new DatabaseError('Failed to archive multiple tasks', error)
     }
   }
 

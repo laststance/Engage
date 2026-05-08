@@ -28,9 +28,3 @@ export const Colors = {
     tabIconSelected: tintColorDark,
   },
 }
-
-// Use design system fonts
-export const Fonts = DesignSystem.fonts
-
-// Export design system for easy access
-export { DesignSystem } from './design-system'

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+
+  "entry": [
+    "app/**/*.{ts,tsx}",
+    "src/__tests__/setup.ts",
+    "babel.config.js",
+    "eslint.config.js",
+    "jest.config.js",
+    "metro.config.js",
+    "tailwind.config.js"
+  ],
+
+  "ignorePatterns": [
+    "coverage/**",
+    "ios/**",
+    "android/**",
+
+    // Gluestack generated wrappers and RN platform shims are imported through
+    // aliases / platform resolution that fallow currently cannot fully infer.
+    "components/ui/**",
+    "hooks/use-color-scheme.*"
+  ],
+
+  "ignoreDependencies": [
+    "@expo/dom-webview",
+    "@expo/metro-runtime",
+    "@gluestack-ui/core",
+    "@gluestack-ui/utils",
+    "babel-plugin-module-resolver",
+    "expo",
+    "expo-device",
+    "expo-image",
+    "expo-notifications",
+    "expo-splash-screen",
+    "expo-symbols",
+    "expo-system-ui",
+    "expo-web-browser",
+    "jest-transform-stub",
+    "nativewind",
+    "react-native-css-interop",
+    "react-native-gesture-handler",
+    "react-native-svg",
+    "react-native-web",
+    "tailwind-variants"
+  ],
+
+  "ignoreExports": [
+    {
+      "file": "src/services/offlineService.ts",
+      "exports": ["offlineService"]
+    },
+    {
+      "file": "src/services/repositories/TaskRepository.ts",
+      "exports": ["TaskRepository"]
+    },
+    {
+      "file": "src/utils/businessLogic.ts",
+      "exports": ["getSuggestedTasks", "isTaskCompleted"]
+    },
+    {
+      "file": "src/utils/dateUtils.ts",
+      "exports": ["isToday", "isYesterday", "daysBetween"]
+    },
+    {
+      "file": "src/utils/statisticsEngine.ts",
+      "exports": [
+        "calculateCompletionRate",
+        "calculateCategoryBreakdown",
+        "calculateJournalStats"
+      ]
+    }
+  ],
+
+  "usedClassMembers": ["getSetting", "setSetting"],
+
+  "duplicates": {
+    "enabled": true,
+    "mode": "mild",
+    "minTokens": 90,
+    "minLines": 8,
+    "ignoreImports": true,
+    "ignoreDefaults": true,
+    "ignore": ["**/__tests__/**", "components/ui/**"]
+  },
+
+  "rules": {
+    "test-only-dependencies": "off",
+    "type-only-dependencies": "off"
+  }
+}

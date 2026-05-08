@@ -13,7 +13,7 @@ import { Platform } from 'react-native'
  * iOS System Colors following Apple HIG
  * These colors automatically adapt to light/dark mode and accessibility settings
  */
-export const SystemColors = {
+const SystemColors = {
   // Primary System Colors
   systemBlue: '#007AFF',
   systemGreen: '#34C759',
@@ -64,7 +64,7 @@ export const SystemColors = {
  * Category-specific colors for task organization
  * Blue for "事業" (business), Green for "生活" (life), and additional colors for custom categories
  */
-export const CategoryColors = {
+const CategoryColors = {
   // Default preset categories
   business: {
     primary: SystemColors.systemBlue,
@@ -121,7 +121,7 @@ export const CategoryColors = {
 /**
  * Semantic colors for different states and feedback
  */
-export const SemanticColors = {
+const SemanticColors = {
   success: SystemColors.systemGreen,
   warning: SystemColors.systemYellow,
   error: SystemColors.systemRed,
@@ -143,7 +143,7 @@ export const SemanticColors = {
  * iOS Typography Scale following Apple HIG
  * Font sizes and weights that match iOS system typography
  */
-export const Typography = {
+const Typography = {
   // Display Typography
   largeTitle: {
     fontSize: 34,
@@ -226,7 +226,7 @@ export const Typography = {
 /**
  * Font families optimized for each platform
  */
-export const FontFamilies = Platform.select({
+const FontFamilies = Platform.select({
   ios: {
     system: 'system-ui',
     systemRounded: 'ui-rounded',
@@ -250,7 +250,7 @@ export const FontFamilies = Platform.select({
  * Consistent spacing scale following 8pt grid system
  * Based on Apple HIG spacing recommendations
  */
-export const Spacing = {
+const Spacing = {
   // Base spacing units
   xs: 4, // 0.25rem
   sm: 8, // 0.5rem
@@ -299,7 +299,7 @@ export const Spacing = {
 /**
  * Border radius values following iOS design patterns
  */
-export const BorderRadius = {
+const BorderRadius = {
   xs: 4,
   sm: 8,
   md: 12,
@@ -320,7 +320,7 @@ export const BorderRadius = {
 /**
  * Shadow system following iOS elevation patterns
  */
-export const Shadows = {
+const Shadows = {
   // iOS-style shadows
   small: {
     shadowColor: '#000000',
@@ -366,7 +366,7 @@ export const Shadows = {
 /**
  * Minimum touch target sizes following Apple HIG accessibility guidelines
  */
-export const TouchTargets = {
+const TouchTargets = {
   minimum: 44, // Minimum 44pt touch target
   comfortable: 48, // Comfortable touch target
   large: 56, // Large touch target for primary actions
@@ -377,7 +377,7 @@ export const TouchTargets = {
 /**
  * Animation durations and easing curves following iOS patterns
  */
-export const Animation = {
+const Animation = {
   duration: {
     fast: 150,
     normal: 250,
@@ -397,7 +397,7 @@ export const Animation = {
 /**
  * Get category color by category name or ID
  */
-export const getCategoryColor = (
+const getCategoryColor = (
   categoryId: string
 ): (typeof CategoryColors)[keyof typeof CategoryColors] => {
   // Map category IDs to color keys (locale-agnostic)
@@ -419,7 +419,7 @@ export const getCategoryColor = (
 /**
  * Generate dynamic color for custom categories
  */
-export const generateCategoryColor = (
+const generateCategoryColor = (
   categoryId: string
 ): (typeof CategoryColors)[keyof typeof CategoryColors] => {
   const colors = Object.values(CategoryColors)
@@ -430,7 +430,7 @@ export const generateCategoryColor = (
 /**
  * Get heatmap color based on completion count
  */
-export const getHeatmapColor = (completionCount: number): string => {
+const getHeatmapColor = (completionCount: number): string => {
   if (completionCount === 0) return SemanticColors.heatmap.none
   if (completionCount === 1) return SemanticColors.heatmap.low
   if (completionCount === 2) return SemanticColors.heatmap.medium
@@ -441,7 +441,7 @@ export const getHeatmapColor = (completionCount: number): string => {
 /**
  * Create consistent component styles
  */
-export const createComponentStyles = {
+const createComponentStyles = {
   button: (variant: 'primary' | 'secondary' | 'tertiary' = 'primary') => ({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
@@ -500,5 +500,3 @@ export const DesignSystem = {
     createComponentStyles,
   },
 } as const
-
-export default DesignSystem

@@ -94,6 +94,7 @@ This project uses GitHub Actions for automated testing, security scanning, quali
    - Builds production E2E app
    - Runs Maestro tests from `maestro/ios/`
    - Uploads test results and simulator logs
+   - Uses `macos-15` so React Native 0.83 has an Xcode 16.1+ toolchain
    - **Note**: This uses macOS runners which are more expensive
 
 2. **E2E Android** (Currently disabled)
@@ -130,14 +131,15 @@ This project uses GitHub Actions for automated testing, security scanning, quali
    - Fails on moderate+ severity vulnerabilities
    - Blocks GPL-3.0 and AGPL-3.0 licenses
 
-3. **npm Audit** (10 min timeout)
-   - Scans for vulnerable dependencies
+3. **pnpm Audit** (10 min timeout)
+   - Scans for vulnerable dependencies with `pnpm audit --audit-level=moderate`
    - Fails on high/critical vulnerabilities
    - Warnings for moderate vulnerabilities
 
 4. **Secret Scanning** (10 min timeout)
    - Uses TruffleHog to detect secrets
-   - Scans commit history
+   - Scans push/PR diffs by default
+   - Scans the full default branch on scheduled/manual runs
    - Only verified secrets reported
 
 **Permissions**: Requires `security-events: write` for CodeQL
@@ -298,7 +300,7 @@ Configure these secrets in GitHub repository settings:
 - **`EXPO_TOKEN`**
   - Get from: https://expo.dev/settings/access-tokens
   - Used for: EAS Build, EAS Submit, Expo CLI operations
-  - Required by: ci.yml, e2e.yml, release.yml
+  - Required by: ci.yml build validation and release.yml
 
 ### Optional (For Enhanced Features)
 
@@ -423,22 +425,21 @@ npx expo config --type public
 xcrun simctl list devices available
 
 # Manually test E2E build
-npm run build:e2e
+pnpm build:e2e
 sleep 180
-npm run test:e2e:production
+pnpm test:e2e:production
 ```
 
 #### 3. Security Scan Fails with Vulnerabilities
 
-**Problem**: npm audit finds high/critical vulnerabilities
+**Problem**: pnpm audit finds high/critical vulnerabilities
 
 **Solution**:
 ```bash
 # Check audit locally
-npm audit
+pnpm audit --audit-level=moderate
 
-# Fix automatically if possible
-npm audit fix
+# Update direct dependencies or add scoped pnpm overrides for vulnerable transitive ranges
 
 # For unfixable issues, assess risk and create exceptions
 ```
@@ -460,8 +461,8 @@ npm audit fix
 ```bash
 # Review the Dependabot PR locally
 gh pr checkout <pr-number>
-npm install
-npm test
+pnpm install --frozen-lockfile
+pnpm test
 
 # Fix breaking changes
 # Push fixes to the Dependabot branch
@@ -510,9 +511,9 @@ Add these badges to your README.md:
 
 1. **Before Pushing**
    ```bash
-   npm run lint          # Check code style
-   npm run typecheck     # Check types
-   npm test              # Run tests
+   pnpm lint             # Check code style with --max-warnings 0
+   pnpm typecheck        # Check types
+   pnpm test             # Run tests
    ```
 
 2. **Creating PRs**

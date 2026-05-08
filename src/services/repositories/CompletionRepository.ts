@@ -1,8 +1,13 @@
 import { Completion, Task } from '../../types'
 import { databaseService, DatabaseError } from '../database'
-import { formatDate } from '../../utils/dateUtils'
+import {
+  formatDate,
+  getMonthEndDate,
+  getMonthStartDate,
+  getWeekEndDate,
+} from '../../utils/dateUtils'
 
-export interface CompletionStats {
+interface CompletionStats {
   totalCompletions: number
   completionRate: number
   activeDays: number
@@ -11,7 +16,7 @@ export interface CompletionStats {
   categoryBreakdown: Record<string, { completed: number; total: number }>
 }
 
-export interface DailyCompletionData {
+interface DailyCompletionData {
   date: string
   completions: Completion[]
   totalTasks: number
@@ -19,7 +24,7 @@ export interface DailyCompletionData {
   completionRate: number
 }
 
-export class CompletionRepository {
+class CompletionRepository {
   // Basic CRUD operations
   async findByDate(date: string): Promise<Completion[]> {
     return await databaseService.getCompletions(date)
@@ -85,11 +90,7 @@ export class CompletionRepository {
   // Weekly and monthly queries
   async findCompletionsForWeek(weekStartDate: string): Promise<Completion[]> {
     try {
-      const startDate = new Date(weekStartDate)
-      const endDate = new Date(startDate)
-      endDate.setDate(startDate.getDate() + 6)
-
-      const weekEndDate = formatDate(endDate)
+      const weekEndDate = getWeekEndDate(new Date(weekStartDate))
 
       return await this.findByDateRange(weekStartDate, weekEndDate)
     } catch (error) {
@@ -102,8 +103,9 @@ export class CompletionRepository {
     month: number
   ): Promise<Completion[]> {
     try {
-      const startDate = `${year}-${month.toString().padStart(2, '0')}-01`
-      const endDate = formatDate(new Date(year, month, 0))
+      const targetMonth = new Date(year, month - 1, 1)
+      const startDate = getMonthStartDate(targetMonth)
+      const endDate = getMonthEndDate(targetMonth)
 
       return await this.findByDateRange(startDate, endDate)
     } catch (error) {

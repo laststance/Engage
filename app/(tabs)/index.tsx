@@ -7,6 +7,7 @@ import { VStack } from '@/components/ui/vstack'
 import { Calendar } from '@/src/components/Calendar'
 import { DayModal } from '@/src/components/DayModal'
 import { useAppStore } from '@/src/stores/app-store'
+import { calculateAchievementData } from '@/src/utils/statisticsEngine'
 
 export default function CalendarScreen() {
   const { t } = useTranslation()
@@ -16,9 +17,10 @@ export default function CalendarScreen() {
   const selectedDate = useAppStore((state) => state.selectedDate)
   const selectDate = useAppStore((state) => state.selectDate)
   const completions = useAppStore((state) => state.completions)
-  const getAchievementData = useAppStore((state) => state.getAchievementData)
-
-  const achievementData = useMemo(() => getAchievementData(), [completions])
+  const achievementData = useMemo(
+    () => calculateAchievementData(completions),
+    [completions]
+  )
 
   const handleDateSelect = (date: string) => {
     selectDate(date)

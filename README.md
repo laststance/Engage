@@ -1,125 +1,100 @@
-# Engage - Habit Tracker App 👋
+# Engage
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Engage is a React Native habit tracker built with Expo. It focuses on daily task completion, streak tracking, reflective journaling, and local-first backup/restore.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- Expo SDK 55
+- React Native 0.83
+- React 19.2
+- Expo Router
+- SQLite via `expo-sqlite`
+- Zustand
+- NativeWind with Tailwind CSS v3
+- Jest and React Native Testing Library
+- Maestro for iOS E2E tests
 
-   ```bash
-   pnpm install
-   ```
+## Requirements
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+- Node.js 22.20.0
+- pnpm 10.33.4 through Corepack
+- Xcode 16.1 or newer for React Native 0.83 iOS builds
+- Maestro for E2E testing
 
 ```bash
-pnpm reset-project
+corepack enable
+pnpm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Available Scripts
-
-### 🚀 Development Scripts
+## Development
 
 ```bash
-# Start development server
-pnpm start                    # Start Expo dev server
-pnpm ios                  # Start iOS development build
-pnpm android             # Start Android development build
-pnpm web                 # Start web development build
-
-# Code quality
-pnpm lint                # Run ESLint
-pnpm typecheck          # Run TypeScript type checking
-pnpm test                   # Run Jest unit tests
-ppnpm test:watch         # Run Jest in watch mode
-ppnpm test:coverage      # Run Jest with coverage report
+pnpm start
+pnpm ios
+pnpm android
+pnpm web
 ```
 
-### 🧪 E2E Testing Scripts
+## Quality Checks
 
-This project includes E2E tests using [Maestro](https://maestro.mobile.dev/) with **DevTools-free Production Builds** for stable testing.
-
-#### Prerequisites
-
-1. Install Java 17 or higher
-2. Install Maestro: `curl -Ls "https://get.maestro.mobile.dev" | bash`
-
-#### Production Build E2E Testing (Recommended)
-
-**🎯 DevTools-Free Environment** - Uses Release configuration without React Native DevTools interference.
+`pnpm lint` is configured with `--max-warnings 0`, so warnings fail the command.
 
 ```bash
-# Step 1: Start Production Build (DevTools disabled)
-pnpm build:e2e           # Start E2E production build
-pnpm build:e2e:restart   # Clean restart production build
-
-# Step 2: Run E2E Tests (after build completes ~3-5 minutes)
-ppnpm test:e2e:production              # Run all E2E tests
-ppnpm test:e2e:production:single       # Run single test file
-
-# Clean up processes if needed
-pnpm build:e2e:clean     # Stop production build processes
-ppnpm test:e2e:clean      # Kill DevTools processes
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:coverage
+pnpm exec expo install --check
+pnpm audit --audit-level=moderate
 ```
 
-#### Development Build E2E Testing
+## E2E Testing
+
+The recommended iOS E2E flow uses a release build with React Native DevTools disabled.
 
 ```bash
-# Quick testing with development build (may show DevTools)
-ppnpm test:e2e:ios        # Run all E2E tests
-```
-
-#### Example Workflow
-
-```bash
-# 1. Start DevTools-free production build
 pnpm build:e2e
-
-# 2. Wait for build completion (watch terminal output)
-#    Look for: "Build Succeeded" and "Opening on iPhone 16 Pro"
-
-# 3. Run specific test
-ppnpm test:e2e:production:single maestro/ios/app-launch.yaml
-
-# 4. Run all tests
-ppnpm test:e2e:production
+pnpm test:e2e:production
 ```
 
-**✨ Benefits of Production Build Testing:**
-- ✅ No React Native DevTools interference
-- ✅ Stable and consistent test execution
-- ✅ Production-like performance testing
-- ✅ Clean Mac desktop during testing
+Useful maintenance commands:
 
-## Learn more
+```bash
+pnpm build:e2e:clean
+pnpm test:e2e:clean
+pnpm test:e2e:production:single maestro/ios/app-launch.yaml
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Deployment
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Deployment scripts are wrapped by `scripts/deploy.js`.
 
-## Join the community
+```bash
+pnpm deploy:check
+pnpm deploy:version
+pnpm deploy:build
+pnpm deploy:submit
+pnpm deploy:full
+```
 
-Join our community of developers creating universal apps.
+## Project Structure
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```text
+app/                    Expo Router screens and tab navigation
+components/             Shared Gluestack UI primitives
+constants/              Theme and design-system tokens
+docs/                   Static support and privacy pages
+maestro/ios/            Maestro E2E flows
+src/components/         App feature components
+src/hooks/              App hooks
+src/services/           SQLite, repositories, backup, offline services
+src/stores/             Zustand app store
+src/types/              Domain types
+src/utils/              Date, statistics, and business logic helpers
+```
+
+## Notes
+
+- Keep native package versions compatible with Expo SDK 55. Use `pnpm exec expo install --check` before merging dependency updates.
+- Keep Tailwind on v3 while using NativeWind 4.x.
+- Keep task assignment and completion separate: `completed=false` means assigned, `completed=true` means done.

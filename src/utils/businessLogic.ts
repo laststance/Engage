@@ -49,7 +49,15 @@ export const getSuggestedTasks = (
 }
 
 /**
- * Group tasks by category for display
+ * Groups tasks by the known category order for display.
+ * @param tasks - Tasks to group.
+ * @param categories - Categories that define the visible group keys and order.
+ * @returns A category-id keyed task map. Categories with no tasks are included as empty arrays.
+ * @example
+ * groupTasksByCategory(
+ *   [{ id: 'task-1', title: 'Read', categoryId: 'life', archived: false, createdAt: 1, updatedAt: 1 }],
+ *   [{ id: 'life', name: 'Life' }]
+ * ) // => { life: [{ id: 'task-1', title: 'Read', categoryId: 'life', archived: false, createdAt: 1, updatedAt: 1 }] }
  */
 export const groupTasksByCategory = (
   tasks: Task[],

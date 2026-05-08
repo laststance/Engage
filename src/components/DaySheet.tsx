@@ -11,6 +11,7 @@ import { JournalInput } from './JournalInput'
 import { Task, Entry, Completion, Category } from '@/src/types'
 import i18n, { getCategoryDisplayName } from '@/src/i18n/config'
 import { parseDate } from '@/src/utils/dateUtils'
+import { groupTasksByCategory } from '@/src/utils/businessLogic'
 
 interface DaySheetProps {
   date: string
@@ -50,17 +51,11 @@ export const DaySheet: React.FC<DaySheetProps> = ({
   const { t } = useTranslation()
   const formattedDate = formatDaySheetDate(date, i18n.language, t)
 
-  // Create a map of completed task IDs for quick lookup
-  const completedTaskIds = new Set(completions.filter((c) => c.completed).map((c) => c.taskId))
+  const completedTaskIds = new Set(
+    completions.filter((c) => c.completed).map((c) => c.taskId)
+  )
 
-  // Group tasks by category
-  const tasksByCategory = tasks.reduce((acc, task) => {
-    if (!acc[task.categoryId]) {
-      acc[task.categoryId] = []
-    }
-    acc[task.categoryId].push(task)
-    return acc
-  }, {} as Record<string, Task[]>)
+  const tasksByCategory = groupTasksByCategory(tasks, categories)
 
   // Calculate progress for each category
   const getCategoryProgress = (categoryId: string) => {

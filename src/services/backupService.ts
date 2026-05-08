@@ -2,10 +2,10 @@ import * as FileSystem from 'expo-file-system/legacy'
 import { Paths } from 'expo-file-system'
 import * as Sharing from 'expo-sharing'
 import * as DocumentPicker from 'expo-document-picker'
-import { DatabaseService, DatabaseError } from './database'
+import { DatabaseService } from './database'
 import { Task, Entry, Completion, Category } from '../types'
 
-export interface BackupData {
+interface BackupData {
   version: string
   timestamp: number
   categories: Category[]
@@ -20,7 +20,7 @@ export interface BackupData {
   }
 }
 
-export interface BackupResult {
+interface BackupResult {
   success: boolean
   filePath?: string
   fileName?: string
@@ -28,7 +28,7 @@ export interface BackupResult {
   errors: string[]
 }
 
-export interface RestoreResult {
+interface RestoreResult {
   success: boolean
   recordsImported: {
     categories: number
@@ -41,7 +41,7 @@ export interface RestoreResult {
   warnings: string[]
 }
 
-export interface BackupValidationResult {
+interface BackupValidationResult {
   isValid: boolean
   version: string
   timestamp: number
@@ -59,7 +59,7 @@ export interface BackupValidationResult {
 /**
  * Service for managing data backup and export functionality
  */
-export class BackupService {
+class BackupService {
   private readonly BACKUP_VERSION = '1.0'
   private readonly BACKUP_DIRECTORY = `${Paths.document.uri}backups/`
   private readonly MAX_BACKUP_FILES = 10 // Keep only last 10 backups

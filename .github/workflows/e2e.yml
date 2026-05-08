@@ -22,7 +22,7 @@ concurrency:
 jobs:
   e2e-ios:
     name: E2E Tests (iOS)
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 60
 
     steps:
@@ -39,14 +39,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
-
-      - name: Setup Expo and EAS
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+        run: pnpm install --frozen-lockfile
 
       - name: Install Maestro
         run: |
@@ -174,14 +167,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
-
-      - name: Setup Expo and EAS
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+        run: pnpm install --frozen-lockfile
 
       - name: Install Maestro
         run: |

@@ -1,7 +1,6 @@
 /**
  * Notifications hook - Stub implementation
- * This is a placeholder implementation to satisfy TypeScript requirements
- * The full implementation is available in useNotifications.ts.disabled
+ * This keeps the settings screen stable until notification scheduling is wired.
  */
 
 import { useState } from 'react'
@@ -46,16 +45,5 @@ export function useNotifications() {
     scheduleDailyReminder,
     cancelDailyReminder,
     refreshSettings,
-  }
-}
-
-export function useNotificationResponse() {
-  const clearLastResponse = () => {
-    console.warn('useNotifications: clearLastResponse not implemented')
-  }
-
-  return {
-    lastResponse: null,
-    clearLastResponse,
   }
 }

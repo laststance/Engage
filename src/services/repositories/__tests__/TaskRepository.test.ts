@@ -1,5 +1,5 @@
 import { TaskRepository } from '../TaskRepository'
-import { databaseService, DatabaseError } from '../../database'
+import { databaseService } from '../../database'
 
 // Mock the database service
 jest.mock('../../database', () => ({

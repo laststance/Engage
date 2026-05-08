@@ -115,7 +115,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       await onCreateCategory(newCategoryName.trim())
       setNewCategoryName('')
       setShowNewCategoryInput(false)
-    } catch (error) {
+    } catch {
       Alert.alert(t('common.error'), t('presetEditor.createCategoryFailed'))
     }
   }
@@ -161,7 +161,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       }))
 
       await onSave(tasksToSave)
-    } catch (error) {
+    } catch {
       Alert.alert(t('common.error'), t('presetEditor.saveFailed'))
     } finally {
       setSaving(false)

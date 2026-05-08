@@ -30,6 +30,18 @@ export interface MonthlyStats extends StatsData {
   month: number
 }
 
+interface PeriodSummaryStats {
+  streakDays: number
+  completionRate: number
+  activeDays: number
+  totalTasks: number
+  dailyAverage: number
+  journalDays: number
+  categoryBreakdown: Record<string, { completed: number; total: number }>
+}
+
+const DECIMAL_PRECISION_FACTOR = 100
+
 /**
  * Calculate current streak based on consecutive days with at least one completion
  */
@@ -197,19 +209,30 @@ export const calculateJournalStats = (
 }
 
 /**
- * Calculate weekly statistics
+ * Calculates the shared period stats used by weekly and monthly reports.
+ * @param tasks - All available tasks.
+ * @param completions - Completion records grouped by date.
+ * @param entries - Journal entries grouped by date.
+ * @param categories - All task categories.
+ * @param startDate - First date in YYYY-MM-DD format.
+ * @param endDate - Last date in YYYY-MM-DD format.
+ * @returns
+ * - Shared task, streak, journal, and category summary values.
+ * - Empty periods return zero totals and an empty category breakdown.
+ * @example
+ * calculatePeriodSummaryStats([], {}, {}, [], '2026-05-01', '2026-05-07')
+ * // => { streakDays: 0, completionRate: 0, activeDays: 0, totalTasks: 0, ... }
  */
-export const calculateWeeklyStats = (
+const calculatePeriodSummaryStats = (
   tasks: Task[],
   completions: Record<string, Completion[]>,
   entries: Record<string, Entry>,
   categories: Category[],
-  weekStartDate: string,
-  weekEndDate: string
-): WeeklyStats => {
-  const daysInRange = getDaysInRange(weekStartDate, weekEndDate)
+  startDate: string,
+  endDate: string
+): PeriodSummaryStats => {
+  const daysInRange = getDaysInRange(startDate, endDate)
 
-  // Calculate basic stats (only count completed tasks)
   const totalCompletions = daysInRange.reduce((total, date) => {
     return total + (completions[date]?.filter((c) => c.completed).length || 0)
   }, 0)
@@ -220,50 +243,63 @@ export const calculateWeeklyStats = (
 
   const completionRate = calculateCompletionRate(
     completions,
-    weekStartDate,
-    weekEndDate
+    startDate,
+    endDate
   )
   const dailyAverage = activeDays > 0 ? totalCompletions / activeDays : 0
-
-  // Calculate streak (always from today, not period end date which may be in the future)
   const streakResult = calculateStreakDays(completions)
-
-  // Calculate category breakdown
   const categoryBreakdown = calculateCategoryBreakdown(
     tasks,
     completions,
     categories,
-    weekStartDate,
-    weekEndDate
+    startDate,
+    endDate
   )
-
-  // Convert CategoryStats to the expected format
-  const categoryBreakdownFormatted: Record<
-    string,
-    { completed: number; total: number }
-  > = {}
-  Object.entries(categoryBreakdown).forEach(([categoryId, stats]) => {
-    categoryBreakdownFormatted[categoryId] = {
-      completed: stats.completed,
-      total: stats.total,
-    }
-  })
-
-  // Calculate journal stats
-  const journalStats = calculateJournalStats(
-    entries,
-    weekStartDate,
-    weekEndDate
-  )
+  const journalStats = calculateJournalStats(entries, startDate, endDate)
 
   return {
     streakDays: streakResult.currentStreak,
     completionRate,
     activeDays,
     totalTasks: totalCompletions,
-    dailyAverage: Math.round(dailyAverage * 100) / 100,
+    dailyAverage:
+      Math.round(dailyAverage * DECIMAL_PRECISION_FACTOR) /
+      DECIMAL_PRECISION_FACTOR,
     journalDays: journalStats.journalDays,
-    categoryBreakdown: categoryBreakdownFormatted,
+    categoryBreakdown: Object.fromEntries(
+      Object.entries(categoryBreakdown).map(([categoryId, stats]) => [
+        categoryId,
+        {
+          completed: stats.completed,
+          total: stats.total,
+        },
+      ])
+    ),
+  }
+}
+
+/**
+ * Calculate weekly statistics
+ */
+export const calculateWeeklyStats = (
+  tasks: Task[],
+  completions: Record<string, Completion[]>,
+  entries: Record<string, Entry>,
+  categories: Category[],
+  weekStartDate: string,
+  weekEndDate: string
+): WeeklyStats => {
+  const periodStats = calculatePeriodSummaryStats(
+    tasks,
+    completions,
+    entries,
+    categories,
+    weekStartDate,
+    weekEndDate
+  )
+
+  return {
+    ...periodStats,
     weekStart: weekStartDate,
     weekEnd: weekEndDate,
   }
@@ -282,63 +318,17 @@ export const calculateMonthlyStats = (
   year: number,
   month: number
 ): MonthlyStats => {
-  const daysInRange = getDaysInRange(monthStartDate, monthEndDate)
-
-  // Calculate basic stats (only count completed tasks)
-  const totalCompletions = daysInRange.reduce((total, date) => {
-    return total + (completions[date]?.filter((c) => c.completed).length || 0)
-  }, 0)
-
-  const activeDays = daysInRange.filter(
-    (date) => completions[date] && completions[date].some((c) => c.completed)
-  ).length
-
-  const completionRate = calculateCompletionRate(
-    completions,
-    monthStartDate,
-    monthEndDate
-  )
-  const dailyAverage = activeDays > 0 ? totalCompletions / activeDays : 0
-
-  // Calculate streak (always from today, not period end date which may be in the future)
-  const streakResult = calculateStreakDays(completions)
-
-  // Calculate category breakdown
-  const categoryBreakdown = calculateCategoryBreakdown(
+  const periodStats = calculatePeriodSummaryStats(
     tasks,
     completions,
+    entries,
     categories,
     monthStartDate,
     monthEndDate
   )
 
-  // Convert CategoryStats to the expected format
-  const categoryBreakdownFormatted: Record<
-    string,
-    { completed: number; total: number }
-  > = {}
-  Object.entries(categoryBreakdown).forEach(([categoryId, stats]) => {
-    categoryBreakdownFormatted[categoryId] = {
-      completed: stats.completed,
-      total: stats.total,
-    }
-  })
-
-  // Calculate journal stats
-  const journalStats = calculateJournalStats(
-    entries,
-    monthStartDate,
-    monthEndDate
-  )
-
   return {
-    streakDays: streakResult.currentStreak,
-    completionRate,
-    activeDays,
-    totalTasks: totalCompletions,
-    dailyAverage: Math.round(dailyAverage * 100) / 100,
-    journalDays: journalStats.journalDays,
-    categoryBreakdown: categoryBreakdownFormatted,
+    ...periodStats,
     monthStart: monthStartDate,
     monthEnd: monthEndDate,
     year,

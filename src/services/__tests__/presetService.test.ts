@@ -1,7 +1,6 @@
 import { presetService } from '../presetService'
 import { taskRepository } from '../repositories/TaskRepository'
 import { categoryRepository } from '../repositories/CategoryRepository'
-import { databaseService } from '../database'
 
 // Mock the repositories
 jest.mock('../repositories/TaskRepository')
@@ -12,10 +11,6 @@ const mockTaskRepository = taskRepository as jest.Mocked<typeof taskRepository>
 const mockCategoryRepository = categoryRepository as jest.Mocked<
   typeof categoryRepository
 >
-const mockDatabaseService = databaseService as jest.Mocked<
-  typeof databaseService
->
-
 describe('PresetService', () => {
   beforeEach(() => {
     jest.clearAllMocks()

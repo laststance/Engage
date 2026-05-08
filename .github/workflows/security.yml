@@ -82,7 +82,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Run pnpm audit
         run: |
@@ -125,12 +125,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: TruffleHog Secret Scan
+      - name: TruffleHog Secret Scan (push / pull request)
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --debug --only-verified
+
+      - name: TruffleHog Secret Scan (full branch)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
+          base: ""
+          head: ${{ github.event.repository.default_branch }}
           extra_args: --debug --only-verified
 
   security-summary:

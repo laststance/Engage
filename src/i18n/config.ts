@@ -1,6 +1,10 @@
 import { getLocales } from 'expo-localization'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import i18n from 'i18next'
+import i18next, {
+  changeLanguage as changeI18nextLanguage,
+  t as translate,
+  use as registerI18nextPlugin,
+} from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import ja from './locales/ja'
 import en from './locales/en'
@@ -9,7 +13,7 @@ const LANGUAGE_KEY = '@engage/language'
 
 const deviceLanguage = getLocales()[0]?.languageCode ?? 'ja'
 
-i18n.use(initReactI18next).init({
+registerI18nextPlugin(initReactI18next).init({
   resources: {
     ja: { translation: ja },
     en: { translation: en },
@@ -22,7 +26,7 @@ i18n.use(initReactI18next).init({
 // Load saved language preference (async, overrides device default)
 AsyncStorage.getItem(LANGUAGE_KEY).then((savedLang) => {
   if (savedLang && (savedLang === 'ja' || savedLang === 'en')) {
-    i18n.changeLanguage(savedLang)
+    changeI18nextLanguage(savedLang)
   }
 })
 
@@ -34,7 +38,7 @@ AsyncStorage.getItem(LANGUAGE_KEY).then((savedLang) => {
  */
 export const changeLanguage = async (lang: 'ja' | 'en') => {
   await AsyncStorage.setItem(LANGUAGE_KEY, lang)
-  await i18n.changeLanguage(lang)
+  await changeI18nextLanguage(lang)
 }
 
 /**
@@ -57,7 +61,7 @@ export const getCategoryDisplayName = (category: {
   name: string
 }): string => {
   const key = PRESET_CATEGORY_KEYS[category.id]
-  return key ? i18n.t(key) : category.name
+  return key ? translate(key) : category.name
 }
 
-export default i18n
+export default i18next

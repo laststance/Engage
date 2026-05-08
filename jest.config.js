@@ -22,9 +22,6 @@ module.exports = {
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
-  setupFilesAfterEnv: [
-    '@testing-library/jest-native/extend-expect',
-  ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '\\.svg$': 'jest-transform-stub',

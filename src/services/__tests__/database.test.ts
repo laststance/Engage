@@ -1,6 +1,5 @@
 import * as SQLite from 'expo-sqlite'
-import { DatabaseService, DatabaseError, MigrationError } from '../database'
-import { Task, Entry, Completion } from '../../types'
+import { DatabaseService, DatabaseError } from '../database'
 
 // Mock expo-sqlite
 jest.mock('expo-sqlite', () => ({

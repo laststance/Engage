@@ -4,7 +4,7 @@ import { categoryRepository } from './repositories/CategoryRepository'
 import { DatabaseError } from './database'
 import i18n from '@/src/i18n/config'
 
-export interface DefaultTaskData {
+interface DefaultTaskData {
   title: string
   categoryId: string
   defaultMinutes?: number
@@ -19,7 +19,7 @@ export interface PresetInitializationResult {
 /**
  * Service for managing preset tasks and categories initialization
  */
-export class PresetService {
+class PresetService {
   /**
    * Default categories resolved at runtime via i18n
    * @returns Translated category list

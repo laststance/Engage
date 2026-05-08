@@ -19,7 +19,7 @@ export class DatabaseError extends Error {
   }
 }
 
-export class MigrationError extends Error {
+class MigrationError extends Error {
   constructor(message: string, public version?: number) {
     super(message)
     this.name = 'MigrationError'
@@ -197,7 +197,7 @@ class DatabaseService {
       )) as { version: number | null } | null
 
       return result?.version ?? 0
-    } catch (error) {
+    } catch {
       // If schema_migrations table doesn't exist, return 0
       return 0
     }
@@ -225,7 +225,7 @@ class DatabaseService {
       await this.db.execAsync('COMMIT')
 
       console.log(`Migration ${migration.version} applied successfully`)
-    } catch (error) {
+    } catch {
       // Rollback on error
       await this.db.execAsync('ROLLBACK')
       throw new MigrationError(
@@ -461,26 +461,6 @@ class DatabaseService {
     }
   }
 
-  async getTasksWithCategories(): Promise<
-    (Task & { categoryName: string })[]
-  > {
-    try {
-      const result = await this.executeQuery<any>(
-        `SELECT t.*, c.name as category_name 
-         FROM tasks t 
-         JOIN categories c ON t.category_id = c.id 
-         WHERE t.archived = 0 
-         ORDER BY t.created_at DESC`
-      )
-      return result.map((row) => ({
-        ...this.mapRowToTask(row),
-        categoryName: row.category_name,
-      }))
-    } catch (error) {
-      throw new DatabaseError('Failed to get tasks with categories', error)
-    }
-  }
-
   async getTaskById(id: string): Promise<Task | null> {
     try {
       this.validateTaskId(id)
@@ -590,14 +570,6 @@ class DatabaseService {
       }
     } catch (error) {
       throw new DatabaseError('Failed to delete task', error)
-    }
-  }
-
-  async archiveTask(id: string): Promise<void> {
-    try {
-      await this.updateTask(id, { archived: true })
-    } catch (error) {
-      throw new DatabaseError('Failed to archive task', error)
     }
   }
 
@@ -832,18 +804,6 @@ class DatabaseService {
     }
   }
 
-  async deleteSetting(key: string): Promise<void> {
-    try {
-      if (!key || key.trim().length === 0) {
-        throw new DatabaseError('Setting key is required')
-      }
-
-      await this.executeUpdate('DELETE FROM settings WHERE key = ?', [key])
-    } catch (error) {
-      throw new DatabaseError('Failed to delete setting', error)
-    }
-  }
-
   // Additional validation methods
   private validateTaskId(id: string): void {
     if (!id || id.trim().length === 0) {
@@ -901,38 +861,6 @@ class DatabaseService {
       minutes: row.minutes,
       completed: Boolean(row.completed),
       createdAt: row.created_at,
-    }
-  }
-
-  // Database maintenance methods
-  async vacuum(): Promise<void> {
-    try {
-      await this.executeQuery('VACUUM')
-      console.log('Database vacuum completed')
-    } catch (error) {
-      throw new DatabaseError('Failed to vacuum database', error)
-    }
-  }
-
-  async getTableInfo(tableName: string): Promise<any[]> {
-    try {
-      return await this.executeQuery(`PRAGMA table_info(${tableName})`)
-    } catch (error) {
-      throw new DatabaseError(
-        `Failed to get table info for ${tableName}`,
-        error
-      )
-    }
-  }
-
-  async getDatabaseSize(): Promise<number> {
-    try {
-      const result = await this.executeQueryFirst<{ size: number }>(
-        'SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()'
-      )
-      return result?.size || 0
-    } catch (error) {
-      throw new DatabaseError('Failed to get database size', error)
     }
   }
 
