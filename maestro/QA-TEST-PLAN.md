@@ -4,7 +4,7 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 
 ## Test Environment
 - **Platform:** iOS Simulator (iPhone 17 Pro)
-- **App:** Engage (com.anonymous.engage)
+- **App:** Engage (com.laststance.engage)
 - **Build:** Production E2E build (DevTools disabled)
 - **Date:** 2026-03-11
 
