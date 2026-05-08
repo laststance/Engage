@@ -24,6 +24,12 @@ jobs:
     name: E2E Tests (iOS)
     runs-on: macos-26
     timeout-minutes: 60
+    env:
+      APP_READY_WAIT_SECONDS: 180
+      BUILD_POLL_INTERVAL_SECONDS: 30
+      E2E_BUILD_LOG: e2e-build.log
+      E2E_BUILD_READY_TEXT: Logs for your project will appear below
+      MAX_BUILD_WAIT_SECONDS: 2700
 
     steps:
       - name: Checkout code
@@ -70,40 +76,54 @@ jobs:
           # Clean previous builds
           pnpm build:e2e:clean || true
 
-          # Build production app for testing
-          pnpm build:e2e &
+          # Build, install, and launch the production app for testing.
+          # `expo run:ios` stays alive to stream Metro logs after launch, so the
+          # CI step treats the app launch log line as the readiness signal.
+          nohup pnpm build:e2e > "$E2E_BUILD_LOG" 2>&1 &
           BUILD_PID=$!
 
-          # Wait for build to complete (max 45 minutes)
           SECONDS=0
-          MAX_WAIT=2700
 
           while kill -0 $BUILD_PID 2>/dev/null; do
-            if [ $SECONDS -ge $MAX_WAIT ]; then
-              echo "Build timeout after $MAX_WAIT seconds"
+            if grep -q "$E2E_BUILD_READY_TEXT" "$E2E_BUILD_LOG"; then
+              echo "Build completed and app launched"
+              tail -n 80 "$E2E_BUILD_LOG"
+              break
+            fi
+
+            if [ $SECONDS -ge "$MAX_BUILD_WAIT_SECONDS" ]; then
+              echo "Build timeout after $MAX_BUILD_WAIT_SECONDS seconds"
+              tail -n 120 "$E2E_BUILD_LOG"
               kill $BUILD_PID 2>/dev/null || true
               exit 1
             fi
+
             echo "Building... (${SECONDS}s elapsed)"
-            sleep 30
+            tail -n 20 "$E2E_BUILD_LOG"
+            sleep "$BUILD_POLL_INTERVAL_SECONDS"
           done
 
-          # Check if build succeeded
-          wait $BUILD_PID
-          BUILD_EXIT_CODE=$?
+          if ! kill -0 $BUILD_PID 2>/dev/null; then
+            wait $BUILD_PID
+            BUILD_EXIT_CODE=$?
 
-          if [ $BUILD_EXIT_CODE -ne 0 ]; then
-            echo "Build failed with exit code $BUILD_EXIT_CODE"
-            exit 1
+            if [ $BUILD_EXIT_CODE -ne 0 ]; then
+              echo "Build failed with exit code $BUILD_EXIT_CODE"
+              tail -n 120 "$E2E_BUILD_LOG"
+              exit 1
+            fi
+
+            echo "Build command exited successfully"
+            tail -n 80 "$E2E_BUILD_LOG"
           fi
 
-          echo "Build completed successfully"
+          echo "$BUILD_PID" > .e2e-build.pid
 
       - name: Wait for app to be ready
         run: |
-          # Wait for app to fully start (3-5 minutes typical)
+          # Wait for app to fully start.
           echo "Waiting for app to be ready..."
-          sleep 180
+          sleep "$APP_READY_WAIT_SECONDS"
 
           # Verify app is running
           xcrun simctl list | grep Booted
@@ -140,6 +160,10 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
+          if [ -f .e2e-build.pid ]; then
+            kill "$(cat .e2e-build.pid)" 2>/dev/null || true
+          fi
+
           # Kill all Expo and DevTools processes
           pnpm build:e2e:clean || true
 
