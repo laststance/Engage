@@ -85,23 +85,24 @@ This project uses GitHub Actions for automated testing, security scanning, quali
 **Triggers**:
 - Manual dispatch
 - Push to `main` (when app code or tests change)
+- Pull requests to `main` (when app code, tests, native iOS files, or E2E workflow inputs change)
 - Scheduled: Daily at 2 AM UTC
 
 **Jobs**:
 
-1. **E2E iOS** (60 min timeout, macOS runner)
-   - Sets up iOS simulator (iPhone 15 Pro)
+1. **E2E iOS** (90 min timeout, standard GitHub-hosted macOS runner)
+   - Sets up the first available preferred iPhone device model on the installed Xcode runtime (for example, `iPhone 17 Pro` on iOS 26.x, then `iPhone 16 Pro`, `iPhone 15 Pro`, or the first available iPhone fallback)
    - Builds production E2E app
    - Runs Maestro tests from `maestro/ios/`
    - Uploads test results and simulator logs
-   - Uses `macos-15` so React Native 0.83 has an Xcode 16.1+ toolchain
-   - **Note**: This uses macOS runners which are more expensive
+   - Uses the standard GitHub-hosted `macos-26` runner so React Native 0.83 has a current macOS/Xcode toolchain
+   - **Note**: Standard GitHub-hosted runners are free for public repositories, but private repositories or larger runners can be billed
 
 2. **E2E Android** (Currently disabled)
    - Placeholder for future Android E2E tests
-   - Enable by setting `if: false` to `if: true`
+   - Enable by setting repository variable `ENABLE_ANDROID_E2E=true`
 
-**Concurrency**: Only one E2E run at a time
+**Concurrency**: Cancels previous E2E runs on the same PR/ref without interrupting unrelated E2E runs
 
 **Artifacts**:
 - Maestro test results (30 days)
