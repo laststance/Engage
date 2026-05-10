@@ -52,6 +52,9 @@ on:
     # Run E2E tests daily at 2 AM UTC
     - cron: '0 2 * * *'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 # Cancel previous runs for the same PR/ref without interrupting unrelated E2E runs
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}

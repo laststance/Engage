@@ -10,6 +10,9 @@ permissions:
   pull-requests: write
   issues: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   coverage-check:
     name: Coverage Enforcement
@@ -64,10 +67,12 @@ jobs:
           fi
 
           # Save coverage for PR comment
-          echo "COVERAGE_STATEMENTS=${STATEMENTS}" >> $GITHUB_ENV
-          echo "COVERAGE_BRANCHES=${BRANCHES}" >> $GITHUB_ENV
-          echo "COVERAGE_FUNCTIONS=${FUNCTIONS}" >> $GITHUB_ENV
-          echo "COVERAGE_LINES=${LINES}" >> $GITHUB_ENV
+          {
+            echo "COVERAGE_STATEMENTS=${STATEMENTS}"
+            echo "COVERAGE_BRANCHES=${BRANCHES}"
+            echo "COVERAGE_FUNCTIONS=${FUNCTIONS}"
+            echo "COVERAGE_LINES=${LINES}"
+          } >> "$GITHUB_ENV"
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v6
@@ -115,9 +120,11 @@ jobs:
           echo "- Dev dependencies: ${DEV_DEPS_COUNT}"
 
           # Save for PR comment
-          echo "BUNDLE_SIZE=${PROD_DEPS}" >> $GITHUB_ENV
-          echo "DEPS_COUNT=${DEPS_COUNT}" >> $GITHUB_ENV
-          echo "DEV_DEPS_COUNT=${DEV_DEPS_COUNT}" >> $GITHUB_ENV
+          {
+            echo "BUNDLE_SIZE=${PROD_DEPS}"
+            echo "DEPS_COUNT=${DEPS_COUNT}"
+            echo "DEV_DEPS_COUNT=${DEV_DEPS_COUNT}"
+          } >> "$GITHUB_ENV"
 
   code-metrics:
     name: Code Complexity Metrics
@@ -131,12 +138,14 @@ jobs:
       - name: Calculate code metrics
         run: |
           # Count lines of code
-          TS_LINES=$(find src app components -name "*.ts" -o -name "*.tsx" | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}' || echo "0")
-          TEST_LINES=$(find . -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.spec.tsx" | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}' || echo "0")
+          TS_LINES=$(find src app components \( -name "*.ts" -o -name "*.tsx" \) -exec wc -l {} + 2>/dev/null | tail -1 | awk '{print $1}')
+          TEST_LINES=$(find . \( -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.spec.tsx" \) -exec wc -l {} + 2>/dev/null | tail -1 | awk '{print $1}')
+          TS_LINES=${TS_LINES:-0}
+          TEST_LINES=${TEST_LINES:-0}
 
           # Count files
-          TS_FILES=$(find src app components -name "*.ts" -o -name "*.tsx" | wc -l)
-          TEST_FILES=$(find . -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.spec.tsx" | wc -l)
+          TS_FILES=$(find src app components \( -name "*.ts" -o -name "*.tsx" \) -print | wc -l | tr -d ' ')
+          TEST_FILES=$(find . \( -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.spec.tsx" \) -print | wc -l | tr -d ' ')
 
           echo "Code Metrics:"
           echo "- TypeScript lines: ${TS_LINES}"
@@ -154,11 +163,13 @@ jobs:
           echo "- Test/Code ratio: ${TEST_RATIO}%"
 
           # Save for PR comment
-          echo "TS_LINES=${TS_LINES}" >> $GITHUB_ENV
-          echo "TEST_LINES=${TEST_LINES}" >> $GITHUB_ENV
-          echo "TS_FILES=${TS_FILES}" >> $GITHUB_ENV
-          echo "TEST_FILES=${TEST_FILES}" >> $GITHUB_ENV
-          echo "TEST_RATIO=${TEST_RATIO}" >> $GITHUB_ENV
+          {
+            echo "TS_LINES=${TS_LINES}"
+            echo "TEST_LINES=${TEST_LINES}"
+            echo "TS_FILES=${TS_FILES}"
+            echo "TEST_FILES=${TEST_FILES}"
+            echo "TEST_RATIO=${TEST_RATIO}"
+          } >> "$GITHUB_ENV"
 
   pr-comment:
     name: PR Quality Report
@@ -255,9 +266,11 @@ jobs:
     steps:
       - name: Generate summary
         run: |
-          echo "## Quality Checks Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Coverage Check: ${{ needs.coverage-check.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Bundle Analysis: ${{ needs.bundle-size.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Code Metrics: ${{ needs.code-metrics.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- PR Comment: ${{ needs.pr-comment.result }}" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Quality Checks Summary"
+            echo ""
+            echo "- Coverage Check: ${{ needs.coverage-check.result }}"
+            echo "- Bundle Analysis: ${{ needs.bundle-size.result }}"
+            echo "- Code Metrics: ${{ needs.code-metrics.result }}"
+            echo "- PR Comment: ${{ needs.pr-comment.result }}"
+          } >> "$GITHUB_STEP_SUMMARY"
