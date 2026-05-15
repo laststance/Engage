@@ -105,6 +105,32 @@ export const Calendar: React.FC<CalendarProps> = ({
     return weeks
   }, [currentMonth])
 
+  /**
+   * Format the visible month title with localized month names.
+   * The English UI should read like "May 2026", not a numeric "5 2026".
+   * @returns Localized month and year label for the current calendar page
+   * @example
+   * // en: "May 2026", ja: "2026年5月"
+   */
+  const monthTitle = useMemo(() => {
+    return new Intl.DateTimeFormat(i18nInstance.language, {
+      month: 'long',
+      year: 'numeric',
+    }).format(currentMonth)
+  }, [currentMonth, i18nInstance.language])
+
+  const monthlySummary = useMemo(() => {
+    const currentMonthDates = calendarData
+      .flat()
+      .filter((day) => day.isCurrentMonth)
+      .map((day) => achievementData[day.dateString] || 0)
+
+    return {
+      activeDays: currentMonthDates.filter((count) => count > 0).length,
+      completedTasks: currentMonthDates.reduce((sum, count) => sum + count, 0),
+    }
+  }, [achievementData, calendarData])
+
   const getHeatmapColor = (completionCount: number): string => {
     if (completionCount === 0) return 'bg-gray-100'
     if (completionCount === 1) return 'bg-green-200'
@@ -178,10 +204,7 @@ export const Calendar: React.FC<CalendarProps> = ({
           className="text-lg font-semibold text-gray-800"
           testID="calendar-title"
         >
-          {t('calendar.monthFormat', {
-            year: currentMonth.getFullYear(),
-            month: currentMonth.getMonth() + 1,
-          })}
+          {monthTitle}
         </Text>
 
         <Pressable
@@ -215,7 +238,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       </HStack>
 
       {/* Calendar grid - more compact design matching Figma */}
-      <VStack className="px-4" space="xs">
+      <VStack className="px-4" space="sm">
         {calendarData.map((week, weekIndex) => (
           <HStack key={weekIndex} space="xs">
             {week.map((dayData, dayIndex) => {
@@ -227,13 +250,18 @@ export const Calendar: React.FC<CalendarProps> = ({
                   key={`${weekIndex}-${dayIndex}`}
                   onPress={() => onDateSelect(dayData.dateString)}
                   testID={`calendar-date-${dayData.dateString}`}
-                  className="flex-1"
+                  className="flex-1 min-h-[48px]"
                   accessibilityLabel={getDateA11yLabel(dayData.date, dayData.dateString, completionCount)}
                   accessibilityRole="button"
                 >
                   <Box
+                    testID={
+                      completionCount > 0
+                        ? `achievement-indicator-${dayData.dateString}`
+                        : undefined
+                    }
                     className={`
-                      h-11 items-center justify-center rounded-md
+                      h-12 items-center justify-center rounded-xl
                       ${dayData.isCurrentMonth ? heatmapColor : 'bg-gray-50'}
                       ${
                         isSelected(dayData.dateString)
@@ -270,7 +298,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       </VStack>
 
       {/* Legend - matching Figma design with proper spacing */}
-      <HStack className="items-center justify-center mt-8 px-4">
+      <HStack className="items-center justify-center mt-7 px-4">
         <Text className="text-xs text-gray-500 mr-3">{t('calendar.legendLess')}</Text>
         <Box className="w-3 h-3 bg-gray-100 rounded-sm mx-1" />
         <Box className="w-3 h-3 bg-green-200 rounded-sm mx-1" />
@@ -278,6 +306,28 @@ export const Calendar: React.FC<CalendarProps> = ({
         <Box className="w-3 h-3 bg-green-600 rounded-sm mx-1" />
         <Text className="text-xs text-gray-500 ml-3">{t('calendar.legendMore')}</Text>
       </HStack>
+
+      <Box className="mx-4 mt-6 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4">
+        <HStack className="items-center justify-between">
+          <VStack space="xs">
+            <Text className="text-xs font-semibold uppercase text-blue-500">
+              {t('calendar.monthlySummary')}
+            </Text>
+            <Text className="text-sm font-medium text-gray-700">
+              {monthlySummary.completedTasks > 0
+                ? t('calendar.monthlySummaryCompleted', {
+                    count: monthlySummary.completedTasks,
+                  })
+                : t('calendar.monthlySummaryEmpty')}
+            </Text>
+          </VStack>
+          <Text className="text-sm font-semibold text-blue-700">
+            {t('calendar.monthlySummaryActiveDays', {
+              count: monthlySummary.activeDays,
+            })}
+          </Text>
+        </HStack>
+      </Box>
     </Box>
   )
 }
