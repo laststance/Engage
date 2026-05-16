@@ -12,6 +12,10 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 
 ## QA Scenarios
 
+The main CI suite runs QA-02, QA-04, QA-05, QA-06, QA-07, QA-10, and QA-11.
+QA-01 is a tagged smoke flow, while QA-03, QA-08, and QA-09 are tagged manual
+redundancy checks that can be run on demand.
+
 ### QA-01: App Launch (P0)
 | Step | Action | Expected Result |
 |------|--------|-----------------|
@@ -20,6 +24,7 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 | 3 | Check title | Calendar title rendered with current month |
 
 **Result:** [x] PASS
+**Automation:** `smoke` tag only; excluded from the main suite because QA-02 also verifies launch.
 
 ---
 
@@ -32,6 +37,7 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 | 4 | Tap "Calendar" tab | Calendar screen visible again |
 
 **Result:** [x] PASS
+**Automation:** Main suite.
 
 ---
 
@@ -44,6 +50,7 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 | 4 | Tap "Confirm" (`task-picker-confirm`) | Modal closes, selected tasks appear on Today screen |
 
 **Result:** [x] PASS
+**Automation:** `manual` tag only; QA-04 and QA-10 cover this setup path in the main suite.
 
 ---
 
@@ -55,6 +62,7 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 | 3 | Tap the same task item again | Task toggles back to uncompleted |
 
 **Result:** [x] PASS
+**Automation:** Main suite.
 
 ---
 
@@ -68,6 +76,7 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 | 5 | Check character count | Character count displays (`character-count`) |
 
 **Result:** [x] PASS
+**Automation:** Main suite.
 
 ---
 
@@ -81,6 +90,7 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 | 5 | Close DayModal (`day-modal-close`) | Modal closes, calendar visible again |
 
 **Result:** [x] PASS
+**Automation:** Main suite.
 
 ---
 
@@ -94,6 +104,7 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 | 5 | Tap close (`preset-editor-close`) | Editor closes, TaskPicker visible |
 
 **Result:** [x] PASS
+**Automation:** Main suite.
 
 ---
 
@@ -106,6 +117,7 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 | 4 | Tap "Month" toggle (`stats-month-toggle`) | Month view displayed |
 
 **Result:** [x] PASS
+**Automation:** `manual` tag only; component tests cover the period toggle behavior.
 
 ---
 
@@ -118,6 +130,7 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 | 4 | Tap close (`settings-close`) | Settings modal closes |
 
 **Result:** [x] PASS
+**Automation:** `manual` tag only; QA-11 covers Settings > Backup in the main suite.
 
 ---
 
@@ -129,20 +142,35 @@ Manual QA scenarios tested on iOS Simulator before codifying as Maestro E2E test
 | 3 | Navigate to Today tab | Previously completed task still shows completed |
 
 **Result:** [x] PASS
+**Automation:** Main suite.
+
+---
+
+### QA-11: Backup Creation (P1)
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings | Settings modal opens |
+| 2 | Tap Backup (`settings-backup`) | Data Backup screen opens |
+| 3 | Tap "Create Backup" | Backup succeeds |
+| 4 | Observe alert | "Backup Created" appears and "Backup Failed" does not appear |
+
+**Result:** [x] PASS
+**Automation:** Main suite.
 
 ---
 
 ## Summary
 
-| Scenario | Priority | Result |
-|----------|----------|--------|
-| QA-01 App Launch | P0 | [x] PASS |
-| QA-02 Tab Navigation | P0 | [x] PASS |
-| QA-03 Task Selection | P0 | [x] PASS |
-| QA-04 Task Completion | P0 | [x] PASS |
-| QA-05 Journal Entry | P1 | [x] PASS |
-| QA-06 Calendar Browsing | P1 | [x] PASS |
-| QA-07 Edit Presets | P1 | [x] PASS |
-| QA-08 Statistics | P1 | [x] PASS |
-| QA-09 Settings | P2 | [x] PASS |
-| QA-10 Data Persistence | P2 | [x] PASS |
+| Scenario | Priority | Automation | Result |
+|----------|----------|------------|--------|
+| QA-01 App Launch | P0 | smoke | [x] PASS |
+| QA-02 Tab Navigation | P0 | main | [x] PASS |
+| QA-03 Task Selection | P0 | manual | [x] PASS |
+| QA-04 Task Completion | P0 | main | [x] PASS |
+| QA-05 Journal Entry | P1 | main | [x] PASS |
+| QA-06 Calendar Browsing | P1 | main | [x] PASS |
+| QA-07 Edit Presets | P1 | main | [x] PASS |
+| QA-08 Statistics | P1 | manual | [x] PASS |
+| QA-09 Settings | P2 | manual | [x] PASS |
+| QA-10 Data Persistence | P2 | main | [x] PASS |
+| QA-11 Backup Creation | P1 | main | [x] PASS |

@@ -1,9 +1,10 @@
 appId: com.laststance.engage
 tags:
   - ios
+  - smoke
 ---
 # QA-01: App Launch
-# Verifies app launches without crash and Calendar screen is visible
+# Fast smoke check for launch-only diagnosis; the main suite covers launch via navigation.
 
 - launchApp:
     clearState: true

@@ -1,9 +1,10 @@
 appId: com.laststance.engage
 tags:
   - ios
+  - manual
 ---
 # QA-03: Task Selection
-# Verifies selecting tasks from TaskPicker and confirming adds them to Today
+# Manual redundancy check; QA-04 and QA-10 cover this setup in the main suite.
 
 - launchApp:
     clearState: true

@@ -1,90 +1,63 @@
-# 🧪 Maestro E2E Tests
+# Maestro E2E Tests
 
-Engageアプリの包括的なEnd-to-Endテストスイート。
+EngageアプリのProduction E2E向けMaestroテストスイート。
 
-## 📱 プラットフォーム対応状況
+## Platform Support
 
 | プラットフォーム | 状態 | ディレクトリ | 備考 |
 |-----------------|------|-------------|------|
-| **iOS** | ✅ 完全実装 | `ios/` | iPhone Simulator最適化 |
-| **Android** | 🚧 計画中 | `android/` | 将来実装予定 |
+| **iOS** | 実装済み | `ios/` | Production build + iPhone Simulator |
+| **Android** | 計画中 | `android/` | 将来実装予定 |
 
-## 🚀 クイックスタート
+## Quick Start
 
 ### iOS テスト実行
 ```bash
-# 環境設定
-export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
-export PATH="$JAVA_HOME/bin:$PATH"
+# 1. Production E2E buildを起動
+pnpm build:e2e
 
-# E2Eテストスイート実行
-npm run test:e2e          # デフォルト（iOS）
-npm run test:e2e:ios      # iOS明示的実行
-npm run test:e2e:android  # Android（未実装通知）
+# 2. Main suiteを実行
+pnpm test:e2e:production
+
+# 3. 個別flowを実行
+pnpm test:e2e:production:single maestro/ios/06-calendar-browsing.yaml
 ```
 
-## 📋 テスト概要
+## Suite Policy
 
-### iOS Tests (`ios/`)
-- **app-launch.yaml**: アプリ起動とCalendar画面表示確認
-- **navigation.yaml**: タブ間ナビゲーション（Calendar ↔ Today ↔ Stats）
-- **ui-elements.yaml**: 各画面のUI要素存在確認
+`pnpm test:e2e:production` と `pnpm test:e2e:ios` は `smoke`, `manual`, `nightly` tagged flowsを除外して、重複の少ないmain suiteだけを実行します。
 
-### ✅ 検証済み機能
-- ✅ アプリ起動・状態クリア
-- ✅ Calendar画面の初期表示
-- ✅ Today画面への遷移・表示
-- ✅ Stats画面への遷移・表示
-- ✅ Calendar画面への復帰
-- ✅ 各画面のtestID要素確認
+### Main Suite
+- `02-tab-navigation.yaml`: app shell / Expo Router / tab wiring
+- `04-task-completion.yaml`: task assignment + completion
+- `05-journal-entry.yaml`: journal input + autosave
+- `06-calendar-browsing.yaml`: calendar navigation + DayModal date regression
+- `07-edit-presets.yaml`: TaskPicker to PresetTaskEditor modal flow
+- `10-data-persistence.yaml`: SQLite state survives restart
+- `11-backup-create.yaml`: backup creation regression
 
-## ⚠️ 技術的制限・注意事項
+### Tagged On-Demand Flows
+- `01-app-launch.yaml` (`smoke`): launch-only diagnosis
+- `03-task-selection.yaml` (`manual`): standalone TaskPicker assignment check
+- `08-statistics.yaml` (`manual`): standalone statistics toggle check
+- `09-settings.yaml` (`manual`): standalone Settings menu check
 
-### Expo Router制限
-現在のテストは **座標ベースナビゲーション** を使用：
-```yaml
-- tapOn:
-    point: 50%, 93%  # Today tab
-    repeat: 2
-    delay: 300
-```
-
-**理由**: 
-- Expo Routerの`tabBarTestID`がMaestro CLIで認識されない（GitHub Issue #2448）
-- 座標使用はMaestroベストプラクティスに反するが、現時点で唯一の実用的解決策
-
-### iOS最適化
-- **Target Device**: iPhone 16 Pro Simulator (iOS 18.6)
-- **Coordinates**: iPhone画面サイズに最適化
-- **Timing**: iOS特有のアニメーション待機時間
-
-## 🔮 将来の改善計画
-
-### 1. Android対応
-- `android/` ディレクトリでAndroid専用テスト実装
-- 座標とタイミングのAndroid最適化
-
-### 2. ベストプラクティス準拠
-- Expo Router改善によるtestID認識対応
-- 座標ベース → testIDベースへの移行
-- プラットフォーム間共通セレクター採用
-
-### 3. テストスイート拡張
-- 実際の機能テスト（データ入力、状態管理）
-- パフォーマンステスト
-- アクセシビリティテスト
-
-## 📊 実行統計
+## Tags
 
 ```bash
-# 最新の成功記録（2025-09-15）
-npm run test:e2e
-> [Passed] app-launch (3s) ✅
-> [Passed] navigation (12s) ✅  
-> [Passed] ui-elements (13s) ✅
-> 3/3 Flows Passed in 28s
+# Main suiteと同じ除外条件を直接指定
+maestro test maestro/ios/ --exclude-tags "smoke,manual,nightly"
+
+# Launch smokeだけ実行
+maestro test maestro/ios/ --include-tags smoke
+
+# Manual redundancy checksだけ実行
+maestro test maestro/ios/ --include-tags manual
 ```
 
----
+## Selector Notes
 
-**リサーチ基盤**: この実装は2025年のMaestro公式ドキュメント、GitHub Issue #2448の回避策、Perplexity AIによるベストプラクティス調査に基づいています。
+- Prefer `id` selectors backed by React Native `testID`.
+- Tab buttons use accessibility labels such as `today-tab`, `stats-tab`, and `calendar-tab`.
+- Use `extendedWaitUntil` before assertions because app initialization and SQLite loading are async.
+- Production build is required because DevTools can interfere with E2E stability.
