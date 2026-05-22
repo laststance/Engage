@@ -22,7 +22,6 @@
     "test:e2e:production": "maestro test maestro/ios/ --exclude-tags \"smoke,manual,nightly\"",
     "test:e2e:production:single": "maestro test",
     "test:e2e:ios": "pnpm test:e2e:clean && maestro test maestro/ios/ --exclude-tags \"smoke,manual,nightly\"",
-    "test:e2e:android": "echo 'Android tests not implemented yet. Run: pnpm test:e2e:ios'",
     "deploy": "node scripts/deploy.js",
     "deploy:check": "node scripts/deploy.js check",
     "deploy:test": "node scripts/deploy.js test",
