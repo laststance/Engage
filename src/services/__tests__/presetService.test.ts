@@ -86,8 +86,37 @@ describe('PresetService', () => {
       expect(result.tasksCreated).toBe(11)
     })
 
-    it('should not create duplicates if data already exists', async () => {
-      // Mock existing data
+    it('should seed default tasks when migrations already created categories', async () => {
+      // Arrange
+      mockCategoryRepository.findAll.mockResolvedValue([
+        { id: 'business', name: '事業' },
+        { id: 'life', name: '生活' },
+      ])
+      mockTaskRepository.findAll.mockResolvedValue([])
+      mockCategoryRepository.findById.mockImplementation(async (id) => {
+        if (id === 'business') return { id: 'business', name: '事業' }
+        if (id === 'life') return { id: 'life', name: '生活' }
+        return null
+      })
+      mockTaskRepository.create.mockImplementation(async (task) => ({
+        ...task,
+        id: 'generated-task-id',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      }))
+
+      // Act
+      const result = await presetService.initializeDefaults()
+
+      // Assert
+      expect(mockCategoryRepository.create).not.toHaveBeenCalled()
+      expect(mockTaskRepository.create).toHaveBeenCalledTimes(11)
+      expect(result.categoriesCreated).toBe(0)
+      expect(result.tasksCreated).toBe(11)
+    })
+
+    it('should not recreate removed default presets when tasks already exist', async () => {
+      // Arrange
       mockCategoryRepository.findAll.mockResolvedValue([
         { id: 'business', name: '事業' },
         { id: 'life', name: '生活' },
@@ -107,34 +136,16 @@ describe('PresetService', () => {
         if (id === 'life') return { id: 'life', name: '生活' }
         return null
       })
-      mockTaskRepository.findByCategoryId.mockImplementation(
-        async (categoryId) => {
-          if (categoryId === 'business') {
-            return [
-              {
-                id: 'existing-task',
-                title: 'ネットワーキング',
-                categoryId: 'business',
-                archived: false,
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-              },
-            ]
-          }
-          return []
-        }
-      )
 
+      // Act
       const result = await presetService.initializeDefaults()
 
-      // Should not create categories that already exist
+      // Assert
       expect(mockCategoryRepository.create).not.toHaveBeenCalled()
-
-      // Should only create tasks that don't exist (10 out of 11)
-      expect(mockTaskRepository.create).toHaveBeenCalledTimes(10)
-
+      expect(mockTaskRepository.create).not.toHaveBeenCalled()
+      expect(mockTaskRepository.findByCategoryId).not.toHaveBeenCalled()
       expect(result.categoriesCreated).toBe(0)
-      expect(result.tasksCreated).toBe(10)
+      expect(result.tasksCreated).toBe(0)
     })
   })
 

@@ -103,20 +103,25 @@ class PresetService {
   }
 
   /**
-   * Initialize default categories and tasks if they don't exist
-   * Returns information about what was created and suggested tasks
+   * Initialize default categories and seed starter tasks for empty task lists.
+   *
+   * Default tasks are created only while no active task exists. After the user
+   * customizes presets, missing defaults may be intentional deletions.
+   *
+   * @returns Counts for created records plus tasks recommended for onboarding.
    */
   async initializeDefaults(): Promise<PresetInitializationResult> {
     try {
       let categoriesCreated = 0
       let tasksCreated = 0
 
-      // Check if we need to initialize (no existing data)
+      // Load current presets before deciding whether starter tasks are needed.
       const existingCategories = await categoryRepository.findAll()
       const existingTasks = await taskRepository.findAll()
 
       const isFirstLaunch =
         existingCategories.length === 0 && existingTasks.length === 0
+      const shouldSeedDefaultTasks = existingTasks.length === 0
 
       // Initialize categories if needed
       for (const category of this.defaultCategories) {
@@ -128,15 +133,9 @@ class PresetService {
         }
       }
 
-      // Initialize tasks if needed
-      for (const taskData of this.defaultTasks) {
-        // Check if task with same title and category already exists
-        const existingTask = await this.findTaskByTitleAndCategory(
-          taskData.title,
-          taskData.categoryId
-        )
-
-        if (!existingTask) {
+      // Seed starter tasks only while the task list is genuinely empty.
+      if (shouldSeedDefaultTasks) {
+        for (const taskData of this.defaultTasks) {
           const task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'> = {
             title: taskData.title,
             categoryId: taskData.categoryId,
@@ -298,22 +297,6 @@ class PresetService {
     } catch (error) {
       console.error('Failed to reset presets:', error)
       throw new DatabaseError('Failed to reset presets', error)
-    }
-  }
-
-  /**
-   * Helper method to find a task by title and category
-   */
-  private async findTaskByTitleAndCategory(
-    title: string,
-    categoryId: string
-  ): Promise<Task | null> {
-    try {
-      const tasks = await taskRepository.findByCategoryId(categoryId)
-      return tasks.find((task) => task.title === title) || null
-    } catch (error) {
-      console.error('Failed to find task by title and category:', error)
-      return null
     }
   }
 
