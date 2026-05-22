@@ -29,7 +29,6 @@ const ja = {
     nextMonth: '次の月',
     legendLess: '少ない',
     legendMore: '多い',
-    monthFormat: '{{year}}年{{month}}月',
     monthlySummary: '今月',
     monthlySummaryCompleted: '{{count}}件完了',
     monthlySummaryActiveDays: '{{count}}日活動',

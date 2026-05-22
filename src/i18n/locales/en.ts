@@ -29,7 +29,6 @@ const en = {
     nextMonth: 'Next month',
     legendLess: 'Less',
     legendMore: 'More',
-    monthFormat: '{{month}} {{year}}',
     monthlySummary: 'This month',
     monthlySummaryCompleted: '{{count}} completed',
     monthlySummaryActiveDays: '{{count}} active days',

@@ -147,6 +147,7 @@ redundancy checks that can be run on demand.
 ---
 
 ### QA-11: Backup Creation (P1)
+
 | Step | Action | Expected Result |
 |------|--------|-----------------|
 | 1 | Navigate to Settings | Settings modal opens |

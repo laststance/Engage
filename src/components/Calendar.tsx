@@ -250,7 +250,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                   key={`${weekIndex}-${dayIndex}`}
                   onPress={() => onDateSelect(dayData.dateString)}
                   testID={`calendar-date-${dayData.dateString}`}
-                  className="flex-1 min-h-[48px]"
+                  className="flex-1 min-w-[44px] min-h-[48px]"
                   accessibilityLabel={getDateA11yLabel(dayData.date, dayData.dateString, completionCount)}
                   accessibilityRole="button"
                 >
