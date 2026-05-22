@@ -1,9 +1,10 @@
 appId: com.laststance.engage
 tags:
   - ios
+  - manual
 ---
 # QA-08: Statistics
-# Verifies Stats screen renders and week/month toggle works
+# Manual redundancy check; component tests cover the toggle and QA-02 covers tab reachability.
 
 - launchApp:
     clearState: true

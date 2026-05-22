@@ -195,10 +195,13 @@ export const JournalInput: React.FC<JournalInputProps> = ({
 
       {/* Empty state encouragement */}
       {text.length === 0 && !isFocused && (
-        <Box className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
-          <Text className="text-sm text-blue-700 text-center">
-            {t('journal.encouragement')}
-          </Text>
+        <Box className="mt-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
+          <HStack className="items-center justify-center" space="sm">
+            <IconSymbol name="lightbulb" size={16} color="#1D4ED8" />
+            <Text className="flex-1 text-center text-sm text-blue-700">
+              {t('journal.encouragement')}
+            </Text>
+          </HStack>
         </Box>
       )}
 

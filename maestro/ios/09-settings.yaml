@@ -1,9 +1,10 @@
 appId: com.laststance.engage
 tags:
   - ios
+  - manual
 ---
 # QA-09: Settings Navigation
-# Verifies Settings modal opens with expected menu items
+# Manual redundancy check; QA-11 covers the Settings > Backup path in the main suite.
 
 - launchApp:
     clearState: true

@@ -36,7 +36,13 @@ export default function CalendarScreen() {
       <VStack className="flex-1" style={{ paddingTop: insets.top }}>
         <Box className="px-4 pt-4 pb-2">
           <Text
-            className="text-gray-600 text-center text-base"
+            className="text-2xl font-bold text-gray-800 text-center mb-2"
+            testID="calendar-screen-title"
+          >
+            {t('calendar.title')}
+          </Text>
+          <Text
+            className="text-gray-600 text-center text-sm"
             testID="calendar-description"
           >
             {t('calendar.description')}

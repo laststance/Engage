@@ -24,6 +24,7 @@ export default function StatsScreen() {
       <VStack className="flex-1" style={{ paddingTop: insets.top }}>
         <Box className="px-4 pt-4 pb-2">
           <HStack className="justify-between items-center mb-2">
+            <Box className="min-w-[44px]" />
             <Box className="flex-1">
               <Text
                 className="text-2xl font-bold text-gray-800 text-center"

@@ -132,16 +132,15 @@ This project uses GitHub Actions for automated testing, security scanning, quali
    - Fails on moderate+ severity vulnerabilities
    - Blocks GPL-3.0 and AGPL-3.0 licenses
 
-3. **pnpm Audit** (10 min timeout)
-   - Scans for vulnerable dependencies with `pnpm audit --audit-level=moderate`
-   - Fails on high/critical vulnerabilities
-   - Warnings for moderate vulnerabilities
-
-4. **Secret Scanning** (10 min timeout)
+3. **Secret Scanning** (10 min timeout)
    - Uses TruffleHog to detect secrets
    - Scans push/PR diffs by default
    - Scans the full default branch on scheduled/manual runs
    - Only verified secrets reported
+
+4. **Security Summary**
+   - Aggregates CodeQL, Dependency Review on PRs, and Secret Scanning results
+   - Fails when any required security scan fails or reports issues
 
 **Permissions**: Requires `security-events: write` for CodeQL
 
@@ -431,16 +430,15 @@ sleep 180
 pnpm test:e2e:production
 ```
 
-#### 3. Security Scan Fails with Vulnerabilities
+#### 3. Dependency Review Fails with Vulnerabilities
 
-**Problem**: pnpm audit finds high/critical vulnerabilities
+**Problem**: Dependency Review finds vulnerable package changes in a PR
 
 **Solution**:
 ```bash
-# Check audit locally
-pnpm audit --audit-level=moderate
+# Review the dependency-review-action report on the PR
 
-# Update direct dependencies or add scoped pnpm overrides for vulnerable transitive ranges
+# Update direct dependencies or avoid introducing the vulnerable package
 
 # For unfixable issues, assess risk and create exceptions
 ```

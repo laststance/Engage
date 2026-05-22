@@ -57,11 +57,11 @@ export const Statistics: React.FC<StatisticsProps> = ({
     subtitle?: string
     color?: string
   }> = ({ title, value, subtitle, color = 'text-blue-600' }) => (
-    <Box className="bg-white rounded-xl p-4 border border-gray-200">
+    <Box className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
       <VStack space="sm">
         <HStack className="items-center justify-between">
           <Text className="text-sm font-medium text-gray-600">{title}</Text>
-          <Text className="text-gray-400">📊</Text>
+          <IconSymbol name="chart.bar" size={14} color="#9CA3AF" />
         </HStack>
         <Text className={`text-2xl font-bold ${color}`}>{value}</Text>
         {subtitle && <Text className="text-xs text-gray-500">{subtitle}</Text>}
@@ -93,11 +93,9 @@ export const Statistics: React.FC<StatisticsProps> = ({
         nestedScrollEnabled={true}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
-        <VStack space="lg" className="p-4">
+        <VStack space="lg" className="p-4 pt-3">
           {/* Header */}
           <VStack space="md">
-            <Text className="text-3xl font-bold text-gray-800">{t('stats.title')}</Text>
-
             {/* Period Toggle */}
             <HStack className="bg-gray-200 rounded-lg p-1">
               <Pressable
@@ -165,7 +163,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
             <Text className="text-xl font-semibold text-gray-800">
               {t('stats.todayAchievements')}
             </Text>
-            <Box className="bg-blue-700 rounded-xl p-6">
+            <Box className="bg-blue-600 rounded-2xl p-6 shadow-sm">
               <VStack space="sm" className="items-center">
                 <IconSymbol name="star.fill" size={32} color="white" />
                 <Text className="text-white text-2xl font-bold">
@@ -255,7 +253,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                   return (
                     <Box
                       key={categoryId}
-                      className="bg-white rounded-lg p-4 border border-gray-200"
+                      className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm"
                     >
                       <VStack space="sm">
                         <HStack className="items-center justify-between">
@@ -290,7 +288,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
               )}
 
               {Object.keys(currentStats.categoryBreakdown).length === 0 && (
-                <Box className="bg-white rounded-lg p-8 border border-gray-200">
+                <Box className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
                   <VStack className="items-center" space="sm">
                     <IconSymbol name="chart.bar" size={32} color="#9CA3AF" />
                     <Text className="text-gray-500 text-center">
