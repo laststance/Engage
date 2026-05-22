@@ -138,6 +138,10 @@ This project uses GitHub Actions for automated testing, security scanning, quali
    - Scans the full default branch on scheduled/manual runs
    - Only verified secrets reported
 
+4. **Security Summary**
+   - Aggregates CodeQL, Dependency Review on PRs, and Secret Scanning results
+   - Fails when any required security scan fails or reports issues
+
 **Permissions**: Requires `security-events: write` for CodeQL
 
 **Configuration**: See `.github/codeql-config.yml` for CodeQL settings

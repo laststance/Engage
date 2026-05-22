@@ -95,14 +95,16 @@ jobs:
   security-summary:
     name: Security Summary
     runs-on: ubuntu-latest
-    needs: [codeql-analysis, secret-scanning]
+    needs: [codeql-analysis, dependency-review, secret-scanning]
     if: always()
 
     steps:
       - name: Check security scan results
         run: |
+          dep_review_result="${{ needs.dependency-review.result }}"
           if [ "${{ needs.codeql-analysis.result }}" != "success" ] || \
-             [ "${{ needs.secret-scanning.result }}" != "success" ]; then
+             [ "${{ needs.secret-scanning.result }}" != "success" ] || \
+             { [ "${{ github.event_name }}" = "pull_request" ] && [ "$dep_review_result" != "success" ]; }; then
             echo "::warning::One or more security scans failed or found issues"
             exit 1
           fi
