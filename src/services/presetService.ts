@@ -121,7 +121,8 @@ class PresetService {
 
       const isFirstLaunch =
         existingCategories.length === 0 && existingTasks.length === 0
-      const shouldSeedDefaultTasks = existingTasks.length === 0
+      const activeTasks = existingTasks.filter((task) => !task.archived)
+      const shouldSeedDefaultTasks = activeTasks.length === 0
 
       // Initialize categories if needed
       for (const category of this.defaultCategories) {
@@ -133,7 +134,7 @@ class PresetService {
         }
       }
 
-      // Seed starter tasks only while the task list is genuinely empty.
+      // Seed starter tasks only while the active task list is genuinely empty.
       if (shouldSeedDefaultTasks) {
         for (const taskData of this.defaultTasks) {
           const task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'> = {

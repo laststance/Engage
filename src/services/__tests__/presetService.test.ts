@@ -147,6 +147,44 @@ describe('PresetService', () => {
       expect(result.categoriesCreated).toBe(0)
       expect(result.tasksCreated).toBe(0)
     })
+
+    it('should seed default tasks when only archived tasks remain', async () => {
+      // Arrange
+      mockCategoryRepository.findAll.mockResolvedValue([
+        { id: 'business', name: '事業' },
+        { id: 'life', name: '生活' },
+      ])
+      mockTaskRepository.findAll.mockResolvedValue([
+        {
+          id: 'archived-task',
+          title: 'ネットワーキング',
+          categoryId: 'business',
+          archived: true,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+      ])
+      mockCategoryRepository.findById.mockImplementation(async (id) => {
+        if (id === 'business') return { id: 'business', name: '事業' }
+        if (id === 'life') return { id: 'life', name: '生活' }
+        return null
+      })
+      mockTaskRepository.create.mockImplementation(async (task) => ({
+        ...task,
+        id: 'generated-task-id',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      }))
+
+      // Act
+      const result = await presetService.initializeDefaults()
+
+      // Assert
+      expect(mockCategoryRepository.create).not.toHaveBeenCalled()
+      expect(mockTaskRepository.create).toHaveBeenCalledTimes(11)
+      expect(result.categoriesCreated).toBe(0)
+      expect(result.tasksCreated).toBe(11)
+    })
   })
 
   describe('getSuggestedTasks', () => {
