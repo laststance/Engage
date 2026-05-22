@@ -1,13 +1,12 @@
 # Maestro E2E Tests
 
-EngageアプリのProduction E2E向けMaestroテストスイート。
+EngageアプリのiOS Production E2E向けMaestroテストスイート。
 
 ## Platform Support
 
 | プラットフォーム | 状態 | ディレクトリ | 備考 |
 |-----------------|------|-------------|------|
 | **iOS** | 実装済み | `ios/` | Production build + iPhone Simulator |
-| **Android** | 計画中 | `android/` | 将来実装予定 |
 
 ## Quick Start
 
