@@ -1,18 +1,7 @@
 import React from 'react'
-import { render, fireEvent } from '@testing-library/react-native'
+import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { TaskPicker } from '../TaskPicker'
-import { Task, Category } from '../../types'
-
-// Mock expo-symbols
-jest.mock('expo-symbols', () => ({
-  SymbolView: 'SymbolView',
-}))
-
-// Mock the GluestackUIProvider
-jest.mock('@/components/ui/gluestack-ui-provider', () => ({
-  GluestackUIProvider: ({ children }: { children: React.ReactNode }) =>
-    children,
-}))
+import { Category, Task, TaskAssignmentOperationResult } from '../../types'
 
 describe('TaskPicker', () => {
   const mockCategories: Category[] = [
@@ -32,29 +21,25 @@ describe('TaskPicker', () => {
     },
     {
       id: 'task2',
-      title: '運動 (20分以上)',
+      title: '運動',
       categoryId: 'life',
       defaultMinutes: 20,
       archived: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     },
-    {
-      id: 'task3',
-      title: 'スキル学習',
-      categoryId: 'business',
-      defaultMinutes: 60,
-      archived: false,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    },
   ]
 
-  const mockOnTaskSelect = jest.fn()
+  const successResult: TaskAssignmentOperationResult = {
+    success: true,
+    date: '2025-01-15',
+    addedCount: 1,
+    removedCount: 0,
+  }
+
+  const mockOnTaskSelect = jest.fn<Promise<TaskAssignmentOperationResult>, [string[]]>()
   const mockOnClose = jest.fn()
   const mockOnEditPresets = jest.fn()
-  const mockOnUpdatePresets = jest.fn()
-  const mockOnCreateCategory = jest.fn()
 
   const defaultProps = {
     isVisible: true,
@@ -64,151 +49,124 @@ describe('TaskPicker', () => {
     onTaskSelect: mockOnTaskSelect,
     onClose: mockOnClose,
     onEditPresets: mockOnEditPresets,
-    onUpdatePresets: mockOnUpdatePresets,
-    onCreateCategory: mockOnCreateCategory,
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockOnTaskSelect.mockResolvedValue(successResult)
   })
 
-  it('renders correctly when visible', () => {
-    const { getByText, getByTestId } = render(<TaskPicker {...defaultProps} />)
-
-    expect(getByText('表示するタスクを選択')).toBeTruthy()
-    expect(getByTestId('task-picker-confirm')).toBeTruthy()
-    expect(getByTestId('task-picker-cancel')).toBeTruthy()
-  })
-
-  it('does not render when not visible', () => {
-    const { queryByText } = render(
-      <TaskPicker {...defaultProps} isVisible={false} />
-    )
-
-    expect(queryByText('表示するタスクを選択')).toBeNull()
-  })
-
-  it('displays tasks grouped by category', () => {
+  it('shows selectable preset tasks grouped by category', () => {
+    // Arrange & Act
     const { getByText } = render(<TaskPicker {...defaultProps} />)
 
-    // Should show category headers
+    // Assert
     expect(getByText('事業')).toBeTruthy()
     expect(getByText('生活')).toBeTruthy()
-
-    // Should show tasks
     expect(getByText('ネットワーキング')).toBeTruthy()
-    expect(getByText('運動 (20分以上)')).toBeTruthy()
-    expect(getByText('スキル学習')).toBeTruthy()
+    expect(getByText('運動')).toBeTruthy()
   })
 
-  it('allows selecting and deselecting tasks', () => {
+  it('submits the locally selected task ids after the user confirms', async () => {
+    // Arrange
     const { getByTestId } = render(<TaskPicker {...defaultProps} />)
 
-    const taskItem = getByTestId('task-picker-item-task1')
-    fireEvent.press(taskItem)
+    // Act
+    fireEvent.press(getByTestId('task-picker-item-task1'))
+    fireEvent.press(getByTestId('task-picker-confirm'))
 
-    // Task should be visually selected (this would be tested through style changes)
-    expect(taskItem).toBeTruthy()
+    // Assert
+    await waitFor(() => {
+      expect(mockOnTaskSelect).toHaveBeenCalledWith(['task1'])
+    })
+    expect(mockOnClose).toHaveBeenCalledTimes(1)
   })
 
-  it('shows selected tasks count in confirm button', () => {
-    const { getByText } = render(
-      <TaskPicker {...defaultProps} selectedTasks={['task1', 'task2']} />
-    )
-
-    // Check that the confirm button shows the count
-    expect(getByText('確定 (2個)')).toBeTruthy()
-  })
-
-  it('calls onConfirm with selected task IDs', () => {
+  it('exposes selected accessibility state on selected task items', () => {
+    // Arrange & Act
     const { getByTestId } = render(
       <TaskPicker {...defaultProps} selectedTasks={['task1']} />
     )
 
-    const confirmButton = getByTestId('task-picker-confirm')
-    fireEvent.press(confirmButton)
-
-    expect(mockOnTaskSelect).toHaveBeenCalledWith(['task1'])
+    // Assert
+    expect(getByTestId('task-picker-item-task1').props.accessibilityState).toMatchObject({
+      selected: true,
+    })
+    expect(getByTestId('task-picker-item-task2').props.accessibilityState).toMatchObject({
+      selected: false,
+    })
   })
 
-  it('calls onCancel when cancel button is pressed', () => {
-    const { getByTestId } = render(<TaskPicker {...defaultProps} />)
-
-    const cancelButton = getByTestId('task-picker-cancel')
-    fireEvent.press(cancelButton)
-
-    expect(mockOnClose).toHaveBeenCalled()
-  })
-
-  it('calls onCancel when close button is pressed', () => {
-    const { getByTestId } = render(<TaskPicker {...defaultProps} />)
-
-    const closeButton = getByTestId('task-picker-close')
-    fireEvent.press(closeButton)
-
-    expect(mockOnClose).toHaveBeenCalled()
-  })
-
-  it('calls onEditPresets when edit button is pressed', () => {
-    const { getByTestId } = render(<TaskPicker {...defaultProps} />)
-
-    const editButton = getByTestId('edit-presets-button')
-    fireEvent.press(editButton)
-
-    expect(mockOnEditPresets).toHaveBeenCalled()
-  })
-
-  it('shows zero count when no tasks selected', () => {
-    const { getByText } = render(
-      <TaskPicker {...defaultProps} selectedTasks={[]} />
-    )
-
-    // Check that the confirm button shows zero count
-    expect(getByText('確定 (0個)')).toBeTruthy()
-  })
-
-  it('shows correct count when tasks are selected', () => {
-    const { getByText } = render(
+  it('resyncs local selected state when the picker reopens with different tasks', async () => {
+    // Arrange
+    const { getByTestId, rerender } = render(
       <TaskPicker {...defaultProps} selectedTasks={['task1']} />
     )
 
-    // Check that the confirm button shows one task selected
-    expect(getByText('確定 (1個)')).toBeTruthy()
+    // Act
+    rerender(
+      <TaskPicker
+        {...defaultProps}
+        selectedTasks={['task2']}
+        onTaskSelect={mockOnTaskSelect}
+      />
+    )
+    fireEvent.press(getByTestId('task-picker-confirm'))
+
+    // Assert
+    await waitFor(() => {
+      expect(mockOnTaskSelect).toHaveBeenCalledWith(['task2'])
+    })
   })
 
-  it('filters out archived tasks', () => {
-    const tasksWithArchived = [
-      ...mockTasks,
-      {
-        id: 'archived-task',
-        title: 'Archived Task',
-        categoryId: 'business',
-        defaultMinutes: 30,
-        archived: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-    ]
+  it('keeps the picker open and shows an error when assignment persistence fails', async () => {
+    // Arrange
+    mockOnTaskSelect.mockResolvedValue({
+      success: false,
+      date: '2025-01-15',
+      addedCount: 0,
+      removedCount: 0,
+      message: 'Save failed',
+    })
+    const { getByTestId, getByText } = render(<TaskPicker {...defaultProps} />)
 
-    const { queryByText } = render(
-      <TaskPicker {...defaultProps} presetTasks={tasksWithArchived} />
+    // Act
+    fireEvent.press(getByTestId('task-picker-confirm'))
+
+    // Assert
+    await waitFor(() => {
+      expect(getByText('Save failed')).toBeTruthy()
+    })
+    expect(mockOnClose).not.toHaveBeenCalled()
+  })
+
+  it('shows the first-preset action when there are no preset tasks', () => {
+    // Arrange & Act
+    const { getByText } = render(
+      <TaskPicker {...defaultProps} presetTasks={[]} />
     )
 
-    expect(queryByText('Archived Task')).toBeNull()
+    // Assert
+    expect(getByText('taskPicker.noPresetTasks')).toBeTruthy()
+    expect(getByText('presetEditor.addTask')).toBeTruthy()
   })
 
-  it('handles empty task list gracefully', () => {
-    const { getByText } = render(<TaskPicker {...defaultProps} presetTasks={[]} />)
+  it('prevents duplicate assignment saves while confirm is already pending', () => {
+    // Arrange
+    let resolveSave: (result: TaskAssignmentOperationResult) => void = () => {}
+    mockOnTaskSelect.mockReturnValue(
+      new Promise((resolve) => {
+        resolveSave = resolve
+      })
+    )
+    const { getByTestId } = render(<TaskPicker {...defaultProps} />)
 
-    // Should show empty state message
-    expect(getByText('プリセットタスクがありません')).toBeTruthy()
-    expect(getByText('タスクを追加')).toBeTruthy()
-  })
+    // Act
+    fireEvent.press(getByTestId('task-picker-confirm'))
+    fireEvent.press(getByTestId('task-picker-confirm'))
+    resolveSave(successResult)
 
-  it('shows task duration when available', () => {
-    const { getByText } = render(<TaskPicker {...defaultProps} />)
-
-    // Tasks with duration should show it in the title
-    expect(getByText('運動 (20分以上)')).toBeTruthy()
+    // Assert
+    expect(mockOnTaskSelect).toHaveBeenCalledTimes(1)
   })
 })

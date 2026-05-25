@@ -7,7 +7,6 @@ module.exports = {
     'src/components/__tests__/Statistics.test.tsx',
     'src/components/__tests__/JournalInput.test.tsx',
     'src/components/__tests__/Calendar.test.tsx',
-    'src/components/__tests__/TaskPicker.test.tsx',
   ],
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {

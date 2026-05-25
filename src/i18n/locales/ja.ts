@@ -44,6 +44,11 @@ const ja = {
   daySheet: {
     selectTasks: '表示するタスクを選択',
     noTasksMessage: '表示するタスクを選択してください',
+    chooseTodaysHabits: '今日の習慣を選ぶ',
+    taskCompleted: '「{{title}}」を完了しました',
+    taskCompletionUndone: '「{{title}}」を未完了に戻しました',
+    taskCompletionFailed: 'タスクの保存に失敗しました',
+    retry: '再試行',
     dateFormat: '{{month}}月{{day}}日 ({{dayOfWeek}})',
     completed: '完了',
     notCompleted: '未完了',
@@ -58,6 +63,7 @@ const ja = {
     newCategory: '新しいカテゴリーを作成',
     noPresetTasks: 'プリセットタスクがありません',
     confirm: '確定 ({{count}}個)',
+    saveFailed: 'タスク選択の保存に失敗しました',
   },
 
   presetEditor: {

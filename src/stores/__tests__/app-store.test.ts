@@ -21,6 +21,8 @@ jest.mock('../../services/repositories', () => ({
   completionRepository: {
     findByDateRange: jest.fn(),
     toggle: jest.fn(),
+    createMultiple: jest.fn(),
+    delete: jest.fn(),
   },
   categoryRepository: {
     findAll: jest.fn(),
@@ -144,20 +146,29 @@ describe('useAppStore', () => {
   })
 
   describe('toggleTaskCompletion', () => {
-    it('should toggle task completion and update local state', async () => {
+    it('creates a completed record when an assigned task is finished', async () => {
+      // Arrange
       ;(completionRepository.toggle as jest.Mock).mockResolvedValue(true)
 
+      // Act
       const store = useAppStore.getState()
-      await store.toggleTaskCompletion('2025-01-15', 'task1')
+      const result = await store.toggleTaskCompletion('2025-01-15', 'task1')
 
+      // Assert
       const state = useAppStore.getState()
+      expect(result).toEqual({
+        success: true,
+        date: '2025-01-15',
+        taskId: 'task1',
+        change: 'completed',
+      })
       expect(state.completions['2025-01-15']).toHaveLength(1)
       expect(state.completions['2025-01-15'][0].taskId).toBe('task1')
       expect(state.completions['2025-01-15'][0].completed).toBe(true)
     })
 
-    it('should handle uncompleting tasks', async () => {
-      // Setup initial state with completed task
+    it('marks a completed task incomplete when it is toggled again', async () => {
+      // Arrange
       useAppStore.setState({
         completions: {
           '2025-01-15': [mockCompletions[0]],
@@ -165,13 +176,123 @@ describe('useAppStore', () => {
       })
       ;(completionRepository.toggle as jest.Mock).mockResolvedValue(false)
 
+      // Act
       const store = useAppStore.getState()
-      await store.toggleTaskCompletion('2025-01-15', 'task1')
+      const result = await store.toggleTaskCompletion('2025-01-15', 'task1')
 
+      // Assert
       const state = useAppStore.getState()
-      // Record still exists but completed is flipped to false
+      expect(result).toEqual({
+        success: true,
+        date: '2025-01-15',
+        taskId: 'task1',
+        change: 'undone',
+      })
       expect(state.completions['2025-01-15']).toHaveLength(1)
       expect(state.completions['2025-01-15'][0].completed).toBe(false)
+    })
+
+    it('rolls back the visible completion when persistence fails', async () => {
+      // Arrange
+      useAppStore.setState({
+        completions: {
+          '2025-01-15': [mockCompletions[0]],
+        },
+      })
+      ;(completionRepository.toggle as jest.Mock).mockRejectedValue(
+        new Error('SQLite is unavailable')
+      )
+
+      // Act
+      const store = useAppStore.getState()
+      const result = await store.toggleTaskCompletion('2025-01-15', 'task1')
+
+      // Assert
+      const state = useAppStore.getState()
+      expect(result).toEqual({
+        success: false,
+        date: '2025-01-15',
+        taskId: 'task1',
+        change: 'undone',
+        message: 'Failed to toggle task completion. Please try again.',
+      })
+      expect(state.completions['2025-01-15']).toEqual([mockCompletions[0]])
+      expect(state.error).toBe(
+        'Failed to toggle task completion. Please try again.'
+      )
+    })
+  })
+
+  describe('addTasksToDate', () => {
+    it('assigns newly selected tasks as incomplete records', async () => {
+      // Arrange
+      const assignedCompletion = {
+        id: 'comp2',
+        date: '2025-01-15',
+        taskId: 'task2',
+        completed: false,
+        createdAt: Date.now(),
+      }
+      useAppStore.setState({
+        completions: {
+          '2025-01-15': [mockCompletions[0]],
+        },
+      })
+      ;(completionRepository.createMultiple as jest.Mock).mockResolvedValue([
+        assignedCompletion,
+      ])
+
+      // Act
+      const store = useAppStore.getState()
+      const result = await store.addTasksToDate('2025-01-15', [
+        'task1',
+        'task2',
+      ])
+
+      // Assert
+      const state = useAppStore.getState()
+      expect(result).toEqual({
+        success: true,
+        date: '2025-01-15',
+        addedCount: 1,
+        removedCount: 0,
+      })
+      expect(state.completions['2025-01-15']).toEqual([
+        mockCompletions[0],
+        assignedCompletion,
+      ])
+      expect(state.completions['2025-01-15'][1].completed).toBe(false)
+    })
+
+    it('keeps the picker recoverable when task assignment persistence fails', async () => {
+      // Arrange
+      useAppStore.setState({
+        completions: {
+          '2025-01-15': [mockCompletions[0]],
+        },
+      })
+      ;(completionRepository.createMultiple as jest.Mock).mockRejectedValue(
+        new Error('SQLite is unavailable')
+      )
+
+      // Act
+      const store = useAppStore.getState()
+      const result = await store.addTasksToDate('2025-01-15', [
+        'task1',
+        'task2',
+      ])
+
+      // Assert
+      const state = useAppStore.getState()
+      expect(result).toEqual({
+        success: false,
+        date: '2025-01-15',
+        addedCount: 0,
+        removedCount: 0,
+        message: 'SQLite is unavailable',
+      })
+      expect(state.completions['2025-01-15']).toEqual([mockCompletions[0]])
+      expect(state.error).toBe('SQLite is unavailable')
     })
   })
 

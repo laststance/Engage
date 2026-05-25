@@ -71,10 +71,9 @@ export function useDayView(date: string) {
 
   const handleTaskSelect = useCallback(
     async (taskIds: string[]) => {
-      await addTasksToDate(date, taskIds)
-      setTaskPickerVisible(false)
+      return await addTasksToDate(date, taskIds)
     },
-    [date, addTasksToDate, setTaskPickerVisible],
+    [date, addTasksToDate],
   )
 
   const handleUpdatePresets = useCallback(
