@@ -8,7 +8,7 @@ import { Text } from '@/components/ui/text'
 import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
-import { AppPressable } from './AppPressable'
+import { AppPressable } from '@/src/components/AppPressable'
 import { Task, Category, TaskAssignmentOperationResult } from '@/src/types'
 import { getCategoryDisplayName } from '@/src/i18n/config'
 import { groupTasksByCategory } from '@/src/utils/businessLogic'
@@ -153,7 +153,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
             <AppPressable
               onPress={handleCancel}
               disabled={isSaving}
-              className="p-2"
+              className="p-3 touch-target-minimum"
               pressedClassName="bg-system-gray-6 rounded-full"
               testID="task-picker-close"
               accessibilityLabel={t('common.close')}

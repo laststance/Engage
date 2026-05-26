@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { TaskPicker } from '../TaskPicker'
-import { Category, Task, TaskAssignmentOperationResult } from '../../types'
+import { Category, Task, TaskAssignmentOperationResult } from '@/src/types'
 
 describe('TaskPicker', () => {
   const mockCategories: Category[] = [

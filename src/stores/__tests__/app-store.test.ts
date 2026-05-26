@@ -23,6 +23,7 @@ jest.mock('../../services/repositories', () => ({
     toggle: jest.fn(),
     createMultiple: jest.fn(),
     delete: jest.fn(),
+    updateTaskAssignmentsForDate: jest.fn(),
   },
   categoryRepository: {
     findAll: jest.fn(),
@@ -238,9 +239,9 @@ describe('useAppStore', () => {
           '2025-01-15': [mockCompletions[0]],
         },
       })
-      ;(completionRepository.createMultiple as jest.Mock).mockResolvedValue([
-        assignedCompletion,
-      ])
+      ;(
+        completionRepository.updateTaskAssignmentsForDate as jest.Mock
+      ).mockResolvedValue([assignedCompletion])
 
       // Act
       const store = useAppStore.getState()
@@ -257,6 +258,19 @@ describe('useAppStore', () => {
         addedCount: 1,
         removedCount: 0,
       })
+      expect(
+        completionRepository.updateTaskAssignmentsForDate
+      ).toHaveBeenCalledWith(
+        '2025-01-15',
+        [
+          {
+            date: '2025-01-15',
+            taskId: 'task2',
+            completed: false,
+          },
+        ],
+        []
+      )
       expect(state.completions['2025-01-15']).toEqual([
         mockCompletions[0],
         assignedCompletion,
@@ -271,9 +285,9 @@ describe('useAppStore', () => {
           '2025-01-15': [mockCompletions[0]],
         },
       })
-      ;(completionRepository.createMultiple as jest.Mock).mockRejectedValue(
-        new Error('SQLite is unavailable')
-      )
+      ;(
+        completionRepository.updateTaskAssignmentsForDate as jest.Mock
+      ).mockRejectedValue(new Error('SQLite is unavailable'))
 
       // Act
       const store = useAppStore.getState()

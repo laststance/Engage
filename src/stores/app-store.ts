@@ -358,14 +358,12 @@ export const useAppStore = create<AppState>((set, get) => ({
         completed: false,
       }))
 
-      const createdCompletions = completionsToCreate.length > 0
-        ? await completionRepository.createMultiple(completionsToCreate)
-        : []
-
-      // Remove deselected tasks
-      for (const taskId of removedTaskIds) {
-        await completionRepository.delete(date, taskId)
-      }
+      const createdCompletions =
+        await completionRepository.updateTaskAssignmentsForDate(
+          date,
+          completionsToCreate,
+          removedTaskIds
+        )
 
       // Update local state
       const updatedCompletions = { ...state.completions }
@@ -402,6 +400,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         error: message,
       })
 
+      // The repository sync is atomic, so a failed save leaves no applied deltas.
       return {
         success: false,
         date,
