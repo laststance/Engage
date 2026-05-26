@@ -3,6 +3,32 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { Category, Task, TaskAssignmentOperationResult } from '@/src/types'
 import { TaskPicker } from '../TaskPicker'
 
+jest.mock('react-i18next', () => ({
+  initReactI18next: {
+    type: '3rdParty',
+    init: jest.fn(),
+  },
+  useTranslation: () => ({
+    t: (key: string, options?: { count?: number }) => {
+      const translations: Record<string, string> = {
+        'taskPicker.discardChanges': 'Discard changes',
+        'taskPicker.discardChangesAndClose': 'Discard changes and close',
+        'taskPicker.selectedStatus': 'Selected',
+        'taskPicker.toggleSelectionHint':
+          'Double tap to toggle whether this task is assigned for today.',
+        'taskPicker.unsavedChanges': 'Unsaved changes',
+      }
+
+      if (key === 'taskPicker.selectedCount') {
+        return `${options?.count ?? 0} selected`
+      }
+
+      return translations[key] || key
+    },
+    i18n: { changeLanguage: jest.fn() },
+  }),
+}))
+
 describe('TaskPicker', () => {
   const mockCategories: Category[] = [
     { id: 'business', name: '事業' },
@@ -58,13 +84,14 @@ describe('TaskPicker', () => {
 
   it('shows selectable preset tasks grouped by category', () => {
     // Arrange & Act
-    const { getByText } = render(<TaskPicker {...defaultProps} />)
+    const { getByTestId, getByText } = render(<TaskPicker {...defaultProps} />)
 
     // Assert
     expect(getByText('事業')).toBeTruthy()
     expect(getByText('生活')).toBeTruthy()
     expect(getByText('ネットワーキング')).toBeTruthy()
     expect(getByText('運動')).toBeTruthy()
+    expect(getByTestId('task-picker-selected-count')).toBeTruthy()
   })
 
   it('submits the locally selected task ids after the user confirms', async () => {
@@ -84,17 +111,45 @@ describe('TaskPicker', () => {
 
   it('exposes selected accessibility state on selected task items', () => {
     // Arrange & Act
-    const { getByTestId } = render(
+    const { getByTestId, getByText } = render(
       <TaskPicker {...defaultProps} selectedTasks={['task1']} />
     )
 
     // Assert
-    expect(getByTestId('task-picker-item-task1').props.accessibilityState).toMatchObject({
+    expect(
+      getByTestId('task-picker-item-task1').props.accessibilityState
+    ).toMatchObject({
       selected: true,
     })
-    expect(getByTestId('task-picker-item-task2').props.accessibilityState).toMatchObject({
+    expect(
+      getByTestId('task-picker-item-task2').props.accessibilityState
+    ).toMatchObject({
       selected: false,
     })
+    expect(getByText('Selected')).toBeTruthy()
+    expect(
+      getByTestId('task-picker-item-task1').props.accessibilityValue
+    ).toMatchObject({
+      text: 'Selected',
+    })
+    expect(
+      getByTestId('task-picker-item-task1').props.accessibilityHint
+    ).toBe('Double tap to toggle whether this task is assigned for today.')
+  })
+
+  it('shows unsaved-change affordances after the local selection changes', () => {
+    // Arrange
+    const { getByTestId, getByText } = render(<TaskPicker {...defaultProps} />)
+
+    // Act
+    fireEvent.press(getByTestId('task-picker-item-task1'))
+
+    // Assert
+    expect(getByText('Unsaved changes')).toBeTruthy()
+    expect(getByText('Discard changes')).toBeTruthy()
+    expect(getByTestId('task-picker-close').props.accessibilityLabel).toBe(
+      'Discard changes and close'
+    )
   })
 
   it('resyncs local selected state when the picker reopens with different tasks', async () => {
