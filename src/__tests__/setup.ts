@@ -49,6 +49,8 @@ jest.mock('react-native', () => {
   return {
     View: createNativeComponent('View'),
     Text: createNativeComponent('Text'),
+    TextInput: createNativeComponent('TextInput'),
+    SafeAreaView: createNativeComponent('SafeAreaView'),
     ScrollView: createNativeComponent('ScrollView'),
     Pressable,
     Modal,

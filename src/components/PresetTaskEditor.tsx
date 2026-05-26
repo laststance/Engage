@@ -7,6 +7,10 @@ import { Pressable } from '@/components/ui/pressable'
 import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import {
+  OperationFeedback,
+  OperationFeedbackKind,
+} from '@/src/components/OperationFeedback'
 import { Task, Category } from '@/src/types'
 import { getCategoryDisplayName } from '@/src/i18n/config'
 
@@ -28,6 +32,13 @@ interface EditingTask {
   isNew?: boolean
 }
 
+interface PresetEditorFeedback {
+  kind: OperationFeedbackKind
+  message: string
+  actionLabel?: string
+  onAction?: () => void
+}
+
 export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   isVisible,
   tasks,
@@ -41,10 +52,13 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   const [isLoading, setSaving] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false)
+  const [operationFeedback, setOperationFeedback] =
+    useState<PresetEditorFeedback | null>(null)
 
   // Initialize editing tasks when modal opens
   useEffect(() => {
     if (isVisible) {
+      setOperationFeedback(null)
       setEditingTasks(
         tasks.map((task) => ({
           id: task.id,
@@ -88,6 +102,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   }
 
   const updateTask = (index: number, updates: Partial<EditingTask>) => {
+    setOperationFeedback(null)
     setEditingTasks((prev) =>
       prev.map((task, i) => (i === index ? { ...task, ...updates } : task))
     )
@@ -115,8 +130,19 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       await onCreateCategory(newCategoryName.trim())
       setNewCategoryName('')
       setShowNewCategoryInput(false)
+      setOperationFeedback({
+        kind: 'success',
+        message: t('presetEditor.categoryCreated'),
+      })
     } catch {
-      Alert.alert(t('common.error'), t('presetEditor.createCategoryFailed'))
+      setOperationFeedback({
+        kind: 'error',
+        message: t('presetEditor.createCategoryFailed'),
+        actionLabel: t('common.retry'),
+        onAction: () => {
+          void handleCreateCategory()
+        },
+      })
     }
   }
 
@@ -125,7 +151,10 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     const validTasks = editingTasks.filter((task) => task.title.trim() !== '')
 
     if (validTasks.length === 0) {
-      Alert.alert(t('common.error'), t('presetEditor.atLeastOneTask'))
+      setOperationFeedback({
+        kind: 'error',
+        message: t('presetEditor.atLeastOneTask'),
+      })
       return
     }
 
@@ -139,11 +168,18 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     })
 
     if (duplicates.length > 0) {
-      Alert.alert(t('common.error'), t('presetEditor.duplicateTaskInCategory'))
+      setOperationFeedback({
+        kind: 'error',
+        message: t('presetEditor.duplicateTaskInCategory'),
+      })
       return
     }
 
     setSaving(true)
+    setOperationFeedback({
+      kind: 'saving',
+      message: t('common.saving'),
+    })
     try {
       // Convert editing tasks back to Task objects
       const tasksToSave: Task[] = validTasks.map((task) => ({
@@ -161,8 +197,19 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       }))
 
       await onSave(tasksToSave)
+      setOperationFeedback({
+        kind: 'success',
+        message: t('presetEditor.saveSuccess'),
+      })
     } catch {
-      Alert.alert(t('common.error'), t('presetEditor.saveFailed'))
+      setOperationFeedback({
+        kind: 'error',
+        message: t('presetEditor.saveFailed'),
+        actionLabel: t('common.retry'),
+        onAction: () => {
+          void handleSave()
+        },
+      })
     } finally {
       setSaving(false)
     }
@@ -218,6 +265,16 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
               <Text className="text-white font-medium">{t('presetEditor.addTask')}</Text>
             </HStack>
           </Pressable>
+
+          {operationFeedback && (
+            <OperationFeedback
+              kind={operationFeedback.kind}
+              message={operationFeedback.message}
+              actionLabel={operationFeedback.actionLabel}
+              onAction={operationFeedback.onAction}
+              testID="preset-editor-feedback"
+            />
+          )}
         </VStack>
 
         {/* Task List */}

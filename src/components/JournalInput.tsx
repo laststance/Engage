@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useCallback, useState, useEffect, useRef } from 'react'
 import { TextInput } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
@@ -6,6 +6,8 @@ import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { HStack } from '@/components/ui/hstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import { OperationFeedback } from '@/src/components/OperationFeedback'
+import { useInteractionFeedback } from '@/src/hooks/useInteractionFeedback'
 import { Entry } from '@/src/types'
 
 interface JournalInputProps {
@@ -16,6 +18,8 @@ interface JournalInputProps {
   maxLength?: number
 }
 
+type JournalSaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
 export const JournalInput: React.FC<JournalInputProps> = ({
   date,
   entry,
@@ -24,10 +28,12 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   maxLength = 1000,
 }) => {
   const { t } = useTranslation()
+  const triggerFeedback = useInteractionFeedback()
   const [text, setText] = useState(entry?.note || '')
   const [isFocused, setIsFocused] = useState(false)
-  const [isAutoSaving, setIsAutoSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<JournalSaveStatus>('idle')
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [lastFailedText, setLastFailedText] = useState<string | null>(null)
   const [characterCount, setCharacterCount] = useState(entry?.note?.length || 0)
 
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -37,7 +43,29 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   useEffect(() => {
     setText(entry?.note || '')
     setCharacterCount(entry?.note?.length || 0)
+    setSaveStatus('idle')
+    setLastSaved(null)
+    setLastFailedText(null)
   }, [entry])
+
+  const saveJournalText = useCallback(
+    async (nextText: string) => {
+      setSaveStatus('saving')
+      setLastFailedText(null)
+
+      try {
+        await onUpdate(nextText)
+        setLastSaved(new Date())
+        setSaveStatus('saved')
+      } catch (error) {
+        console.error('Auto-save failed:', error)
+        triggerFeedback('error')
+        setLastFailedText(nextText)
+        setSaveStatus('error')
+      }
+    },
+    [onUpdate, triggerFeedback]
+  )
 
   // Auto-save functionality with debouncing
   useEffect(() => {
@@ -48,15 +76,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
     // Only auto-save if text has changed from the original entry
     if (text !== (entry?.note || '')) {
       autoSaveTimeoutRef.current = setTimeout(async () => {
-        try {
-          setIsAutoSaving(true)
-          await onUpdate(text)
-          setLastSaved(new Date())
-        } catch (error) {
-          console.error('Auto-save failed:', error)
-        } finally {
-          setIsAutoSaving(false)
-        }
+        await saveJournalText(text)
       }, 1000) // Auto-save after 1 second of inactivity
     }
 
@@ -65,13 +85,15 @@ export const JournalInput: React.FC<JournalInputProps> = ({
         clearTimeout(autoSaveTimeoutRef.current)
       }
     }
-  }, [text, entry?.note, onUpdate])
+  }, [text, entry?.note, saveJournalText])
 
   const handleTextChange = (newText: string) => {
     // Enforce character limit
     if (newText.length <= maxLength) {
       setText(newText)
       setCharacterCount(newText.length)
+      setLastFailedText(null)
+      setSaveStatus('idle')
     }
   }
 
@@ -83,7 +105,11 @@ export const JournalInput: React.FC<JournalInputProps> = ({
     setIsFocused(false)
     // Force save on blur if there are unsaved changes
     if (text !== (entry?.note || '')) {
-      onUpdate(text).catch(console.error)
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+        autoSaveTimeoutRef.current = null
+      }
+      void saveJournalText(text)
     }
   }
 
@@ -98,10 +124,13 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   }
 
   const getStatusText = () => {
-    if (isAutoSaving) {
+    if (saveStatus === 'saving') {
       return t('common.saving')
     }
-    if (lastSaved) {
+    if (saveStatus === 'error') {
+      return t('journal.saveFailed')
+    }
+    if (saveStatus === 'saved' && lastSaved) {
       const now = new Date()
       const diffMs = now.getTime() - lastSaved.getTime()
       const diffMinutes = Math.floor(diffMs / 60000)
@@ -129,7 +158,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
           {t('journal.title')}
         </Text>
         <HStack className="items-center" space="xs">
-          {isAutoSaving && (
+          {saveStatus === 'saving' && (
             <IconSymbol name="arrow.clockwise" size={16} color="#6B7280" />
           )}
           <Text className="text-sm text-gray-500">{getStatusText()}</Text>
@@ -168,6 +197,28 @@ export const JournalInput: React.FC<JournalInputProps> = ({
           }}
         />
       </Box>
+
+      {saveStatus !== 'idle' && (
+        <OperationFeedback
+          kind={
+            saveStatus === 'error'
+              ? 'error'
+              : saveStatus === 'saving'
+              ? 'saving'
+              : 'success'
+          }
+          message={getStatusText()}
+          actionLabel={saveStatus === 'error' ? t('common.retry') : undefined}
+          onAction={
+            saveStatus === 'error'
+              ? () => {
+                  void saveJournalText(lastFailedText ?? text)
+                }
+              : undefined
+          }
+          testID="journal-save-feedback"
+        />
+      )}
 
       {/* Footer with character count and hints */}
       <HStack className="items-center justify-between">
