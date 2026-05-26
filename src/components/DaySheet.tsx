@@ -6,7 +6,7 @@ import { Text } from '@/components/ui/text'
 import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
-import { AppCard } from './AppCard'
+import { AppCard } from '@/src/components/AppCard'
 import { JournalInput } from './JournalInput'
 import { AppPressable } from './AppPressable'
 import {
