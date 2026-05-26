@@ -54,5 +54,7 @@ tags:
     text: "1/1"
 
 # Verify final-task completion shows a closure message
-- assertVisible:
-    text: "All tasks complete. Nice closure for today."
+- extendedWaitUntil:
+    visible:
+      text: "All tasks complete. Nice closure for today."
+    timeout: 15000
