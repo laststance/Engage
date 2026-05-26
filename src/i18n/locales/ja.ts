@@ -20,6 +20,7 @@ const ja = {
     continue: '続行',
     next: '次へ',
     skip: 'スキップ',
+    retry: '再試行',
   },
 
   calendar: {
@@ -91,6 +92,8 @@ const ja = {
     atLeastOneTask: '少なくとも1つのタスクが必要です',
     duplicateTaskInCategory: '同じカテゴリー内で重複するタスク名があります',
     saveFailed: 'タスクの保存に失敗しました',
+    saveSuccess: 'プリセットタスクを保存しました',
+    categoryCreated: 'カテゴリーを作成しました',
   },
 
   stats: {
@@ -186,6 +189,7 @@ const ja = {
     export: 'データをエクスポート・共有',
     importing: 'インポート中...',
     import: 'バックアップをインポート',
+    deleting: '削除中...',
     statistics: 'バックアップ統計',
     totalBackups: '総バックアップ数:',
     validBackups: '有効なバックアップ:',
@@ -201,6 +205,8 @@ const ja = {
     createSuccessTitle: 'バックアップ作成完了',
     createSuccessMessage:
       'バックアップが正常に作成されました。\n\nファイル名: {{fileName}}\nサイズ: {{size}}',
+    createSuccessMessageInline:
+      'バックアップを作成しました: {{fileName}} ({{size}})',
     createFailTitle: 'バックアップ作成失敗',
     exportSuccessTitle: 'データエクスポート完了',
     exportSuccessMessage:
@@ -211,6 +217,7 @@ const ja = {
       'この操作により、現在のデータがすべて置き換えられます。続行しますか？',
     importSuccessTitle: 'インポート完了',
     importSuccessMessage: 'データが正常にインポートされました。\n\nカテゴリ: {{categories}}\nタスク: {{tasks}}\nエントリ: {{entries}}\n完了記録: {{completions}}\n設定: {{settings}}',
+    importSuccessMessageInline: 'データをインポートしました: カテゴリ {{categories}}件、タスク {{tasks}}件、エントリ {{entries}}件、完了記録 {{completions}}件、設定 {{settings}}件。',
     importFailTitle: 'インポート失敗',
     deleteConfirmTitle: 'バックアップ削除',
     deleteConfirmMessage:

@@ -20,6 +20,7 @@ const en = {
     continue: 'Continue',
     next: 'Next',
     skip: 'Skip',
+    retry: 'Retry',
   },
 
   calendar: {
@@ -91,6 +92,8 @@ const en = {
     atLeastOneTask: 'At least one task is required',
     duplicateTaskInCategory: 'Duplicate task names in the same category',
     saveFailed: 'Failed to save tasks',
+    saveSuccess: 'Preset tasks saved',
+    categoryCreated: 'Category created',
   },
 
   stats: {
@@ -186,6 +189,7 @@ const en = {
     export: 'Export & Share Data',
     importing: 'Importing...',
     import: 'Import Backup',
+    deleting: 'Deleting...',
     statistics: 'Backup Statistics',
     totalBackups: 'Total backups:',
     validBackups: 'Valid backups:',
@@ -201,6 +205,8 @@ const en = {
     createSuccessTitle: 'Backup Created',
     createSuccessMessage:
       'Backup created successfully.\n\nFile: {{fileName}}\nSize: {{size}}',
+    createSuccessMessageInline:
+      'Backup created: {{fileName}} ({{size}})',
     createFailTitle: 'Backup Failed',
     exportSuccessTitle: 'Export Complete',
     exportSuccessMessage: 'Data exported and shared successfully.',
@@ -210,6 +216,7 @@ const en = {
       'This will replace all current data. Continue?',
     importSuccessTitle: 'Import Complete',
     importSuccessMessage: 'Data imported successfully.\n\nCategories: {{categories}}\nTasks: {{tasks}}\nEntries: {{entries}}\nCompletions: {{completions}}\nSettings: {{settings}}',
+    importSuccessMessageInline: 'Imported data: {{categories}} categories, {{tasks}} tasks, {{entries}} entries, {{completions}} completions, {{settings}} settings.',
     importFailTitle: 'Import Failed',
     deleteConfirmTitle: 'Delete Backup',
     deleteConfirmMessage: 'Delete backup file "{{fileName}}"?',

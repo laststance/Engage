@@ -101,7 +101,9 @@ describe('PresetTaskEditor', () => {
   })
 
   it('allows changing task category', () => {
-    const { getByTestId } = render(<PresetTaskEditor {...defaultProps} />)
+    const { getByTestId } = render(
+      <PresetTaskEditor {...defaultProps} />
+    )
 
     // Find category option for the first task (index 0)
     const categoryOption = getByTestId('category-option-life-0')
@@ -147,7 +149,7 @@ describe('PresetTaskEditor', () => {
   })
 
   it('validates tasks before saving', async () => {
-    const { getByTestId, getByDisplayValue } = render(
+    const { getByTestId, getByDisplayValue, getByText } = render(
       <PresetTaskEditor {...defaultProps} />
     )
 
@@ -163,17 +165,15 @@ describe('PresetTaskEditor', () => {
     fireEvent.press(saveButton)
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'エラー',
-        '少なくとも1つのタスクが必要です'
-      )
+      expect(getByTestId('preset-editor-feedback')).toBeTruthy()
     })
 
+    expect(getByText('presetEditor.atLeastOneTask')).toBeTruthy()
     expect(mockOnSave).not.toHaveBeenCalled()
   })
 
   it('detects duplicate task names in same category', async () => {
-    const { getByTestId, getByDisplayValue } = render(
+    const { getByTestId, getByDisplayValue, getByText } = render(
       <PresetTaskEditor {...defaultProps} />
     )
 
@@ -190,19 +190,19 @@ describe('PresetTaskEditor', () => {
     fireEvent.press(saveButton)
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'エラー',
-        '同じカテゴリー内で重複するタスク名があります'
-      )
+      expect(getByTestId('preset-editor-feedback')).toBeTruthy()
     })
 
+    expect(getByText('presetEditor.duplicateTaskInCategory')).toBeTruthy()
     expect(mockOnSave).not.toHaveBeenCalled()
   })
 
   it('saves valid tasks successfully', async () => {
     mockOnSave.mockResolvedValue(undefined)
 
-    const { getByTestId } = render(<PresetTaskEditor {...defaultProps} />)
+    const { getByTestId } = render(
+      <PresetTaskEditor {...defaultProps} />
+    )
 
     const saveButton = getByTestId('preset-editor-save')
     fireEvent.press(saveButton)
@@ -240,16 +240,22 @@ describe('PresetTaskEditor', () => {
   it('handles save errors gracefully', async () => {
     mockOnSave.mockRejectedValue(new Error('Save failed'))
 
-    const { getByTestId } = render(<PresetTaskEditor {...defaultProps} />)
+    const { getByTestId, getByText } = render(
+      <PresetTaskEditor {...defaultProps} />
+    )
 
     const saveButton = getByTestId('preset-editor-save')
     fireEvent.press(saveButton)
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'エラー',
-        'タスクの保存に失敗しました'
-      )
+      expect(getByTestId('preset-editor-feedback')).toBeTruthy()
+    })
+    expect(getByText('presetEditor.saveFailed')).toBeTruthy()
+
+    fireEvent.press(getByTestId('preset-editor-feedback-action'))
+
+    await waitFor(() => {
+      expect(mockOnSave).toHaveBeenCalledTimes(2)
     })
   })
 
@@ -258,7 +264,7 @@ describe('PresetTaskEditor', () => {
       new Error('Category creation failed')
     )
 
-    const { getByTestId, getByPlaceholderText } = render(
+    const { getByTestId, getByPlaceholderText, getByText } = render(
       <PresetTaskEditor {...defaultProps} />
     )
 
@@ -267,7 +273,9 @@ describe('PresetTaskEditor', () => {
     fireEvent.press(addCategoryButton)
 
     // Enter category name
-    const categoryInput = getByPlaceholderText('新しいカテゴリー名')
+    const categoryInput = getByPlaceholderText(
+      'presetEditor.newCategoryPlaceholder'
+    )
     fireEvent.changeText(categoryInput, '勉強')
 
     // Try to create category
@@ -275,10 +283,8 @@ describe('PresetTaskEditor', () => {
     fireEvent.press(createButton)
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'エラー',
-        'カテゴリーの作成に失敗しました'
-      )
+      expect(getByTestId('preset-editor-feedback')).toBeTruthy()
     })
+    expect(getByText('presetEditor.createCategoryFailed')).toBeTruthy()
   })
 })

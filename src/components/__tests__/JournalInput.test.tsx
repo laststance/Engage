@@ -152,4 +152,34 @@ describe('JournalInput', () => {
       expect(mockOnUpdate).toHaveBeenCalledWith('自動保存テスト')
     })
   })
+
+  it('shows retry feedback when journal persistence fails', async () => {
+    // Arrange
+    const failingOnUpdate = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('Save failed'))
+      .mockResolvedValueOnce(undefined)
+    const { getByTestId } = render(
+      <JournalInput {...defaultProps} onUpdate={failingOnUpdate} />
+    )
+
+    // Act
+    const textInput = getByTestId('journal-text-input')
+    fireEvent.changeText(textInput, '保存に失敗するテキスト')
+    fireEvent(textInput, 'blur')
+
+    // Assert
+    await waitFor(() => {
+      expect(getByTestId('journal-save-feedback')).toBeTruthy()
+    })
+
+    fireEvent.press(getByTestId('journal-save-feedback-action'))
+
+    await waitFor(() => {
+      expect(failingOnUpdate).toHaveBeenCalledTimes(2)
+    })
+    expect(failingOnUpdate).toHaveBeenLastCalledWith(
+      '保存に失敗するテキスト'
+    )
+  })
 })

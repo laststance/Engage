@@ -37,15 +37,14 @@ tags:
       text: "Data Backup"
     timeout: 5000
 
-# Create a local backup and assert the success alert appears.
-- tapOn: "Create Backup"
+# Create a local backup and assert inline feedback appears.
+- tapOn:
+    id: "backup-create-button"
 
 - extendedWaitUntil:
     visible:
-      text: "Backup Created"
+      id: "backup-operation-feedback"
     timeout: 10000
 
 - assertNotVisible:
     text: "Backup Failed"
-
-- tapOn: "OK"

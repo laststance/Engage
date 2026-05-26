@@ -2,6 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
+import {
+  OperationFeedback,
+  OperationFeedbackKind,
+} from '@/src/components/OperationFeedback'
+import { useInteractionFeedback } from '@/src/hooks/useInteractionFeedback'
 import { useAppStore } from '../stores/app-store'
 import i18n from '@/src/i18n/config'
 
@@ -21,14 +26,24 @@ interface BackupStats {
   validBackups: number
 }
 
+interface BackupFeedback {
+  kind: OperationFeedbackKind
+  message: string
+  actionLabel?: string
+  onAction?: () => void
+}
+
 /**
  * Component for managing data backups and exports
  */
 export const BackupManager: React.FC = () => {
   const { t } = useTranslation()
+  const triggerFeedback = useInteractionFeedback()
   const [backups, setBackups] = useState<BackupInfo[]>([])
   const [stats, setStats] = useState<BackupStats | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [operationFeedback, setOperationFeedback] =
+    useState<BackupFeedback | null>(null)
 
   const {
     createBackup,
@@ -65,23 +80,45 @@ export const BackupManager: React.FC = () => {
     try {
       setIsLoading(true)
       clearError()
+      setOperationFeedback({
+        kind: 'saving',
+        message: t('backup.creating'),
+      })
 
       const result = await createBackup()
 
       if (result.success) {
-        Alert.alert(
-          t('backup.createSuccessTitle'),
-          t('backup.createSuccessMessage', { fileName: result.fileName, size: formatFileSize(result.size || 0) }),
-          [{ text: t('common.ok') }]
-        )
+        triggerFeedback('complete')
+        setOperationFeedback({
+          kind: 'success',
+          message: t('backup.createSuccessMessageInline', {
+            fileName: result.fileName,
+            size: formatFileSize(result.size || 0),
+          }),
+        })
         await loadBackupData()
       } else {
-        Alert.alert(t('backup.createFailTitle'), result.errors.join('\n'), [
-          { text: t('common.ok') },
-        ])
+        triggerFeedback('error')
+        setOperationFeedback({
+          kind: 'error',
+          message: result.errors.join('\n') || t('backup.createFailTitle'),
+          actionLabel: t('common.retry'),
+          onAction: () => {
+            void handleCreateBackup()
+          },
+        })
       }
     } catch (error) {
       console.error('Failed to create backup:', error)
+      triggerFeedback('error')
+      setOperationFeedback({
+        kind: 'error',
+        message: t('backup.createFailTitle'),
+        actionLabel: t('common.retry'),
+        onAction: () => {
+          void handleCreateBackup()
+        },
+      })
     } finally {
       setIsLoading(false)
     }
@@ -91,22 +128,93 @@ export const BackupManager: React.FC = () => {
     try {
       setIsLoading(true)
       clearError()
+      setOperationFeedback({
+        kind: 'saving',
+        message: t('backup.exporting'),
+      })
 
       const result = await exportData()
 
       if (result.success) {
-        Alert.alert(
-          t('backup.exportSuccessTitle'),
-          t('backup.exportSuccessMessage'),
-          [{ text: t('common.ok') }]
-        )
+        triggerFeedback('complete')
+        setOperationFeedback({
+          kind: 'success',
+          message: t('backup.exportSuccessMessage'),
+        })
       } else {
-        Alert.alert(t('backup.exportFailTitle'), result.errors.join('\n'), [
-          { text: t('common.ok') },
-        ])
+        triggerFeedback('error')
+        setOperationFeedback({
+          kind: 'error',
+          message: result.errors.join('\n') || t('backup.exportFailTitle'),
+          actionLabel: t('common.retry'),
+          onAction: () => {
+            void handleExportData()
+          },
+        })
       }
     } catch (error) {
       console.error('Failed to export data:', error)
+      triggerFeedback('error')
+      setOperationFeedback({
+        kind: 'error',
+        message: t('backup.exportFailTitle'),
+        actionLabel: t('common.retry'),
+        onAction: () => {
+          void handleExportData()
+        },
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const performImportBackup = async () => {
+    try {
+      setIsLoading(true)
+      clearError()
+      setOperationFeedback({
+        kind: 'saving',
+        message: t('backup.importing'),
+      })
+
+      const result = await importBackup()
+
+      if (result.success) {
+        triggerFeedback('complete')
+        setOperationFeedback({
+          kind: 'success',
+          message: t('backup.importSuccessMessageInline', {
+            categories: result.recordsImported.categories,
+            tasks: result.recordsImported.tasks,
+            entries: result.recordsImported.entries,
+            completions: result.recordsImported.completions,
+            settings: result.recordsImported.settings,
+          }),
+        })
+        await loadBackupData()
+        return
+      }
+
+      triggerFeedback('error')
+      setOperationFeedback({
+        kind: 'error',
+        message: result.errors.join('\n') || t('backup.importFailTitle'),
+        actionLabel: t('common.retry'),
+        onAction: () => {
+          void handleImportBackup()
+        },
+      })
+    } catch (error) {
+      console.error('Failed to import backup:', error)
+      triggerFeedback('error')
+      setOperationFeedback({
+        kind: 'error',
+        message: t('backup.importFailTitle'),
+        actionLabel: t('common.retry'),
+        onAction: () => {
+          void handleImportBackup()
+        },
+      })
     } finally {
       setIsLoading(false)
     }
@@ -121,40 +229,55 @@ export const BackupManager: React.FC = () => {
         {
           text: t('common.continue'),
           style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsLoading(true)
-              clearError()
-
-              const result = await importBackup()
-
-              if (result.success) {
-                Alert.alert(
-                  t('backup.importSuccessTitle'),
-                  t('backup.importSuccessMessage', {
-                    categories: result.recordsImported.categories,
-                    tasks: result.recordsImported.tasks,
-                    entries: result.recordsImported.entries,
-                    completions: result.recordsImported.completions,
-                    settings: result.recordsImported.settings,
-                  }),
-                  [{ text: t('common.ok') }]
-                )
-                await loadBackupData()
-              } else {
-                Alert.alert(t('backup.importFailTitle'), result.errors.join('\n'), [
-                  { text: t('common.ok') },
-                ])
-              }
-            } catch (error) {
-              console.error('Failed to import backup:', error)
-            } finally {
-              setIsLoading(false)
-            }
+          onPress: () => {
+            void performImportBackup()
           },
         },
       ]
     )
+  }
+
+  const performDeleteBackup = async (fileName: string) => {
+    try {
+      setIsLoading(true)
+      setOperationFeedback({
+        kind: 'saving',
+        message: t('backup.deleting'),
+      })
+      const success = await deleteBackup(fileName)
+
+      if (success) {
+        triggerFeedback('complete')
+        setOperationFeedback({
+          kind: 'success',
+          message: t('backup.deleteSuccessMessage'),
+        })
+        await loadBackupData()
+      } else {
+        triggerFeedback('error')
+        setOperationFeedback({
+          kind: 'error',
+          message: t('backup.deleteFailMessage'),
+          actionLabel: t('common.retry'),
+          onAction: () => {
+            void performDeleteBackup(fileName)
+          },
+        })
+      }
+    } catch (error) {
+      console.error('Failed to delete backup:', error)
+      triggerFeedback('error')
+      setOperationFeedback({
+        kind: 'error',
+        message: t('backup.deleteFailMessage'),
+        actionLabel: t('common.retry'),
+        onAction: () => {
+          void performDeleteBackup(fileName)
+        },
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleDeleteBackup = async (fileName: string) => {
@@ -166,26 +289,8 @@ export const BackupManager: React.FC = () => {
         {
           text: t('common.delete'),
           style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsLoading(true)
-              const success = await deleteBackup(fileName)
-
-              if (success) {
-                Alert.alert(t('backup.deleteSuccessTitle'), t('backup.deleteSuccessMessage'), [
-                  { text: t('common.ok') },
-                ])
-                await loadBackupData()
-              } else {
-                Alert.alert(t('backup.deleteFailTitle'), t('backup.deleteFailMessage'), [
-                  { text: t('common.ok') },
-                ])
-              }
-            } catch (error) {
-              console.error('Failed to delete backup:', error)
-            } finally {
-              setIsLoading(false)
-            }
+          onPress: () => {
+            void performDeleteBackup(fileName)
           },
         },
       ]
@@ -212,11 +317,21 @@ export const BackupManager: React.FC = () => {
 
   return (
     <ScrollView className="flex-1 p-4 bg-white">
-
-
       {error && (
         <View className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           <Text className="text-red-800">{error}</Text>
+        </View>
+      )}
+
+      {operationFeedback && (
+        <View className="mb-4">
+          <OperationFeedback
+            kind={operationFeedback.kind}
+            message={operationFeedback.message}
+            actionLabel={operationFeedback.actionLabel}
+            onAction={operationFeedback.onAction}
+            testID="backup-operation-feedback"
+          />
         </View>
       )}
 
@@ -229,6 +344,7 @@ export const BackupManager: React.FC = () => {
             onPress={handleCreateBackup}
             disabled={isLoading}
             className="w-full"
+            testID="backup-create-button"
           >
             <Text className="text-white font-medium">
               {isLoading ? t('backup.creating') : t('backup.create')}
@@ -240,6 +356,7 @@ export const BackupManager: React.FC = () => {
             disabled={isLoading}
             variant="outline"
             className="w-full"
+            testID="backup-export-button"
           >
             <Text className="font-medium">
               {isLoading ? t('backup.exporting') : t('backup.export')}
@@ -251,6 +368,7 @@ export const BackupManager: React.FC = () => {
             disabled={isLoading}
             variant="outline"
             className="w-full"
+            testID="backup-import-button"
           >
             <Text className="font-medium">
               {isLoading ? t('backup.importing') : t('backup.import')}
