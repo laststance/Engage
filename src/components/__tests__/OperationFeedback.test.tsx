@@ -1,6 +1,6 @@
 import React from 'react'
 import { fireEvent, render } from '@testing-library/react-native'
-import { OperationFeedback } from '../OperationFeedback'
+import { OperationFeedback } from '@/src/components/OperationFeedback'
 
 describe('OperationFeedback', () => {
   it('shows the feedback message and retry action for recoverable failures', () => {

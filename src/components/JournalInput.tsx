@@ -37,10 +37,12 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   const [characterCount, setCharacterCount] = useState(entry?.note?.length || 0)
 
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const saveRequestIdRef = useRef(0)
   const textInputRef = useRef<TextInput>(null)
 
   // Update local state when entry prop changes (e.g., date change)
   useEffect(() => {
+    saveRequestIdRef.current += 1
     setText(entry?.note || '')
     setCharacterCount(entry?.note?.length || 0)
     setSaveStatus('idle')
@@ -50,14 +52,17 @@ export const JournalInput: React.FC<JournalInputProps> = ({
 
   const saveJournalText = useCallback(
     async (nextText: string) => {
+      const requestId = ++saveRequestIdRef.current
       setSaveStatus('saving')
       setLastFailedText(null)
 
       try {
         await onUpdate(nextText)
+        if (requestId !== saveRequestIdRef.current) return
         setLastSaved(new Date())
         setSaveStatus('saved')
       } catch (error) {
+        if (requestId !== saveRequestIdRef.current) return
         console.error('Auto-save failed:', error)
         triggerFeedback('error')
         setLastFailedText(nextText)
@@ -90,6 +95,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   const handleTextChange = (newText: string) => {
     // Enforce character limit
     if (newText.length <= maxLength) {
+      saveRequestIdRef.current += 1
       setText(newText)
       setCharacterCount(newText.length)
       setLastFailedText(null)

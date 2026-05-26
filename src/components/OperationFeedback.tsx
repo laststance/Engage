@@ -93,7 +93,7 @@ export function OperationFeedback({
           <AppPressable
             onPress={onAction}
             feedback="select"
-            className={`rounded-md px-3 py-2 ${styles.action}`}
+            className={`min-h-[44px] justify-center rounded-md px-3 py-2 ${styles.action}`}
             pressedClassName={styles.actionPressed}
             testID={`${testID}-action`}
             accessibilityRole="button"
