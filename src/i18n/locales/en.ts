@@ -84,6 +84,7 @@ const en = {
     taskNamePlaceholder: 'Enter task name',
     category: 'Category',
     categoryName: 'Category Name',
+    unknownCategory: 'Unknown category',
     categoryManagement: 'Category Management',
     addCategory: 'Add Category',
     newCategoryPlaceholder: 'New category name',

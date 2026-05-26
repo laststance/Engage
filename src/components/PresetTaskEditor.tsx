@@ -389,7 +389,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                         <Text className="text-lg font-semibold text-gray-800">
                           {category
                             ? getCategoryDisplayName(category)
-                            : 'Unknown Category'}
+                            : t('presetEditor.unknownCategory')}
                         </Text>
                       </HStack>
                     </HStack>
@@ -478,6 +478,13 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                                           }
                                         `}
                                           testID={`category-option-${cat.id}-${task.index}`}
+                                          accessibilityLabel={getCategoryDisplayName(
+                                            cat
+                                          )}
+                                          accessibilityRole="button"
+                                          accessibilityState={{
+                                            selected: isSelected,
+                                          }}
                                         >
                                           <Box
                                             className={`w-3 h-3 rounded-full ${catColor} mr-2`}

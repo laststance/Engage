@@ -83,6 +83,7 @@ const ja = {
     taskNamePlaceholder: 'タスク名を入力',
     category: 'カテゴリー',
     categoryName: 'カテゴリー名',
+    unknownCategory: '不明なカテゴリー',
     categoryManagement: 'カテゴリー管理',
     addCategory: 'カテゴリー追加',
     newCategoryPlaceholder: '新しいカテゴリー名',

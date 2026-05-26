@@ -1,8 +1,8 @@
 import React from 'react'
 import { fireEvent, render } from '@testing-library/react-native'
 import { Alert } from 'react-native'
-import { PresetTaskEditor } from '../PresetTaskEditor'
 import { Category, Task } from '@/src/types'
+import { PresetTaskEditor } from '../PresetTaskEditor'
 
 jest.spyOn(Alert, 'alert')
 
@@ -83,6 +83,24 @@ describe('PresetTaskEditor form safety', () => {
     expect(getAllByText('presetEditor.duplicateTaskInCategory')).toHaveLength(3)
     expect(getByTestId('preset-editor-save').props.disabled).toBe(true)
     expect(onSave).not.toHaveBeenCalled()
+  })
+
+  it('exposes selected state on category chips for screen readers', () => {
+    // Arrange
+    const { getByTestId } = renderEditor()
+
+    // Act
+    const selectedBusinessChip = getByTestId('category-option-business-0')
+    const unselectedLifeChip = getByTestId('category-option-life-0')
+
+    // Assert
+    expect(selectedBusinessChip.props.accessibilityRole).toBe('button')
+    expect(selectedBusinessChip.props.accessibilityState).toEqual({
+      selected: true,
+    })
+    expect(unselectedLifeChip.props.accessibilityState).toEqual({
+      selected: false,
+    })
   })
 
   it('keeps destructive task removal behind a confirmation dialog', () => {
