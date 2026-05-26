@@ -213,7 +213,7 @@ describe('TaskPicker', () => {
     expect(getByText('presetEditor.addTask')).toBeTruthy()
   })
 
-  it('prevents duplicate assignment saves while confirm is already pending', () => {
+  it('prevents duplicate assignment saves while confirm is already pending', async () => {
     // Arrange
     let resolveSave: (result: TaskAssignmentOperationResult) => void = () => {}
     mockOnTaskSelect.mockReturnValue(
@@ -226,9 +226,17 @@ describe('TaskPicker', () => {
     // Act
     fireEvent.press(getByTestId('task-picker-confirm'))
     fireEvent.press(getByTestId('task-picker-confirm'))
-    resolveSave(successResult)
 
     // Assert
+    await waitFor(() => {
+      expect(
+        getByTestId('task-picker-confirm').props.accessibilityState
+      ).toMatchObject({
+        busy: true,
+        disabled: true,
+      })
+    })
     expect(mockOnTaskSelect).toHaveBeenCalledTimes(1)
+    resolveSave(successResult)
   })
 })

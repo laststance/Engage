@@ -196,6 +196,29 @@ export const Calendar: React.FC<CalendarProps> = ({
     return t('calendar.dateA11y', { day })
   }
 
+  /**
+   * Describes calendar state that React Native does not expose as accessibilityState.
+   * @param isCurrentMonth - Whether the cell belongs to the visible calendar month.
+   * @param isCurrentDate - Whether the cell represents today.
+   * @returns A localized value string for VoiceOver, or `undefined` when no extra state is needed.
+   * @example
+   * getDateA11yValue(false, false) // => 'Outside this month'
+   */
+  const getDateA11yValue = (
+    isCurrentMonth: boolean,
+    isCurrentDate: boolean
+  ): string | undefined => {
+    if (isCurrentDate) {
+      return t('calendar.currentDateA11yValue')
+    }
+
+    if (!isCurrentMonth) {
+      return t('calendar.outsideMonthA11yValue')
+    }
+
+    return undefined
+  }
+
   return (
     <Box className="flex-1 bg-gray-50" testID="calendar-component">
       {/* Header with month navigation - matching Figma design */}
@@ -258,11 +281,19 @@ export const Calendar: React.FC<CalendarProps> = ({
             {week.map((dayData, dayIndex) => {
               const completionCount = achievementData[dayData.dateString] || 0
               const heatmapColor = getHeatmapColor(completionCount)
-              const isSelectedDate = isSelected(dayData.dateString)
+              const isCurrentDate = isToday(dayData.dateString)
+              const isInteractiveDate = dayData.isCurrentMonth
+              const isSelectedDate =
+                isInteractiveDate && isSelected(dayData.dateString)
+              const dateAccessibilityValue = getDateA11yValue(
+                isInteractiveDate,
+                isCurrentDate
+              )
 
               return (
                 <AppPressable
                   key={`${weekIndex}-${dayIndex}`}
+                  disabled={!isInteractiveDate}
                   feedback="select"
                   onPress={() => onDateSelect(dayData.dateString)}
                   testID={`calendar-date-${dayData.dateString}`}
@@ -270,6 +301,11 @@ export const Calendar: React.FC<CalendarProps> = ({
                   pressedClassName="opacity-80"
                   selected={isSelectedDate}
                   accessibilityLabel={getDateA11yLabel(dayData.date, dayData.dateString, completionCount)}
+                  accessibilityValue={
+                    dateAccessibilityValue
+                      ? { text: dateAccessibilityValue }
+                      : undefined
+                  }
                   accessibilityRole="button"
                 >
                   <Box
@@ -287,7 +323,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                           : ''
                       }
                       ${
-                        isToday(dayData.dateString)
+                        isCurrentDate
                           ? 'border-2 border-orange-500'
                           : ''
                       }
@@ -302,7 +338,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                             : 'text-gray-300'
                         }
                         ${isSelectedDate ? 'text-blue-600' : ''}
-                        ${isToday(dayData.dateString) ? 'text-orange-600' : ''}
+                        ${isCurrentDate ? 'text-orange-600' : ''}
                       `}
                     >
                       {dayData.date}

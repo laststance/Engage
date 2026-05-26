@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from '@testing-library/react-native'
+import { fireEvent, render } from '@testing-library/react-native'
 import { Category, StatsData } from '@/src/types'
 import { Statistics } from '../Statistics'
 
@@ -59,5 +59,27 @@ describe('Statistics completion causality', () => {
     // Assert
     expect(getByTestId('stats-period-recap')).toBeTruthy()
     expect(getByText('stats.periodRecap')).toBeTruthy()
+  })
+
+  it('exposes selected state as the segmented period changes', () => {
+    // Arrange
+    const { getByTestId } = render(
+      <Statistics
+        categories={categories}
+        monthlyStats={activeStats}
+        weeklyStats={activeStats}
+      />
+    )
+
+    // Act
+    fireEvent.press(getByTestId('stats-month-toggle'))
+
+    // Assert
+    expect(getByTestId('stats-week-toggle').props.accessibilityState).toMatchObject({
+      selected: false,
+    })
+    expect(getByTestId('stats-month-toggle').props.accessibilityState).toMatchObject({
+      selected: true,
+    })
   })
 })

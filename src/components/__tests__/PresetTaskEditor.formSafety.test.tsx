@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render } from '@testing-library/react-native'
+import { fireEvent, render, waitFor } from '@testing-library/react-native'
 import { Alert } from 'react-native'
 import { Category, Task } from '@/src/types'
 import { PresetTaskEditor } from '../PresetTaskEditor'
@@ -65,6 +65,9 @@ describe('PresetTaskEditor form safety', () => {
       0
     )
     expect(getByTestId('preset-editor-save').props.disabled).toBe(true)
+    expect(getByTestId('preset-editor-save').props.accessibilityState).toMatchObject({
+      disabled: true,
+    })
     expect(onSave).not.toHaveBeenCalled()
   })
 
@@ -116,5 +119,31 @@ describe('PresetTaskEditor form safety', () => {
       'presetEditor.deleteTaskConfirm',
       expect.any(Array)
     )
+  })
+
+  it('exposes busy and disabled state while saving preset tasks', async () => {
+    // Arrange
+    let resolveSave: () => void = () => {}
+    const onSave = jest.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSave = resolve
+        })
+    )
+    const { getByTestId } = renderEditor({ onSave })
+
+    // Act
+    fireEvent.press(getByTestId('preset-editor-save'))
+
+    // Assert
+    await waitFor(() => {
+      expect(
+        getByTestId('preset-editor-save').props.accessibilityState
+      ).toMatchObject({
+        busy: true,
+        disabled: true,
+      })
+    })
+    resolveSave()
   })
 })

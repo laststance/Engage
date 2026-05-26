@@ -201,6 +201,40 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
     }
   }
 
+  /**
+   * Opens OS notification settings while exposing a pending state to assistive tech.
+   * @returns A promise that settles after the platform settings request finishes.
+   * @example
+   * await handleOpenNotificationSettings()
+   */
+  const handleOpenNotificationSettings = async (): Promise<void> => {
+    setIsSaving(true)
+    setOperationMessage(null)
+
+    try {
+      await openNotificationSettings()
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  /**
+   * Refreshes permission state while keeping the pressed action busy and disabled.
+   * @returns A promise that settles after notification settings are reloaded.
+   * @example
+   * await handleRefreshSettings()
+   */
+  const handleRefreshSettings = async (): Promise<void> => {
+    setIsSaving(true)
+    setOperationMessage(null)
+
+    try {
+      await refreshSettings()
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center p-6">
@@ -227,6 +261,10 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
               onValueChange={handleReminderToggle}
               disabled={isDenied || isSaving}
               testID="notification-reminder-switch"
+              accessibilityState={{
+                busy: isSaving,
+                disabled: isDenied || isSaving,
+              }}
               trackColor={{ false: '#E5E7EB', true: '#007AFF' }}
               thumbColor={settings.enabled ? '#FFFFFF' : '#9CA3AF'}
               accessibilityHint={
@@ -291,6 +329,7 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
                     key={`${time.hour}-${time.minute}`}
                     onPress={() => handleTimeChange(time.hour, time.minute)}
                     selected={isSelected}
+                    busy={isSaving}
                     disabled={isSaving}
                     feedback="select"
                     className={`
@@ -355,7 +394,8 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
         <VStack className="gap-3">
           {isDenied && (
             <AppPressable
-              onPress={openNotificationSettings}
+              onPress={handleOpenNotificationSettings}
+              busy={isSaving}
               disabled={isSaving}
               feedback="select"
               className="w-full bg-system-blue rounded-lg py-3 touch-target-minimum"
@@ -370,7 +410,8 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
           )}
 
           <AppPressable
-            onPress={refreshSettings}
+            onPress={handleRefreshSettings}
+            busy={isSaving}
             disabled={isSaving}
             feedback="select"
             className="w-full bg-secondary-system-background rounded-lg py-3 touch-target-minimum"
@@ -386,6 +427,7 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
           {onClose && (
             <AppPressable
               onPress={onClose}
+              busy={isSaving}
               disabled={isSaving}
               feedback="select"
               className="w-full bg-system-blue rounded-lg py-3 touch-target-minimum"

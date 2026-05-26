@@ -60,3 +60,14 @@ maestro test maestro/ios/ --include-tags manual
 - Tab buttons use accessibility labels such as `today-tab`, `stats-tab`, and `calendar-tab`.
 - Use `extendedWaitUntil` before assertions because app initialization and SQLite loading are async.
 - Production build is required because DevTools can interfere with E2E stability.
+
+## Known Benign Simulator Logs
+
+These messages can appear during Maestro/XCTest runs without indicating an app-originated interaction bug:
+
+- `XCTAutomationSupportErrorUnknownElement: Error getting main window Unknown kAXError value -25218`
+- `XCTAutomationSupport Automation type mismatch`
+- `RCTScrollViewComponentView implements focusItemsInRect`
+- `NSBundle (null) initWithPath failed because the resolved path is empty or nil`
+
+Treat them as platform or test-runner noise unless they accompany a failed assertion, a stuck flow, or a reproducible app UI regression.
