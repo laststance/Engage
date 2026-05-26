@@ -6,7 +6,17 @@ import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { HStack } from '@/components/ui/hstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
-import { OperationFeedback } from '@/src/components/OperationFeedback'
+import {
+  OperationFeedback,
+  type OperationFeedbackKind,
+} from '@/src/components/OperationFeedback'
+import {
+  JOURNAL_AUTOSAVE_DELAY_MS,
+  JOURNAL_NEAR_LIMIT_RATIO,
+  JOURNAL_TEXT_INPUT_MIN_HEIGHT_PX,
+  MINUTES_PER_HOUR,
+  MS_PER_MINUTE,
+} from '@/src/constants/journal'
 import { useInteractionFeedback } from '@/src/hooks/useInteractionFeedback'
 import { Entry } from '@/src/types'
 
@@ -18,7 +28,32 @@ interface JournalInputProps {
   maxLength?: number
 }
 
-type JournalSaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+type JournalSaveStatus = 'idle' | 'draft' | 'saving' | 'saved' | 'error'
+
+/**
+ * Converts journal save state into the shared inline feedback tone.
+ * @param saveStatus - The current local autosave state.
+ * @returns The OperationFeedback tone that matches the journal state.
+ * @example
+ * getJournalFeedbackKind('draft') // => 'info'
+ */
+const getJournalFeedbackKind = (
+  saveStatus: Exclude<JournalSaveStatus, 'idle'>
+): OperationFeedbackKind => {
+  if (saveStatus === 'error') {
+    return 'error'
+  }
+
+  if (saveStatus === 'saving') {
+    return 'saving'
+  }
+
+  if (saveStatus === 'draft') {
+    return 'info'
+  }
+
+  return 'success'
+}
 
 export const JournalInput: React.FC<JournalInputProps> = ({
   date,
@@ -39,16 +74,29 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const saveRequestIdRef = useRef(0)
   const textInputRef = useRef<TextInput>(null)
+  const lastPersistedTextRef = useRef(entry?.note || '')
+  const textRef = useRef(entry?.note || '')
 
   // Update local state when entry prop changes (e.g., date change)
   useEffect(() => {
+    const nextPersistedText = entry?.note || ''
+    const previousPersistedText = lastPersistedTextRef.current
+    const hasLocalDraft = textRef.current !== previousPersistedText
+
     saveRequestIdRef.current += 1
-    setText(entry?.note || '')
-    setCharacterCount(entry?.note?.length || 0)
+    lastPersistedTextRef.current = nextPersistedText
+
+    if (hasLocalDraft) {
+      return
+    }
+
+    textRef.current = nextPersistedText
+    setText(nextPersistedText)
+    setCharacterCount(nextPersistedText.length)
     setSaveStatus('idle')
     setLastSaved(null)
     setLastFailedText(null)
-  }, [entry])
+  }, [entry?.note])
 
   const saveJournalText = useCallback(
     async (nextText: string) => {
@@ -59,6 +107,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       try {
         await onUpdate(nextText)
         if (requestId !== saveRequestIdRef.current) return
+        lastPersistedTextRef.current = nextText
         setLastSaved(new Date())
         setSaveStatus('saved')
       } catch (error) {
@@ -78,11 +127,11 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       clearTimeout(autoSaveTimeoutRef.current)
     }
 
-    // Only auto-save if text has changed from the original entry
-    if (text !== (entry?.note || '')) {
+    // Only auto-save while the local draft differs from the last persisted text.
+    if (text !== lastPersistedTextRef.current) {
       autoSaveTimeoutRef.current = setTimeout(async () => {
         await saveJournalText(text)
-      }, 1000) // Auto-save after 1 second of inactivity
+      }, JOURNAL_AUTOSAVE_DELAY_MS)
     }
 
     return () => {
@@ -90,16 +139,19 @@ export const JournalInput: React.FC<JournalInputProps> = ({
         clearTimeout(autoSaveTimeoutRef.current)
       }
     }
-  }, [text, entry?.note, saveJournalText])
+  }, [text, saveJournalText])
 
   const handleTextChange = (newText: string) => {
     // Enforce character limit
     if (newText.length <= maxLength) {
       saveRequestIdRef.current += 1
+      textRef.current = newText
       setText(newText)
       setCharacterCount(newText.length)
       setLastFailedText(null)
-      setSaveStatus('idle')
+      setSaveStatus(
+        newText === lastPersistedTextRef.current ? 'idle' : 'draft'
+      )
     }
   }
 
@@ -110,7 +162,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   const handleBlur = () => {
     setIsFocused(false)
     // Force save on blur if there are unsaved changes
-    if (text !== (entry?.note || '')) {
+    if (text !== lastPersistedTextRef.current) {
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current)
         autoSaveTimeoutRef.current = null
@@ -130,31 +182,40 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   }
 
   const getStatusText = () => {
+    if (saveStatus === 'draft') {
+      return t('journal.unsavedDraft')
+    }
     if (saveStatus === 'saving') {
       return t('common.saving')
     }
     if (saveStatus === 'error') {
-      return t('journal.saveFailed')
+      return t('journal.saveFailedDraft')
     }
     if (saveStatus === 'saved' && lastSaved) {
       const now = new Date()
       const diffMs = now.getTime() - lastSaved.getTime()
-      const diffMinutes = Math.floor(diffMs / 60000)
+      const diffMinutes = Math.floor(diffMs / MS_PER_MINUTE)
 
       if (diffMinutes < 1) {
         return t('journal.saved')
-      } else if (diffMinutes < 60) {
+      } else if (diffMinutes < MINUTES_PER_HOUR) {
         return t('journal.savedMinutesAgo', { minutes: diffMinutes })
       } else {
-        const diffHours = Math.floor(diffMinutes / 60)
+        const diffHours = Math.floor(diffMinutes / MINUTES_PER_HOUR)
         return t('journal.savedHoursAgo', { hours: diffHours })
       }
     }
     return ''
   }
 
-  const isNearLimit = characterCount > maxLength * 0.8
+  const isNearLimit = characterCount > maxLength * JOURNAL_NEAR_LIMIT_RATIO
   const isAtLimit = characterCount >= maxLength
+  const footerHint =
+    saveStatus === 'draft' || saveStatus === 'error'
+      ? t('journal.unsavedDraftHint')
+      : t('journal.autoSave')
+  const feedbackKind =
+    saveStatus === 'idle' ? null : getJournalFeedbackKind(saveStatus)
 
   return (
     <VStack space="sm" testID="journal-input-container">
@@ -199,20 +260,14 @@ export const JournalInput: React.FC<JournalInputProps> = ({
           maxLength={maxLength}
           scrollEnabled={true}
           style={{
-            minHeight: 88, // Ensure minimum height for comfortable typing
+            minHeight: JOURNAL_TEXT_INPUT_MIN_HEIGHT_PX,
           }}
         />
       </Box>
 
-      {saveStatus !== 'idle' && (
+      {feedbackKind && (
         <OperationFeedback
-          kind={
-            saveStatus === 'error'
-              ? 'error'
-              : saveStatus === 'saving'
-              ? 'saving'
-              : 'success'
-          }
+          kind={feedbackKind}
           message={getStatusText()}
           actionLabel={saveStatus === 'error' ? t('common.retry') : undefined}
           onAction={
@@ -231,7 +286,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
         <Text className="text-xs text-gray-500">
           {text.length === 0
             ? t('journal.reflectionPrompt', { date: formatDate(date) })
-            : t('journal.autoSave')}
+            : footerHint}
         </Text>
         <Text
           className={`

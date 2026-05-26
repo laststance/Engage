@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Modal, SafeAreaView, ScrollView, Alert, TextInput } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
@@ -39,6 +39,97 @@ interface PresetEditorFeedback {
   onAction?: () => void
 }
 
+type PresetTaskValidationMessage =
+  | 'presetEditor.taskNameRequired'
+  | 'presetEditor.duplicateTaskInCategory'
+
+interface PresetTaskValidation {
+  taskMessages: Record<number, PresetTaskValidationMessage[]>
+  formMessages: string[]
+  isValid: boolean
+}
+
+/**
+ * Normalizes preset task titles before validation and persistence.
+ * @param title - The editable task title from the form.
+ * @returns A trimmed title with surrounding whitespace removed.
+ * @example
+ * normalizeTaskTitle('  Reading  ') // => 'Reading'
+ */
+const normalizeTaskTitle = (title: string): string => title.trim()
+
+/**
+ * Builds inline validation state for the preset task editor as users type.
+ * @param editingTasks - Draft tasks currently visible in the editor.
+ * @returns Per-row messages, form-level messages, and whether Save can run.
+ * @example
+ * validatePresetTaskDrafts([{ title: '', categoryId: 'life', archived: false }]).isValid // => false
+ */
+const validatePresetTaskDrafts = (
+  editingTasks: EditingTask[]
+): PresetTaskValidation => {
+  const taskMessages: Record<number, PresetTaskValidationMessage[]> = {}
+  const titleCategoryCounts = new Map<string, number>()
+  let hasDuplicateTitleCategory = false
+
+  editingTasks.forEach((task) => {
+    const normalizedTitle = normalizeTaskTitle(task.title).toLocaleLowerCase()
+
+    if (normalizedTitle.length === 0) {
+      return
+    }
+
+    const titleCategoryKey = `${task.categoryId}:${normalizedTitle}`
+    titleCategoryCounts.set(
+      titleCategoryKey,
+      (titleCategoryCounts.get(titleCategoryKey) ?? 0) + 1
+    )
+  })
+
+  editingTasks.forEach((task, index) => {
+    const messages: PresetTaskValidationMessage[] = []
+    const normalizedTitle = normalizeTaskTitle(task.title)
+
+    if (normalizedTitle.length === 0) {
+      messages.push('presetEditor.taskNameRequired')
+    }
+
+    const titleCategoryKey = `${task.categoryId}:${normalizedTitle.toLocaleLowerCase()}`
+    if (
+      normalizedTitle.length > 0 &&
+      (titleCategoryCounts.get(titleCategoryKey) ?? 0) > 1
+    ) {
+      messages.push('presetEditor.duplicateTaskInCategory')
+      hasDuplicateTitleCategory = true
+    }
+
+    if (messages.length > 0) {
+      taskMessages[index] = messages
+    }
+  })
+
+  const formMessages: string[] = []
+  const hasNamedTask = editingTasks.some(
+    (task) => normalizeTaskTitle(task.title).length > 0
+  )
+
+  if (!hasNamedTask) {
+    formMessages.push('presetEditor.atLeastOneTask')
+  } else if (hasDuplicateTitleCategory) {
+    formMessages.push('presetEditor.duplicateTaskInCategory')
+  }
+
+  if (formMessages.length === 0 && Object.keys(taskMessages).length > 0) {
+    formMessages.push('presetEditor.fixInvalidTasks')
+  }
+
+  return {
+    formMessages,
+    isValid: formMessages.length === 0,
+    taskMessages,
+  }
+}
+
 export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   isVisible,
   tasks,
@@ -54,6 +145,12 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false)
   const [operationFeedback, setOperationFeedback] =
     useState<PresetEditorFeedback | null>(null)
+  const taskValidation = useMemo(
+    () => validatePresetTaskDrafts(editingTasks),
+    [editingTasks]
+  )
+  const saveDisabledReason = taskValidation.formMessages[0] ?? null
+  const isSaveDisabled = isLoading || !taskValidation.isValid
 
   // Initialize editing tasks when modal opens
   useEffect(() => {
@@ -111,16 +208,20 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   const deleteTask = (index: number) => {
     const task = editingTasks[index]
 
-    Alert.alert(t('presetEditor.deleteTask'), t('presetEditor.deleteTaskConfirm', { title: task.title }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.delete'),
-        style: 'destructive',
-        onPress: () => {
-          setEditingTasks((prev) => prev.filter((_, i) => i !== index))
+    Alert.alert(
+      t('presetEditor.deleteTask'),
+      t('presetEditor.deleteTaskConfirm', { title: task.title }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => {
+            setEditingTasks((prev) => prev.filter((_, i) => i !== index))
+          },
         },
-      },
-    ])
+      ]
+    )
   }
 
   const handleCreateCategory = async () => {
@@ -147,30 +248,12 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   }
 
   const handleSave = async () => {
-    // Validate tasks
-    const validTasks = editingTasks.filter((task) => task.title.trim() !== '')
+    const latestValidation = validatePresetTaskDrafts(editingTasks)
 
-    if (validTasks.length === 0) {
+    if (!latestValidation.isValid) {
       setOperationFeedback({
         kind: 'error',
-        message: t('presetEditor.atLeastOneTask'),
-      })
-      return
-    }
-
-    // Check for duplicate titles within same category
-    const duplicates = validTasks.filter((task, index) => {
-      return (
-        validTasks.findIndex(
-          (t) => t.title === task.title && t.categoryId === task.categoryId
-        ) !== index
-      )
-    })
-
-    if (duplicates.length > 0) {
-      setOperationFeedback({
-        kind: 'error',
-        message: t('presetEditor.duplicateTaskInCategory'),
+        message: t(latestValidation.formMessages[0]),
       })
       return
     }
@@ -182,11 +265,11 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     })
     try {
       // Convert editing tasks back to Task objects
-      const tasksToSave: Task[] = validTasks.map((task) => ({
+      const tasksToSave: Task[] = editingTasks.map((task) => ({
         id:
           task.id ||
           `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        title: task.title,
+        title: normalizeTaskTitle(task.title),
         categoryId: task.categoryId,
         defaultMinutes: task.defaultMinutes,
         archived: task.archived,
@@ -216,10 +299,18 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   }
 
   const handleCancel = () => {
-    Alert.alert(t('presetEditor.discardChangesTitle'), t('presetEditor.discardChangesMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('presetEditor.discard'), style: 'destructive', onPress: onCancel },
-    ])
+    Alert.alert(
+      t('presetEditor.discardChangesTitle'),
+      t('presetEditor.discardChangesMessage'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('presetEditor.discard'),
+          style: 'destructive',
+          onPress: onCancel,
+        },
+      ]
+    )
   }
 
   // Group tasks by category for display
@@ -262,7 +353,9 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
           >
             <HStack className="items-center justify-center" space="sm">
               <IconSymbol name="plus" size={20} color="white" />
-              <Text className="text-white font-medium">{t('presetEditor.addTask')}</Text>
+              <Text className="text-white font-medium">
+                {t('presetEditor.addTask')}
+              </Text>
             </HStack>
           </Pressable>
 
@@ -294,133 +387,173 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                           className={`w-4 h-4 rounded-full ${categoryColor}`}
                         />
                         <Text className="text-lg font-semibold text-gray-800">
-                          {category ? getCategoryDisplayName(category) : 'Unknown Category'}
+                          {category
+                            ? getCategoryDisplayName(category)
+                            : t('presetEditor.unknownCategory')}
                         </Text>
                       </HStack>
                     </HStack>
 
                     {/* Tasks in Category */}
                     <VStack space="sm">
-                      {categoryTasks.map((task) => (
-                        <Box
-                          key={task.index}
-                          className="p-4 bg-gray-50 rounded-lg border border-gray-200"
-                        >
-                          <VStack space="md">
-                            {/* Task Title */}
-                            <VStack space="xs">
-                              <Text className="text-sm font-medium text-gray-700">
-                                {t('presetEditor.taskName')}
-                              </Text>
-                              <TextInput
-                                value={task.title}
-                                onChangeText={(text) =>
-                                  updateTask(task.index, { title: text })
-                                }
-                                placeholder={t('presetEditor.taskNamePlaceholder')}
-                                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800"
-                                testID={`task-title-input-${task.index}`}
-                              />
-                            </VStack>
+                      {categoryTasks.map((task) => {
+                        const validationMessages =
+                          taskValidation.taskMessages[task.index] ?? []
+                        const hasValidationError =
+                          validationMessages.length > 0
 
-                            {/* Category Selection */}
-                            <VStack space="xs">
-                              <Text className="text-sm font-medium text-gray-700">
-                                {t('presetEditor.category')}
-                              </Text>
-                              <ScrollView
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                              >
-                                <HStack space="sm">
-                                  {categories.map((cat) => {
-                                    const isSelected =
-                                      task.categoryId === cat.id
-                                    const catColor = getCategoryColor(cat.id)
-
-                                    return (
-                                      <Pressable
-                                        key={cat.id}
-                                        onPress={() =>
-                                          updateTask(task.index, {
-                                            categoryId: cat.id,
-                                          })
-                                        }
-                                        className={`
-                                        px-3 py-2 rounded-full border-2 flex-row items-center
-                                        ${
-                                          isSelected
-                                            ? 'border-blue-500 bg-blue-50'
-                                            : 'border-gray-300 bg-white'
-                                        }
-                                      `}
-                                        testID={`category-option-${cat.id}-${task.index}`}
-                                      >
-                                        <Box
-                                          className={`w-3 h-3 rounded-full ${catColor} mr-2`}
-                                        />
-                                        <Text
-                                          className={`text-sm ${
-                                            isSelected
-                                              ? 'text-blue-700'
-                                              : 'text-gray-700'
-                                          }`}
-                                        >
-                                          {getCategoryDisplayName(cat)}
-                                        </Text>
-                                      </Pressable>
-                                    )
-                                  })}
-                                </HStack>
-                              </ScrollView>
-                            </VStack>
-
-                            {/* Default Minutes */}
-                            <VStack space="xs">
-                              <Text className="text-sm font-medium text-gray-700">
-                                {t('presetEditor.estimatedMinutes')}
-                              </Text>
-                              <TextInput
-                                value={task.defaultMinutes?.toString() || ''}
-                                onChangeText={(text) => {
-                                  const minutes = text
-                                    ? parseInt(text, 10)
-                                    : undefined
-                                  updateTask(task.index, {
-                                    defaultMinutes: isNaN(minutes!)
-                                      ? undefined
-                                      : minutes,
-                                  })
-                                }}
-                                placeholder={t('presetEditor.estimatedMinutesPlaceholder')}
-                                keyboardType="numeric"
-                                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800"
-                                testID={`task-minutes-input-${task.index}`}
-                              />
-                            </VStack>
-
-                            {/* Actions */}
-                            <HStack className="justify-end">
-                              <Pressable
-                                onPress={() => deleteTask(task.index)}
-                                className="bg-red-500 rounded-lg px-4 py-2"
-                                testID={`delete-task-${task.index}`}
-                              >
-                                <HStack className="items-center" space="xs">
-                                  <IconSymbol
-                                    name="trash"
-                                    size={16}
-                                    color="white"
-                                  />
-                                  <Text className="text-white text-sm font-medium">
-                                    {t('common.delete')}
+                        return (
+                          <Box
+                            key={task.index}
+                            className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                          >
+                            <VStack space="md">
+                              {/* Task Title */}
+                              <VStack space="xs">
+                                <Text className="text-sm font-medium text-gray-700">
+                                  {t('presetEditor.taskName')}
+                                </Text>
+                                <TextInput
+                                  value={task.title}
+                                  onChangeText={(text) =>
+                                    updateTask(task.index, { title: text })
+                                  }
+                                  placeholder={t(
+                                    'presetEditor.taskNamePlaceholder'
+                                  )}
+                                  className={`bg-white border rounded-lg px-3 py-2 text-gray-800 ${
+                                    hasValidationError
+                                      ? 'border-red-300'
+                                      : 'border-gray-300'
+                                  }`}
+                                  testID={`task-title-input-${task.index}`}
+                                  accessibilityHint={
+                                    hasValidationError
+                                      ? validationMessages
+                                          .map((messageKey) => t(messageKey))
+                                          .join(' ')
+                                      : undefined
+                                  }
+                                />
+                                {validationMessages.map((messageKey) => (
+                                  <Text
+                                    key={`${task.index}-${messageKey}`}
+                                    className="text-xs font-medium text-red-600"
+                                    testID={`task-title-error-${task.index}`}
+                                  >
+                                    {t(messageKey)}
                                   </Text>
-                                </HStack>
-                              </Pressable>
-                            </HStack>
-                          </VStack>
-                        </Box>
-                      ))}
+                                ))}
+                              </VStack>
+
+                              {/* Category Selection */}
+                              <VStack space="xs">
+                                <Text className="text-sm font-medium text-gray-700">
+                                  {t('presetEditor.category')}
+                                </Text>
+                                <ScrollView
+                                  horizontal
+                                  showsHorizontalScrollIndicator={false}
+                                >
+                                  <HStack space="sm">
+                                    {categories.map((cat) => {
+                                      const isSelected =
+                                        task.categoryId === cat.id
+                                      const catColor = getCategoryColor(cat.id)
+
+                                      return (
+                                        <Pressable
+                                          key={cat.id}
+                                          onPress={() =>
+                                            updateTask(task.index, {
+                                              categoryId: cat.id,
+                                            })
+                                          }
+                                          className={`
+                                          px-3 py-2 rounded-full border-2 flex-row items-center
+                                          ${
+                                            isSelected
+                                              ? 'border-blue-500 bg-blue-50'
+                                              : 'border-gray-300 bg-white'
+                                          }
+                                        `}
+                                          testID={`category-option-${cat.id}-${task.index}`}
+                                          accessibilityLabel={getCategoryDisplayName(
+                                            cat
+                                          )}
+                                          accessibilityRole="button"
+                                          accessibilityState={{
+                                            selected: isSelected,
+                                          }}
+                                        >
+                                          <Box
+                                            className={`w-3 h-3 rounded-full ${catColor} mr-2`}
+                                          />
+                                          <Text
+                                            className={`text-sm ${
+                                              isSelected
+                                                ? 'text-blue-700'
+                                                : 'text-gray-700'
+                                            }`}
+                                          >
+                                            {getCategoryDisplayName(cat)}
+                                          </Text>
+                                        </Pressable>
+                                      )
+                                    })}
+                                  </HStack>
+                                </ScrollView>
+                              </VStack>
+
+                              {/* Default Minutes */}
+                              <VStack space="xs">
+                                <Text className="text-sm font-medium text-gray-700">
+                                  {t('presetEditor.estimatedMinutes')}
+                                </Text>
+                                <TextInput
+                                  value={task.defaultMinutes?.toString() || ''}
+                                  onChangeText={(text) => {
+                                    const minutes = text
+                                      ? parseInt(text, 10)
+                                      : undefined
+                                    updateTask(task.index, {
+                                      defaultMinutes: isNaN(minutes!)
+                                        ? undefined
+                                        : minutes,
+                                    })
+                                  }}
+                                  placeholder={t(
+                                    'presetEditor.estimatedMinutesPlaceholder'
+                                  )}
+                                  keyboardType="numeric"
+                                  className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800"
+                                  testID={`task-minutes-input-${task.index}`}
+                                />
+                              </VStack>
+
+                              {/* Actions */}
+                              <HStack className="justify-end">
+                                <Pressable
+                                  onPress={() => deleteTask(task.index)}
+                                  className="bg-red-500 rounded-lg px-4 py-2"
+                                  testID={`delete-task-${task.index}`}
+                                >
+                                  <HStack className="items-center" space="xs">
+                                    <IconSymbol
+                                      name="trash"
+                                      size={16}
+                                      color="white"
+                                    />
+                                    <Text className="text-white text-sm font-medium">
+                                      {t('common.delete')}
+                                    </Text>
+                                  </HStack>
+                                </Pressable>
+                              </HStack>
+                            </VStack>
+                          </Box>
+                        )
+                      })}
                     </VStack>
                   </VStack>
                 )
@@ -461,7 +594,9 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                     className="bg-green-500 rounded-lg px-4 py-2"
                     testID="create-category-button"
                   >
-                    <Text className="text-white font-medium">{t('common.create')}</Text>
+                    <Text className="text-white font-medium">
+                      {t('common.create')}
+                    </Text>
                   </Pressable>
                 </HStack>
               )}
@@ -482,6 +617,14 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
 
         {/* Footer */}
         <Box className="p-4 border-t border-gray-200">
+          {saveDisabledReason && (
+            <Text
+              className="mb-3 text-center text-sm font-medium text-red-600"
+              testID="preset-editor-save-disabled-reason"
+            >
+              {t(saveDisabledReason)}
+            </Text>
+          )}
           <HStack space="md">
             <Pressable
               onPress={handleCancel}
@@ -495,11 +638,14 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
 
             <Pressable
               onPress={handleSave}
-              disabled={isLoading}
+              disabled={isSaveDisabled}
               className={`flex-1 rounded-lg py-3 ${
-                isLoading ? 'bg-gray-400' : 'bg-blue-500'
+                isSaveDisabled ? 'bg-gray-400' : 'bg-blue-500'
               }`}
               testID="preset-editor-save"
+              accessibilityHint={
+                saveDisabledReason ? t(saveDisabledReason) : undefined
+              }
             >
               <Text className="text-white font-medium text-center">
                 {isLoading ? t('common.saving') : t('common.save')}

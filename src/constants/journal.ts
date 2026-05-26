@@ -1,0 +1,5 @@
+export const JOURNAL_AUTOSAVE_DELAY_MS = 1000
+export const JOURNAL_NEAR_LIMIT_RATIO = 0.8
+export const JOURNAL_TEXT_INPUT_MIN_HEIGHT_PX = 88
+export const MS_PER_MINUTE = 60000
+export const MINUTES_PER_HOUR = 60
