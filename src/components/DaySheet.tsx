@@ -33,7 +33,7 @@ interface DaySheetProps {
 }
 
 type DaySheetTaskFeedback = {
-  kind: 'completed' | 'undone' | 'error'
+  kind: 'completed' | 'undone' | 'allCompleted' | 'error'
   taskId: string
   title: string
 }
@@ -131,9 +131,25 @@ export const DaySheet: React.FC<DaySheetProps> = ({
         const result = await onTaskToggle(task.id)
 
         if (result.success) {
+          const nextCompletedTaskIds = new Set(completedTaskIds)
+
+          if (result.change === 'completed') {
+            nextCompletedTaskIds.add(task.id)
+          } else {
+            nextCompletedTaskIds.delete(task.id)
+          }
+
+          // Give the final completion a distinct closure moment.
+          const completesVisibleTasks =
+            result.change === 'completed' &&
+            tasks.length > 0 &&
+            tasks.every((visibleTask) =>
+              nextCompletedTaskIds.has(visibleTask.id)
+            )
+
           showTaskFeedback(
             {
-              kind: result.change,
+              kind: completesVisibleTasks ? 'allCompleted' : result.change,
               taskId: task.id,
               title: task.title,
             },
@@ -167,7 +183,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
         setPendingTaskId(null)
       }
     },
-    [onTaskToggle, showTaskFeedback, triggerFeedback]
+    [completedTaskIds, onTaskToggle, showTaskFeedback, tasks, triggerFeedback]
   )
 
   // Calculate progress for each category
@@ -259,6 +275,8 @@ export const DaySheet: React.FC<DaySheetProps> = ({
                     t('daySheet.taskCompleted', {
                       title: taskFeedback.title,
                     })}
+                  {taskFeedback.kind === 'allCompleted' &&
+                    t('daySheet.allTasksCompleted')}
                   {taskFeedback.kind === 'undone' &&
                     t('daySheet.taskCompletionUndone', {
                       title: taskFeedback.title,
@@ -384,6 +402,9 @@ export const DaySheet: React.FC<DaySheetProps> = ({
             </VStack>
           ) : (
             <Box className="p-8 items-center">
+              <Text className="text-lg font-semibold text-gray-800 text-center mb-2">
+                {t('daySheet.noTasksTitle')}
+              </Text>
               <Text className="text-gray-500 text-center mb-4">
                 {t('daySheet.noTasksMessage')}
               </Text>

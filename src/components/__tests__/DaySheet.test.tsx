@@ -30,6 +30,16 @@ describe('DaySheet', () => {
     },
   ]
 
+  const secondTask: Task = {
+    id: 'task2',
+    title: '提案メモを書く',
+    categoryId: 'business',
+    defaultMinutes: 15,
+    archived: false,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  }
+
   const mockEntry: Entry = {
     id: 'entry1',
     date: '2025-01-15',
@@ -82,6 +92,7 @@ describe('DaySheet', () => {
     )
 
     // Assert
+    expect(getByText('daySheet.noTasksTitle')).toBeTruthy()
     expect(getByText('daySheet.noTasksMessage')).toBeTruthy()
     fireEvent.press(getByTestId('empty-task-selection-button'))
     expect(mockOnTaskSelectionPress).toHaveBeenCalledTimes(1)
@@ -101,7 +112,9 @@ describe('DaySheet', () => {
 
   it('shows completion acknowledgement after a task is completed', async () => {
     // Arrange
-    const { getByTestId, getByText } = render(<DaySheet {...defaultProps} />)
+    const { getByTestId, getByText } = render(
+      <DaySheet {...defaultProps} tasks={[...mockTasks, secondTask]} />
+    )
 
     // Act
     fireEvent.press(getByTestId('task-item-task1'))
@@ -109,6 +122,31 @@ describe('DaySheet', () => {
     // Assert
     await waitFor(() => {
       expect(getByText('daySheet.taskCompleted')).toBeTruthy()
+    })
+  })
+
+  it('shows closure feedback when the final assigned task is completed', async () => {
+    // Arrange
+    mockOnTaskToggle.mockResolvedValue({
+      success: true,
+      date: '2025-01-15',
+      taskId: 'task2',
+      change: 'completed',
+    })
+    const { getByTestId, getByText } = render(
+      <DaySheet
+        {...defaultProps}
+        tasks={[...mockTasks, secondTask]}
+        completions={completedCompletions}
+      />
+    )
+
+    // Act
+    fireEvent.press(getByTestId('task-item-task2'))
+
+    // Assert
+    await waitFor(() => {
+      expect(getByText('daySheet.allTasksCompleted')).toBeTruthy()
     })
   })
 
