@@ -34,6 +34,11 @@ const ja = {
     monthlySummaryCompleted: '{{count}}件完了',
     monthlySummaryActiveDays: '{{count}}日活動',
     monthlySummaryEmpty: 'まだ完了タスクがありません',
+    monthlySummaryEmptyHint:
+      'Todayで習慣を完了すると、このカレンダーに反映されます。',
+    monthlySummaryHint:
+      'Todayで習慣を完了するたびに自動で更新されます。',
+    selectedDateCompleted: '選択した日は{{count}}件完了しています',
     thisMonth: '今月',
     thisWeek: '今週',
     dateA11y: '{{day}}日',
@@ -127,6 +132,10 @@ const ja = {
     streakEncourageGreat: '素晴らしい継続力です！',
     streakEncourageAmazing: '驚異的な継続力です！',
     periodStats: '{{period}}の統計',
+    periodRecap:
+      '{{days}}日間で{{count}}件完了しています。Todayの完了がカレンダーと統計に反映されます。',
+    periodEmptyNextAction:
+      'Todayで1つ完了すると、カレンダーと統計が動き始めます。',
     totalTasks: '総タスク数',
     dailyAverage: '1日平均',
     dailyAverageValue: '{{value}}個',
@@ -135,6 +144,7 @@ const ja = {
     journalDaysValue: '{{count}}日',
     journalDaysSubtitle: '全体の{{percentage}}',
     categoryBreakdown: 'カテゴリー別実績',
+    unknownCategory: '不明なカテゴリー',
     categoryNoData: 'まだデータがありません',
     categoryNoDataHint: 'タスクを完了すると統計が表示されます',
     categoryCompletionRate: '完了率: {{rate}}',
