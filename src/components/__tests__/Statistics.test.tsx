@@ -87,6 +87,39 @@ describe('Statistics', () => {
     expect(getByText('25日')).toBeTruthy()
   })
 
+  it('marks the active stats period for assistive technologies', () => {
+    // Arrange
+    const { getByTestId } = render(<Statistics {...defaultProps} />)
+
+    // Act
+    const weeklyToggle = getByTestId('stats-week-toggle')
+    const monthlyToggle = getByTestId('stats-month-toggle')
+
+    // Assert
+    expect(weeklyToggle.props.accessibilityState).toMatchObject({
+      selected: true,
+    })
+    expect(monthlyToggle.props.accessibilityState).toMatchObject({
+      selected: false,
+    })
+  })
+
+  it('moves the selected accessibility state when the monthly stats period is opened', () => {
+    // Arrange
+    const { getByTestId } = render(<Statistics {...defaultProps} />)
+
+    // Act
+    fireEvent.press(getByTestId('stats-month-toggle'))
+
+    // Assert
+    expect(getByTestId('stats-week-toggle').props.accessibilityState).toMatchObject({
+      selected: false,
+    })
+    expect(getByTestId('stats-month-toggle').props.accessibilityState).toMatchObject({
+      selected: true,
+    })
+  })
+
   it('switches back to weekly stats when weekly toggle is pressed', () => {
     const { getByTestId, getByText } = render(<Statistics {...defaultProps} />)
 
