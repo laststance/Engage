@@ -6,7 +6,9 @@ import { Text } from '@/components/ui/text'
 import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import { AppCard } from '@/src/components/AppCard'
 import { AppPressable } from '@/src/components/AppPressable'
+import { AppSection } from '@/src/components/AppSection'
 import { StatsData, Category } from '@/src/types'
 import { getCategoryDisplayName } from '@/src/i18n/config'
 
@@ -58,7 +60,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
     subtitle?: string
     color?: string
   }> = ({ title, value, subtitle, color = 'text-blue-600' }) => (
-    <Box className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+    <AppCard>
       <VStack space="sm">
         <HStack className="items-center justify-between">
           <Text className="text-sm font-medium text-gray-600">{title}</Text>
@@ -67,7 +69,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
         <Text className={`text-2xl font-bold ${color}`}>{value}</Text>
         {subtitle && <Text className="text-xs text-gray-500">{subtitle}</Text>}
       </VStack>
-    </Box>
+    </AppCard>
   )
 
   /**
@@ -165,10 +167,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
             </HStack>
           </VStack>
 
-          <Box
-            className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3"
-            testID="stats-period-recap"
-          >
+          <AppCard className="py-3" tone="info" testID="stats-period-recap">
             <Text className="text-sm font-medium leading-5 text-blue-700">
               {hasPeriodCompletions
                 ? t('stats.periodRecap', {
@@ -177,14 +176,10 @@ export const Statistics: React.FC<StatisticsProps> = ({
                   })
                 : t('stats.periodEmptyNextAction')}
             </Text>
-          </Box>
+          </AppCard>
 
-          {/* Today's Achievements */}
-          <VStack space="sm">
-            <Text className="text-xl font-semibold text-gray-800">
-              {t('stats.todayAchievements')}
-            </Text>
-            <Box className="bg-blue-600 rounded-2xl p-6 shadow-sm">
+          <AppSection title={t('stats.todayAchievements')}>
+            <AppCard className="bg-blue-600 border-blue-600 p-6">
               <VStack space="sm" className="items-center">
                 <IconSymbol name="star.fill" size={32} color="white" />
                 <Text className="text-white text-2xl font-bold">
@@ -194,17 +189,17 @@ export const Statistics: React.FC<StatisticsProps> = ({
                   {getStreakEncouragement(currentStats.streakDays)}
                 </Text>
               </VStack>
-            </Box>
-          </VStack>
+            </AppCard>
+          </AppSection>
 
-          {/* Key Metrics */}
-          <VStack space="sm">
-            <Text className="text-xl font-semibold text-gray-800">
-              {t('stats.periodStats', {
-                period: selectedPeriod === 'week' ? t('stats.thisWeek') : t('stats.thisMonth'),
-              })}
-            </Text>
-
+          <AppSection
+            title={t('stats.periodStats', {
+              period:
+                selectedPeriod === 'week'
+                  ? t('stats.thisWeek')
+                  : t('stats.thisMonth'),
+            })}
+          >
             <VStack space="md">
               {/* First Row */}
               <HStack space="md">
@@ -255,14 +250,9 @@ export const Statistics: React.FC<StatisticsProps> = ({
                 color="text-indigo-600"
               />
             </VStack>
-          </VStack>
+          </AppSection>
 
-          {/* Category Breakdown */}
-          <VStack space="sm">
-            <Text className="text-xl font-semibold text-gray-800">
-              {t('stats.categoryBreakdown')}
-            </Text>
-
+          <AppSection title={t('stats.categoryBreakdown')}>
             <VStack space="xs">
               {Object.entries(currentStats.categoryBreakdown).map(
                 ([categoryId, stats]) => {
@@ -272,10 +262,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                     stats.total > 0 ? stats.completed / stats.total : 0
 
                   return (
-                    <Box
-                      key={categoryId}
-                      className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm"
-                    >
+                    <AppCard key={categoryId}>
                       <VStack space="sm">
                         <HStack className="items-center justify-between">
                           <HStack className="items-center" space="sm">
@@ -305,13 +292,13 @@ export const Statistics: React.FC<StatisticsProps> = ({
                           {t('stats.categoryCompletionRate', { rate: formatPercentage(completionRate) })}
                         </Text>
                       </VStack>
-                    </Box>
+                    </AppCard>
                   )
                 }
               )}
 
               {Object.keys(currentStats.categoryBreakdown).length === 0 && (
-                <Box className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+                <AppCard className="p-8">
                   <VStack className="items-center" space="sm">
                     <IconSymbol name="chart.bar" size={32} color="#9CA3AF" />
                     <Text className="text-gray-500 text-center">
@@ -321,10 +308,10 @@ export const Statistics: React.FC<StatisticsProps> = ({
                       {t('stats.categoryNoDataHint')}
                     </Text>
                   </VStack>
-                </Box>
+                </AppCard>
               )}
             </VStack>
-          </VStack>
+          </AppSection>
         </VStack>
       </ScrollView>
     </Box>

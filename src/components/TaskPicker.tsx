@@ -257,6 +257,11 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
                   <VStack space="xs">
                     {categoryTasks.map((task) => {
                       const isSelected = localSelectedTasks.includes(task.id)
+                      const selectionStatus = t(
+                        isSelected
+                          ? 'taskPicker.selectedStatus'
+                          : 'taskPicker.notSelectedStatus'
+                      )
 
                       return (
                         <AppPressable
@@ -264,12 +269,9 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
                           onPress={() => toggleTaskSelection(task.id)}
                           feedback="select"
                           selected={isSelected}
+                          accessibilityLabel={`${task.title}, ${selectionStatus}`}
                           accessibilityValue={{
-                            text: t(
-                              isSelected
-                                ? 'taskPicker.selectedStatus'
-                                : 'taskPicker.notSelectedStatus'
-                            ),
+                            text: selectionStatus,
                           }}
                           accessibilityHint={t(
                             'taskPicker.toggleSelectionHint'

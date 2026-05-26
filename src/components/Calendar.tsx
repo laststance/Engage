@@ -5,6 +5,7 @@ import { Text } from '@/components/ui/text'
 import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import { AppCard } from '@/src/components/AppCard'
 import { AppPressable } from '@/src/components/AppPressable'
 import { formatDate } from '@/src/utils/dateUtils'
 
@@ -196,7 +197,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   }
 
   return (
-    <Box className="flex-1 bg-white" testID="calendar-component">
+    <Box className="flex-1 bg-gray-50" testID="calendar-component">
       {/* Header with month navigation - matching Figma design */}
       <HStack className="items-center justify-between px-6 py-4 mb-4">
         <AppPressable
@@ -324,7 +325,7 @@ export const Calendar: React.FC<CalendarProps> = ({
         <Text className="text-xs text-gray-500 ml-3">{t('calendar.legendMore')}</Text>
       </HStack>
 
-      <Box className="mx-4 mt-6 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4">
+      <AppCard className="mx-4 mt-6" tone="info">
         <VStack space="sm">
           <HStack className="items-center justify-between">
             <VStack space="xs">
@@ -356,8 +357,9 @@ export const Calendar: React.FC<CalendarProps> = ({
           </Text>
 
           {selectedDateIsInCurrentMonth && selectedDateCompletionCount > 0 && (
-            <Box
-              className="rounded-xl border border-green-200 bg-green-50 px-3 py-2"
+            <AppCard
+              className="rounded-xl px-3 py-2"
+              tone="success"
               testID="calendar-selected-day-recap"
             >
               <Text className="text-xs font-medium text-green-700">
@@ -365,10 +367,10 @@ export const Calendar: React.FC<CalendarProps> = ({
                   count: selectedDateCompletionCount,
                 })}
               </Text>
-            </Box>
+            </AppCard>
           )}
         </VStack>
-      </Box>
+      </AppCard>
     </Box>
   )
 }
