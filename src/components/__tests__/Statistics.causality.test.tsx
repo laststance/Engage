@@ -1,7 +1,7 @@
 import React from 'react'
 import { render } from '@testing-library/react-native'
-import { Statistics } from '../Statistics'
 import { Category, StatsData } from '@/src/types'
+import { Statistics } from '../Statistics'
 
 const categories: Category[] = [
   { id: 'business', name: 'Business' },
