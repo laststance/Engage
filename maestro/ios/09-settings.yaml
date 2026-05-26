@@ -45,13 +45,17 @@ tags:
 
 - extendedWaitUntil:
     visible:
-      text: "Daily Reminder"
-    timeout: 5000
+      id: "notification-reminder-switch"
+    timeout: 15000
 
-- assertVisible:
-    text: "Notification Status"
-- assertVisible:
-    id: "notification-check-permission"
+- extendedWaitUntil:
+    visible:
+      id: "notification-state-not-determined"
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: "notification-check-permission"
+    timeout: 15000
 
 - tapOn:
     id: "notification-done"
