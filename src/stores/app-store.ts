@@ -1,5 +1,14 @@
 import { create } from 'zustand'
-import { Task, Entry, Completion, DayData, StatsData, Category } from '../types'
+import {
+  Task,
+  Entry,
+  Completion,
+  DayData,
+  StatsData,
+  Category,
+  TaskAssignmentOperationResult,
+  TaskCompletionOperationResult,
+} from '../types'
 import {
   taskRepository,
   entryRepository,
@@ -66,9 +75,15 @@ interface AppState {
   // Actions
   loadData: () => Promise<void>
   selectDate: (date: string) => void
-  toggleTaskCompletion: (date: string, taskId: string) => Promise<void>
+  toggleTaskCompletion: (
+    date: string,
+    taskId: string
+  ) => Promise<TaskCompletionOperationResult>
   updateJournalEntry: (date: string, content: string) => Promise<void>
-  addTasksToDate: (date: string, taskIds: string[]) => Promise<void>
+  addTasksToDate: (
+    date: string,
+    taskIds: string[]
+  ) => Promise<TaskAssignmentOperationResult>
   updatePresetTasks: (tasks: Task[]) => Promise<void>
   createCategory: (category: Omit<Category, 'id'>) => Promise<void>
   updateCategory: (id: string, updates: Partial<Category>) => Promise<void>
@@ -210,14 +225,18 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   toggleTaskCompletion: async (date: string, taskId: string) => {
     const state = get()
-    const previousCompletions = state.completions
+    const previousTaskCompletion = (state.completions[date] || []).find(
+      (completion) => completion.taskId === taskId
+    )
 
-    // Optimistic update: flip completed field
-    const updatedCompletions = { ...previousCompletions }
+    // Optimistic update: flip only the requested completion row.
+    const updatedCompletions = { ...state.completions }
     const dayCompletions = updatedCompletions[date] || []
     const existingCompletion = dayCompletions.find(
       (c) => c.taskId === taskId
     )
+    const nextCompleted = existingCompletion ? !existingCompletion.completed : true
+    const change = nextCompleted ? 'completed' : 'undone'
 
     if (existingCompletion) {
       // Toggle completed status
@@ -249,13 +268,48 @@ export const useAppStore = create<AppState>((set, get) => ({
       console.log(
         `Task ${taskId} toggled for ${date}`
       )
+
+      return {
+        success: true,
+        date,
+        taskId,
+        change,
+      }
     } catch (error) {
-      // Rollback on failure
+      // Roll back only this task so concurrent successful updates stay intact.
       console.error('Failed to toggle task completion:', error)
-      set({
-        completions: previousCompletions,
-        error: 'Failed to toggle task completion. Please try again.',
+      set((current) => {
+        const currentDayCompletions = current.completions[date] || []
+        const revertedDayCompletions = previousTaskCompletion
+          ? currentDayCompletions.map((completion) =>
+            completion.taskId === taskId
+              ? previousTaskCompletion
+              : completion
+          )
+          : currentDayCompletions.filter(
+            (completion) => completion.taskId !== taskId
+          )
+        const revertedCompletions = { ...current.completions }
+
+        if (revertedDayCompletions.length > 0) {
+          revertedCompletions[date] = revertedDayCompletions
+        } else {
+          delete revertedCompletions[date]
+        }
+
+        return {
+          completions: revertedCompletions,
+          error: 'Failed to toggle task completion. Please try again.',
+        }
       })
+
+      return {
+        success: false,
+        date,
+        taskId,
+        change,
+        message: 'Failed to toggle task completion. Please try again.',
+      }
     }
   },
 
@@ -311,7 +365,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       if (newTaskIds.length === 0 && removedTaskIds.length === 0) {
         console.log(`No changes to tasks for ${date}`)
-        return
+        return {
+          success: true,
+          date,
+          addedCount: 0,
+          removedCount: 0,
+        }
       }
 
       // Create uncompleted assignment records for new tasks
@@ -321,42 +380,65 @@ export const useAppStore = create<AppState>((set, get) => ({
         completed: false,
       }))
 
-      const createdCompletions = completionsToCreate.length > 0
-        ? await completionRepository.createMultiple(completionsToCreate)
-        : []
+      const createdCompletions =
+        await completionRepository.updateTaskAssignmentsForDate(
+          date,
+          completionsToCreate,
+          removedTaskIds
+        )
 
-      // Remove deselected tasks
-      for (const taskId of removedTaskIds) {
-        await completionRepository.delete(date, taskId)
-      }
+      set((current) => {
+        const updatedCompletions = { ...current.completions }
+        const currentDayCompletions = updatedCompletions[date] || []
+        const currentTaskIds = new Set(
+          currentDayCompletions.map((completion) => completion.taskId)
+        )
+        const newCreatedCompletions = createdCompletions.filter(
+          (completion) => !currentTaskIds.has(completion.taskId)
+        )
+        const remainingCompletions = currentDayCompletions.filter(
+          (completion) => selectedTaskIds.has(completion.taskId)
+        )
 
-      // Update local state
-      const updatedCompletions = { ...state.completions }
-      const remainingCompletions = existingCompletions.filter(
-        (c) => selectedTaskIds.has(c.taskId)
-      )
-      updatedCompletions[date] = [
-        ...remainingCompletions,
-        ...createdCompletions,
-      ]
+        updatedCompletions[date] = [
+          ...remainingCompletions,
+          ...newCreatedCompletions,
+        ]
 
-      if (updatedCompletions[date].length === 0) {
-        delete updatedCompletions[date]
-      }
+        if (updatedCompletions[date].length === 0) {
+          delete updatedCompletions[date]
+        }
 
-      set({ completions: updatedCompletions })
+        return { completions: updatedCompletions }
+      })
 
       console.log(
         `Tasks updated for ${date}: +${createdCompletions.length} -${removedTaskIds.length}`
       )
+
+      return {
+        success: true,
+        date,
+        addedCount: createdCompletions.length,
+        removedCount: removedTaskIds.length,
+      }
     } catch (error) {
       console.error('Failed to add tasks to date:', error)
+      const message = error instanceof Error
+        ? error.message
+        : 'Failed to add tasks to date'
       set({
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to add tasks to date',
+        error: message,
       })
+
+      // The repository sync is atomic, so a failed save leaves no applied deltas.
+      return {
+        success: false,
+        date,
+        addedCount: 0,
+        removedCount: 0,
+        message,
+      }
     }
   },
 

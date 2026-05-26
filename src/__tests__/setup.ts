@@ -12,24 +12,69 @@ globalThis.console = {
 }
 
 // Mock React Native completely for unit tests
-jest.mock('react-native', () => ({
-  Platform: {
-    OS: 'ios',
-    select: jest.fn((obj) => obj.ios || obj.default),
-  },
-  StyleSheet: {
-    create: jest.fn((styles) => styles),
-  },
-  Dimensions: {
-    get: jest.fn(() => ({ width: 375, height: 812 })),
-  },
-  Alert: {
-    alert: jest.fn(),
-  },
-  Share: {
-    share: jest.fn(),
-  },
-}))
+jest.mock('react-native', () => {
+  const React = jest.requireActual<typeof import('react')>('react')
+  const createNativeComponent = (displayName: string) => {
+    const NativeComponent = React.forwardRef(
+      ({ children, ...props }: any, ref: any) =>
+        React.createElement(displayName, { ...props, ref }, children)
+    )
+    NativeComponent.displayName = displayName
+    return NativeComponent
+  }
+
+  const Pressable = React.forwardRef(
+    ({ children, disabled, onPress, ...props }: any, ref: any) =>
+      React.createElement(
+        'Pressable',
+        {
+          ...props,
+          disabled,
+          onPress: disabled ? undefined : onPress,
+          ref,
+        },
+        typeof children === 'function' ? children({ pressed: false }) : children
+      )
+  )
+  Pressable.displayName = 'Pressable'
+
+  const Modal = ({ children, visible }: any) => {
+    if (!visible) {
+      return null
+    }
+
+    return React.createElement('Modal', {}, children)
+  }
+
+  return {
+    View: createNativeComponent('View'),
+    Text: createNativeComponent('Text'),
+    ScrollView: createNativeComponent('ScrollView'),
+    Pressable,
+    Modal,
+    Platform: {
+      OS: 'ios',
+      select: jest.fn((obj) => obj.ios || obj.default),
+    },
+    StyleSheet: {
+      create: jest.fn((styles) => styles),
+      flatten: jest.fn((style) => style),
+    },
+    Dimensions: {
+      get: jest.fn(() => ({ width: 375, height: 812 })),
+    },
+    Appearance: {
+      getColorScheme: jest.fn(() => 'light'),
+      addChangeListener: jest.fn(() => ({ remove: jest.fn() })),
+    },
+    Alert: {
+      alert: jest.fn(),
+    },
+    Share: {
+      share: jest.fn(),
+    },
+  }
+})
 
 // Mock expo-sqlite module
 jest.mock('expo-sqlite', () => ({
@@ -39,6 +84,23 @@ jest.mock('expo-sqlite', () => ({
 // Mock expo-symbols module
 jest.mock('expo-symbols', () => ({
   SymbolView: 'SymbolView',
+}))
+
+// Mock vector icons used by IconSymbol
+jest.mock('@expo/vector-icons/MaterialIcons', () => 'MaterialIcons')
+
+// Mock expo-haptics module
+jest.mock('expo-haptics', () => ({
+  selectionAsync: jest.fn(() => Promise.resolve()),
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  impactAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: {
+    Success: 'success',
+    Error: 'error',
+  },
+  ImpactFeedbackStyle: {
+    Light: 'light',
+  },
 }))
 
 // Mock @react-native-community/netinfo
@@ -81,6 +143,7 @@ jest.mock('expo-document-picker', () => ({
 // Mock react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaProvider: ({ children }: any) => children,
+  SafeAreaView: ({ children }: any) => children,
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }))
 

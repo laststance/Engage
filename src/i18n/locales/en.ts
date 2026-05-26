@@ -44,6 +44,11 @@ const en = {
   daySheet: {
     selectTasks: 'Select Tasks',
     noTasksMessage: 'Select tasks to display',
+    chooseTodaysHabits: "Choose today's habits",
+    taskCompleted: '"{{title}}" completed',
+    taskCompletionUndone: '"{{title}}" marked incomplete',
+    taskCompletionFailed: 'Failed to save task completion',
+    retry: 'Retry',
     dateFormat: '{{dayOfWeek}}, {{month}} {{day}}',
     completed: 'Completed',
     notCompleted: 'Not completed',
@@ -58,6 +63,7 @@ const en = {
     newCategory: 'Create New Category',
     noPresetTasks: 'No preset tasks',
     confirm: 'Confirm ({{count}})',
+    saveFailed: 'Failed to save task selection',
   },
 
   presetEditor: {

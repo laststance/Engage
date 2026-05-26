@@ -30,6 +30,24 @@ export interface Completion {
   createdAt: number
 }
 
+export type TaskCompletionChange = 'completed' | 'undone'
+
+export interface TaskCompletionOperationResult {
+  success: boolean
+  date: string
+  taskId: string
+  change: TaskCompletionChange
+  message?: string
+}
+
+export interface TaskAssignmentOperationResult {
+  success: boolean
+  date: string
+  addedCount: number
+  removedCount: number
+  message?: string
+}
+
 export interface DayData {
   date: string
   tasks: Task[]

@@ -423,6 +423,39 @@ class CompletionRepository {
     }
   }
 
+  /**
+   * Atomically applies one day's task assignment additions and removals.
+   * @param date - The YYYY-MM-DD day whose assignment rows are being synced.
+   * @param completionsToCreate - Incomplete assignment rows to insert for the day.
+   * @param taskIdsToDelete - Task IDs whose assignment rows should be removed.
+   * @returns Created completion rows when the whole transaction commits.
+   * @example
+   * updateTaskAssignmentsForDate('2025-01-15', [{ date: '2025-01-15', taskId: 'task-1', completed: false }], ['task-2'])
+   */
+  async updateTaskAssignmentsForDate(
+    date: string,
+    completionsToCreate: Omit<Completion, 'id' | 'createdAt'>[],
+    taskIdsToDelete: string[]
+  ): Promise<Completion[]> {
+    try {
+      const createdCompletions: Completion[] = []
+
+      await databaseService.executeTransaction([
+        ...completionsToCreate.map((completion) => async () => {
+          const created = await this.create(completion)
+          createdCompletions.push(created)
+        }),
+        ...taskIdsToDelete.map((taskId) => async () => {
+          await this.delete(date, taskId)
+        }),
+      ])
+
+      return createdCompletions
+    } catch (error) {
+      throw new DatabaseError('Failed to update task assignments for date', error)
+    }
+  }
+
   async deleteByDateRange(startDate: string, endDate: string): Promise<void> {
     try {
       await databaseService.executeUpdate(
