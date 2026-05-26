@@ -44,9 +44,11 @@ const ja = {
 
   daySheet: {
     selectTasks: '表示するタスクを選択',
-    noTasksMessage: '表示するタスクを選択してください',
+    noTasksTitle: '今日の習慣が未選択です',
+    noTasksMessage: 'まずは1つ、今日取り組む習慣を選びましょう。',
     chooseTodaysHabits: '今日の習慣を選ぶ',
     taskCompleted: '「{{title}}」を完了しました',
+    allTasksCompleted: '今日のタスクをすべて完了しました。お疲れさまです。',
     taskCompletionUndone: '「{{title}}」を未完了に戻しました',
     taskCompletionFailed: 'タスクの保存に失敗しました',
     retry: '再試行',

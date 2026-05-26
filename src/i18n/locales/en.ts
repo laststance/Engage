@@ -44,9 +44,11 @@ const en = {
 
   daySheet: {
     selectTasks: 'Select Tasks',
-    noTasksMessage: 'Select tasks to display',
+    noTasksTitle: 'No habits selected yet',
+    noTasksMessage: 'Choose one habit to start today.',
     chooseTodaysHabits: "Choose today's habits",
     taskCompleted: '"{{title}}" completed',
+    allTasksCompleted: 'All tasks complete. Nice closure for today.',
     taskCompletionUndone: '"{{title}}" marked incomplete',
     taskCompletionFailed: 'Failed to save task completion',
     retry: 'Retry',
