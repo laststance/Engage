@@ -343,6 +343,10 @@ export const BackupManager: React.FC = () => {
           <Button
             onPress={handleCreateBackup}
             disabled={isLoading}
+            accessibilityState={{
+              busy: isLoading,
+              disabled: isLoading,
+            }}
             className="w-full"
             testID="backup-create-button"
           >
@@ -354,6 +358,10 @@ export const BackupManager: React.FC = () => {
           <Button
             onPress={handleExportData}
             disabled={isLoading}
+            accessibilityState={{
+              busy: isLoading,
+              disabled: isLoading,
+            }}
             variant="outline"
             className="w-full"
             testID="backup-export-button"
@@ -366,6 +374,10 @@ export const BackupManager: React.FC = () => {
           <Button
             onPress={handleImportBackup}
             disabled={isLoading}
+            accessibilityState={{
+              busy: isLoading,
+              disabled: isLoading,
+            }}
             variant="outline"
             className="w-full"
             testID="backup-import-button"
@@ -447,6 +459,10 @@ export const BackupManager: React.FC = () => {
                 <Button
                   onPress={() => handleDeleteBackup(backup.fileName)}
                   disabled={isLoading}
+                  accessibilityState={{
+                    busy: isLoading,
+                    disabled: isLoading,
+                  }}
                   variant="outline"
                   size="sm"
                   className="self-start"

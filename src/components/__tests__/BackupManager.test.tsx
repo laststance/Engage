@@ -62,4 +62,39 @@ describe('BackupManager', () => {
     expect(getByTestId('backup-operation-feedback')).toBeTruthy()
     expect(Alert.alert).not.toHaveBeenCalled()
   })
+
+  it('exposes busy and disabled state while a backup is being created', async () => {
+    // Arrange
+    let resolveBackup: (result: {
+      success: boolean
+      fileName: string
+      size: number
+      errors: string[]
+    }) => void = () => {}
+    store.createBackup.mockReturnValue(
+      new Promise((resolve) => {
+        resolveBackup = resolve
+      })
+    )
+    const { getByTestId } = render(<BackupManager />)
+
+    // Act
+    fireEvent.press(getByTestId('backup-create-button'))
+
+    // Assert
+    await waitFor(() => {
+      expect(
+        getByTestId('backup-create-button').props.accessibilityState
+      ).toMatchObject({
+        busy: true,
+        disabled: true,
+      })
+    })
+    resolveBackup({
+      success: true,
+      fileName: 'engage-backup.json',
+      size: 2048,
+      errors: [],
+    })
+  })
 })

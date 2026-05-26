@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render } from '@testing-library/react-native'
+import { fireEvent, render, waitFor } from '@testing-library/react-native'
 import { NotificationSettings } from '../NotificationSettings'
 
 const mockOpenNotificationSettings = jest.fn()
@@ -179,5 +179,36 @@ describe('NotificationSettings', () => {
     expect(getByText('Your daily reminder is scheduled for 20:00.')).toBeTruthy()
     expect(getByText('Current time: 20:00')).toBeTruthy()
     expect(getByTestId('notification-state-scheduled')).toBeTruthy()
+  })
+
+  it('exposes busy and disabled state while checking permissions', async () => {
+    // Arrange
+    let resolveRefresh: () => void = () => {}
+    mockRefreshSettings.mockReturnValue(
+      new Promise<void>((resolve) => {
+        resolveRefresh = resolve
+      })
+    )
+    const { getByTestId } = render(<NotificationSettings />)
+
+    // Act
+    fireEvent.press(getByTestId('notification-check-permission'))
+
+    // Assert
+    await waitFor(() => {
+      expect(
+        getByTestId('notification-check-permission').props.accessibilityState
+      ).toMatchObject({
+        busy: true,
+        disabled: true,
+      })
+    })
+    expect(
+      getByTestId('notification-reminder-switch').props.accessibilityState
+    ).toMatchObject({
+      busy: true,
+      disabled: true,
+    })
+    resolveRefresh()
   })
 })

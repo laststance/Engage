@@ -643,6 +643,10 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                 isSaveDisabled ? 'bg-gray-400' : 'bg-blue-500'
               }`}
               testID="preset-editor-save"
+              accessibilityState={{
+                busy: isLoading,
+                disabled: isSaveDisabled,
+              }}
               accessibilityHint={
                 saveDisabledReason ? t(saveDisabledReason) : undefined
               }

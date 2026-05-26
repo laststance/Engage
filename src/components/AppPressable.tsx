@@ -92,9 +92,9 @@ export const AppPressable = React.forwardRef<
       ref={ref}
       accessibilityState={{
         ...accessibilityState,
-        busy: busy || accessibilityState?.busy,
+        busy: busy || Boolean(accessibilityState?.busy),
         checked: checked ?? accessibilityState?.checked,
-        disabled: isUnavailable || accessibilityState?.disabled,
+        disabled: isUnavailable || Boolean(accessibilityState?.disabled),
         selected: selected ?? accessibilityState?.selected,
       }}
       className={[

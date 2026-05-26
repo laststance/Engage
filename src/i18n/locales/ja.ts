@@ -45,6 +45,8 @@ const ja = {
     dateA11yToday: '{{day}}日 今日',
     dateA11yCompleted: '{{day}}日 {{count}}件完了',
     dateA11yTodayCompleted: '{{day}}日 今日 {{count}}件完了',
+    currentDateA11yValue: '今日',
+    outsideMonthA11yValue: '表示中の月ではありません',
   },
 
   daySheet: {
