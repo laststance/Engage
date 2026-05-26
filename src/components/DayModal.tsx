@@ -2,9 +2,9 @@ import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal, SafeAreaView } from 'react-native'
 import { Text } from '@/components/ui/text'
-import { Pressable } from '@/components/ui/pressable'
 import { HStack } from '@/components/ui/hstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import { AppPressable } from '@/src/components/AppPressable'
 import { DaySheet } from './DaySheet'
 import { TaskPicker } from './TaskPicker'
 import { PresetTaskEditor } from './PresetTaskEditor'
@@ -48,21 +48,22 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1 bg-gray-50">
         {/* Header */}
         <HStack className="items-center justify-between p-4 border-b border-gray-200">
           <Text className="text-lg font-semibold text-gray-800">
             {t('dayModal.title')}
           </Text>
-          <Pressable
+          <AppPressable
             onPress={onClose}
             className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
+            pressedClassName="bg-gray-100 rounded-full"
             testID="day-modal-close"
             accessibilityLabel={t('common.close')}
             accessibilityRole="button"
           >
             <IconSymbol name="xmark" size={24} color="#666" />
-          </Pressable>
+          </AppPressable>
         </HStack>
 
         {/* Day Sheet Content */}

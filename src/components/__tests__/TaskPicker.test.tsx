@@ -13,6 +13,7 @@ jest.mock('react-i18next', () => ({
       const translations: Record<string, string> = {
         'taskPicker.discardChanges': 'Discard changes',
         'taskPicker.discardChangesAndClose': 'Discard changes and close',
+        'taskPicker.notSelectedStatus': 'Not selected',
         'taskPicker.selectedStatus': 'Selected',
         'taskPicker.toggleSelectionHint':
           'Double tap to toggle whether this task is assigned for today.',
@@ -135,6 +136,12 @@ describe('TaskPicker', () => {
     expect(
       getByTestId('task-picker-item-task1').props.accessibilityHint
     ).toBe('Double tap to toggle whether this task is assigned for today.')
+    expect(
+      getByTestId('task-picker-item-task1').props.accessibilityLabel
+    ).toBe('ネットワーキング, Selected')
+    expect(
+      getByTestId('task-picker-item-task2').props.accessibilityLabel
+    ).toBe('運動, Not selected')
   })
 
   it('shows unsaved-change affordances after the local selection changes', () => {

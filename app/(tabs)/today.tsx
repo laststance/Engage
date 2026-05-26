@@ -1,9 +1,8 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
+import { AppScreen } from '@/src/components/AppScreen'
 import { DaySheet } from '@/src/components/DaySheet'
 import { TaskPicker } from '@/src/components/TaskPicker'
 import { PresetTaskEditor } from '@/src/components/PresetTaskEditor'
@@ -20,7 +19,6 @@ export default function TodayScreen() {
 
   const setPresetEditorVisible = useAppStore((state) => state.setPresetEditorVisible)
 
-  const insets = useSafeAreaInsets()
   const today = formatDate(new Date())
   const day = useDayView(today)
 
@@ -42,34 +40,23 @@ export default function TodayScreen() {
 
   try {
     return (
-      <Box className="flex-1 bg-white" testID="today-screen">
-        <VStack className="flex-1" style={{ paddingTop: insets.top }}>
-          <Box className="px-4 pt-4 pb-2">
-            <Text
-              className="text-2xl font-bold text-gray-800 text-center mb-2"
-              testID="today-title"
-            >
-              {t('today.title')}
-            </Text>
-            <Text
-              className="text-gray-600 text-center text-sm"
-              testID="today-description"
-            >
-              {t('today.description')}
-            </Text>
-          </Box>
-
-          <DaySheet
-            date={today}
-            tasks={day.assignedTasks}
-            completions={day.dayCompletions}
-            journalEntry={day.dayEntry}
-            categories={day.categories}
-            onTaskToggle={day.handleTaskToggle}
-            onJournalUpdate={day.handleJournalUpdate}
-            onTaskSelectionPress={day.handleTaskSelectionPress}
-          />
-        </VStack>
+      <AppScreen
+        description={t('today.description')}
+        descriptionTestID="today-description"
+        testID="today-screen"
+        title={t('today.title')}
+        titleTestID="today-title"
+      >
+        <DaySheet
+          date={today}
+          tasks={day.assignedTasks}
+          completions={day.dayCompletions}
+          journalEntry={day.dayEntry}
+          categories={day.categories}
+          onTaskToggle={day.handleTaskToggle}
+          onJournalUpdate={day.handleJournalUpdate}
+          onTaskSelectionPress={day.handleTaskSelectionPress}
+        />
 
         <TaskPicker
           isVisible={day.isTaskPickerVisible}
@@ -90,12 +77,12 @@ export default function TodayScreen() {
           onCancel={handlePresetEditorCancel}
           onCreateCategory={day.handleCreateCategory}
         />
-      </Box>
+      </AppScreen>
     )
   } catch (error) {
     console.error('TodayScreen: Render error', error)
     return (
-      <Box className="flex-1 bg-white" testID="today-screen">
+      <AppScreen testID="today-screen" title={t('today.title')}>
         <VStack className="flex-1 justify-center items-center p-4">
           <Text className="text-red-600 text-center">
             {t('today.errorLoading')}
@@ -104,7 +91,7 @@ export default function TodayScreen() {
             {error?.toString()}
           </Text>
         </VStack>
-      </Box>
+      </AppScreen>
     )
   }
 }

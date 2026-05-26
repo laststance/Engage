@@ -6,6 +6,7 @@ import { Text } from '@/components/ui/text'
 import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import { AppCard } from '@/src/components/AppCard'
 import { JournalInput } from './JournalInput'
 import { AppPressable } from './AppPressable'
 import {
@@ -220,7 +221,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
   }
 
   return (
-    <Box className="flex-1 bg-white" testID="day-sheet">
+    <Box className="flex-1 bg-gray-50" testID="day-sheet">
       <ScrollView
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -239,7 +240,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
             <AppPressable
               onPress={onTaskSelectionPress}
               feedback="select"
-              className="bg-blue-50 border border-blue-200 rounded-lg p-4"
+              className="bg-blue-50 border border-blue-200 rounded-2xl p-4"
               pressedClassName="bg-blue-100"
               testID="task-selection-button"
               accessibilityLabel={t('daySheet.chooseTodaysHabits')}
@@ -255,8 +256,8 @@ export const DaySheet: React.FC<DaySheetProps> = ({
           </VStack>
 
           {taskFeedback && (
-            <Box
-              className={`rounded-lg border p-3 ${
+            <AppCard
+              className={`py-3 ${
                 taskFeedback.kind === 'error'
                   ? 'bg-red-50 border-red-200'
                   : 'bg-green-50 border-green-200'
@@ -308,7 +309,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
                   </AppPressable>
                 )}
               </HStack>
-            </Box>
+            </AppCard>
           )}
 
           {visibleTaskGroups.length > 0 ? (
@@ -350,7 +351,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
                             checked={isCompleted}
                             busy={pendingTaskId === task.id}
                             disabled={Boolean(pendingTaskId)}
-                            className="flex-row items-center py-3 px-3 bg-gray-50 rounded-lg min-h-[44px]"
+                            className="flex-row items-center rounded-2xl border border-gray-200 bg-white px-3 py-3 min-h-[52px] shadow-sm"
                             pressedClassName="bg-gray-100"
                             testID={`task-item-${task.id}`}
                             accessibilityLabel={`${task.title}${
@@ -401,7 +402,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
               })}
             </VStack>
           ) : (
-            <Box className="p-8 items-center">
+            <AppCard className="p-8 items-center">
               <Text className="text-lg font-semibold text-gray-800 text-center mb-2">
                 {t('daySheet.noTasksTitle')}
               </Text>
@@ -420,7 +421,7 @@ export const DaySheet: React.FC<DaySheetProps> = ({
                   {t('daySheet.chooseTodaysHabits')}
                 </Text>
               </AppPressable>
-            </Box>
+            </AppCard>
           )}
 
           <JournalInput

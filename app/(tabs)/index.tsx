@@ -1,9 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Box } from '@/components/ui/box'
-import { Text } from '@/components/ui/text'
-import { VStack } from '@/components/ui/vstack'
+import { AppScreen } from '@/src/components/AppScreen'
 import { Calendar } from '@/src/components/Calendar'
 import { DayModal } from '@/src/components/DayModal'
 import { useAppStore } from '@/src/stores/app-store'
@@ -13,7 +10,6 @@ export default function CalendarScreen() {
   const { t } = useTranslation()
   const [isDayModalVisible, setIsDayModalVisible] = useState(false)
 
-  const insets = useSafeAreaInsets()
   const selectedDate = useAppStore((state) => state.selectedDate)
   const selectDate = useAppStore((state) => state.selectDate)
   const completions = useAppStore((state) => state.completions)
@@ -32,31 +28,20 @@ export default function CalendarScreen() {
   }
 
   return (
-    <Box className="flex-1 bg-white" testID="calendar-screen">
-      <VStack className="flex-1" style={{ paddingTop: insets.top }}>
-        <Box className="px-4 pt-4 pb-2">
-          <Text
-            className="text-2xl font-bold text-gray-800 text-center mb-2"
-            testID="calendar-screen-title"
-          >
-            {t('calendar.title')}
-          </Text>
-          <Text
-            className="text-gray-600 text-center text-sm"
-            testID="calendar-description"
-          >
-            {t('calendar.description')}
-          </Text>
-        </Box>
-
-        <Calendar
-          selectedDate={selectedDate}
-          onDateSelect={handleDateSelect}
-          achievementData={achievementData}
-        />
-      </VStack>
+    <AppScreen
+      description={t('calendar.description')}
+      descriptionTestID="calendar-description"
+      testID="calendar-screen"
+      title={t('calendar.title')}
+      titleTestID="calendar-screen-title"
+    >
+      <Calendar
+        selectedDate={selectedDate}
+        onDateSelect={handleDateSelect}
+        achievementData={achievementData}
+      />
 
       <DayModal isVisible={isDayModalVisible} onClose={handleModalClose} />
-    </Box>
+    </AppScreen>
   )
 }
