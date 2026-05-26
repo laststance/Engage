@@ -68,6 +68,9 @@ These messages can appear during Maestro/XCTest runs without indicating an app-o
 - `XCTAutomationSupportErrorUnknownElement: Error getting main window Unknown kAXError value -25218`
 - `XCTAutomationSupport Automation type mismatch`
 - `RCTScrollViewComponentView implements focusItemsInRect`
+- `UIKeyboardLayoutStar implements focusItemsInRect`
 - `NSBundle (null) initWithPath failed because the resolved path is empty or nil`
+- `TextInputUI Received external candidate resultset`
+- `CoreHaptics ... hapticpatternlibrary.plist could not be opened`
 
 Treat them as platform or test-runner noise unless they accompany a failed assertion, a stuck flow, or a reproducible app UI regression.
