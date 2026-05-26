@@ -3,10 +3,10 @@ import { ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
-import { Pressable } from '@/components/ui/pressable'
 import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import { AppPressable } from '@/src/components/AppPressable'
 import { StatsData, Category } from '@/src/types'
 import { getCategoryDisplayName } from '@/src/i18n/config'
 
@@ -98,10 +98,13 @@ export const Statistics: React.FC<StatisticsProps> = ({
           <VStack space="md">
             {/* Period Toggle */}
             <HStack className="bg-gray-200 rounded-lg p-1">
-              <Pressable
+              <AppPressable
+                feedback="select"
                 onPress={() => setSelectedPeriod('week')}
                 testID="stats-week-toggle"
                 className="flex-1"
+                pressedClassName="opacity-80"
+                selected={selectedPeriod === 'week'}
                 accessibilityLabel={t('stats.showWeekStats')}
                 accessibilityRole="button"
               >
@@ -124,12 +127,15 @@ export const Statistics: React.FC<StatisticsProps> = ({
                     {t('stats.thisWeek')}
                   </Text>
                 </Box>
-              </Pressable>
+              </AppPressable>
 
-              <Pressable
+              <AppPressable
+                feedback="select"
                 onPress={() => setSelectedPeriod('month')}
                 testID="stats-month-toggle"
                 className="flex-1"
+                pressedClassName="opacity-80"
+                selected={selectedPeriod === 'month'}
                 accessibilityLabel={t('stats.showMonthStats')}
                 accessibilityRole="button"
               >
@@ -154,7 +160,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
                     {t('stats.thisMonth')}
                   </Text>
                 </Box>
-              </Pressable>
+              </AppPressable>
             </HStack>
           </VStack>
 

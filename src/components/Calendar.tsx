@@ -2,10 +2,10 @@ import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
-import { Pressable } from '@/components/ui/pressable'
 import { HStack } from '@/components/ui/hstack'
 import { VStack } from '@/components/ui/vstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import { AppPressable } from '@/src/components/AppPressable'
 import { formatDate } from '@/src/utils/dateUtils'
 
 interface CalendarProps {
@@ -190,15 +190,17 @@ export const Calendar: React.FC<CalendarProps> = ({
     <Box className="flex-1 bg-white" testID="calendar-component">
       {/* Header with month navigation - matching Figma design */}
       <HStack className="items-center justify-between px-6 py-4 mb-4">
-        <Pressable
+        <AppPressable
+          feedback="select"
           onPress={() => navigateMonth('prev')}
           testID="calendar-prev-month"
           className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
+          pressedClassName="bg-gray-100 rounded-full"
           accessibilityLabel={t('calendar.prevMonth')}
           accessibilityRole="button"
         >
           <IconSymbol name="chevron.left" size={20} color="#666" />
-        </Pressable>
+        </AppPressable>
 
         <Text
           className="text-lg font-semibold text-gray-800"
@@ -207,15 +209,17 @@ export const Calendar: React.FC<CalendarProps> = ({
           {monthTitle}
         </Text>
 
-        <Pressable
+        <AppPressable
+          feedback="select"
           onPress={() => navigateMonth('next')}
           testID="calendar-next-month"
           className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
+          pressedClassName="bg-gray-100 rounded-full"
           accessibilityLabel={t('calendar.nextMonth')}
           accessibilityRole="button"
         >
           <IconSymbol name="chevron.right" size={20} color="#666" />
-        </Pressable>
+        </AppPressable>
       </HStack>
 
       {/* Days of week header - matching Figma spacing */}
@@ -244,13 +248,17 @@ export const Calendar: React.FC<CalendarProps> = ({
             {week.map((dayData, dayIndex) => {
               const completionCount = achievementData[dayData.dateString] || 0
               const heatmapColor = getHeatmapColor(completionCount)
+              const isSelectedDate = isSelected(dayData.dateString)
 
               return (
-                <Pressable
+                <AppPressable
                   key={`${weekIndex}-${dayIndex}`}
+                  feedback="select"
                   onPress={() => onDateSelect(dayData.dateString)}
                   testID={`calendar-date-${dayData.dateString}`}
                   className="flex-1 min-w-[44px] min-h-[48px]"
+                  pressedClassName="opacity-80"
+                  selected={isSelectedDate}
                   accessibilityLabel={getDateA11yLabel(dayData.date, dayData.dateString, completionCount)}
                   accessibilityRole="button"
                 >
@@ -264,7 +272,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                       h-12 items-center justify-center rounded-xl
                       ${dayData.isCurrentMonth ? heatmapColor : 'bg-gray-50'}
                       ${
-                        isSelected(dayData.dateString)
+                        isSelectedDate
                           ? 'border-2 border-blue-500'
                           : ''
                       }
@@ -283,14 +291,14 @@ export const Calendar: React.FC<CalendarProps> = ({
                             ? 'text-gray-800'
                             : 'text-gray-300'
                         }
-                        ${isSelected(dayData.dateString) ? 'text-blue-600' : ''}
+                        ${isSelectedDate ? 'text-blue-600' : ''}
                         ${isToday(dayData.dateString) ? 'text-orange-600' : ''}
                       `}
                     >
                       {dayData.date}
                     </Text>
                   </Box>
-                </Pressable>
+                </AppPressable>
               )
             })}
           </HStack>

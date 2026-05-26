@@ -60,6 +60,23 @@ describe('Calendar', () => {
     )
   })
 
+  it('marks the selected date cell for assistive technologies', () => {
+    // Arrange
+    const { getByTestId } = render(<Calendar {...defaultProps} />)
+
+    // Act
+    const selectedDate = getByTestId('calendar-date-2024-01-15')
+    const unselectedDate = getByTestId('calendar-date-2024-01-10')
+
+    // Assert
+    expect(selectedDate.props.accessibilityState).toMatchObject({
+      selected: true,
+    })
+    expect(unselectedDate.props.accessibilityState).toMatchObject({
+      selected: false,
+    })
+  })
+
   it('navigates to previous month', () => {
     const { getByTestId, getByText } = render(<Calendar {...defaultProps} />)
 
