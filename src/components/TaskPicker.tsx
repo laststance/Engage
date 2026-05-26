@@ -195,7 +195,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
               </Text>
               {hasSelectionChanges && (
                 <Text
-                  className="text-footnote text-system-orange"
+                  className="text-footnote text-label font-medium"
                   testID="task-picker-unsaved-changes"
                 >
                   {t('taskPicker.unsavedChanges')}

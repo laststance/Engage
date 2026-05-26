@@ -69,7 +69,8 @@ const en = {
     discardChanges: 'Discard changes',
     discardChangesAndClose: 'Discard changes and close',
     saveSelection: 'Save {{count}} selected tasks',
-    toggleSelectionHint: 'Double tap to change whether this task is assigned.',
+    toggleSelectionHint:
+      'Double tap to toggle whether this task is assigned for today.',
     newCategory: 'Create New Category',
     noPresetTasks: 'No preset tasks',
     confirm: 'Save selection ({{count}})',

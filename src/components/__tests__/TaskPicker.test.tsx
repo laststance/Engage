@@ -3,6 +3,32 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { Category, Task, TaskAssignmentOperationResult } from '@/src/types'
 import { TaskPicker } from '../TaskPicker'
 
+jest.mock('react-i18next', () => ({
+  initReactI18next: {
+    type: '3rdParty',
+    init: jest.fn(),
+  },
+  useTranslation: () => ({
+    t: (key: string, options?: { count?: number }) => {
+      const translations: Record<string, string> = {
+        'taskPicker.discardChanges': 'Discard changes',
+        'taskPicker.discardChangesAndClose': 'Discard changes and close',
+        'taskPicker.selectedStatus': 'Selected',
+        'taskPicker.toggleSelectionHint':
+          'Double tap to toggle whether this task is assigned for today.',
+        'taskPicker.unsavedChanges': 'Unsaved changes',
+      }
+
+      if (key === 'taskPicker.selectedCount') {
+        return `${options?.count ?? 0} selected`
+      }
+
+      return translations[key] || key
+    },
+    i18n: { changeLanguage: jest.fn() },
+  }),
+}))
+
 describe('TaskPicker', () => {
   const mockCategories: Category[] = [
     { id: 'business', name: '事業' },
@@ -100,15 +126,15 @@ describe('TaskPicker', () => {
     ).toMatchObject({
       selected: false,
     })
-    expect(getByText('taskPicker.selectedStatus')).toBeTruthy()
+    expect(getByText('Selected')).toBeTruthy()
     expect(
       getByTestId('task-picker-item-task1').props.accessibilityValue
     ).toMatchObject({
-      text: 'taskPicker.selectedStatus',
+      text: 'Selected',
     })
     expect(
       getByTestId('task-picker-item-task1').props.accessibilityHint
-    ).toBe('taskPicker.toggleSelectionHint')
+    ).toBe('Double tap to toggle whether this task is assigned for today.')
   })
 
   it('shows unsaved-change affordances after the local selection changes', () => {
@@ -119,10 +145,10 @@ describe('TaskPicker', () => {
     fireEvent.press(getByTestId('task-picker-item-task1'))
 
     // Assert
-    expect(getByText('taskPicker.unsavedChanges')).toBeTruthy()
-    expect(getByText('taskPicker.discardChanges')).toBeTruthy()
+    expect(getByText('Unsaved changes')).toBeTruthy()
+    expect(getByText('Discard changes')).toBeTruthy()
     expect(getByTestId('task-picker-close').props.accessibilityLabel).toBe(
-      'taskPicker.discardChangesAndClose'
+      'Discard changes and close'
     )
   })
 
