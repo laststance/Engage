@@ -39,6 +39,28 @@ tags:
 - assertVisible:
     id: "settings-backup"
 
+# Open notification settings and verify the permission-state surface
+- tapOn:
+    id: "settings-notifications"
+
+- extendedWaitUntil:
+    visible:
+      text: "Daily Reminder"
+    timeout: 5000
+
+- assertVisible:
+    text: "Notification Status"
+- assertVisible:
+    id: "notification-check-permission"
+
+- tapOn:
+    id: "notification-done"
+
+- extendedWaitUntil:
+    visible:
+      text: "Settings"
+    timeout: 5000
+
 # Close settings
 - tapOn:
     id: "settings-close"
