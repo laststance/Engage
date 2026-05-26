@@ -24,6 +24,35 @@ interface TaskPickerProps {
   onEditPresets: () => void
 }
 
+/**
+ * Checks whether two task selections contain the same IDs regardless of tap order.
+ * @param currentTaskIds - The task IDs currently selected in the picker.
+ * @param savedTaskIds - The task IDs that were selected when the picker opened.
+ * @returns
+ * - `true` when both lists describe the same selection
+ * - `false` when any task was added or removed
+ * @example
+ * haveSameTaskSelection(['task-1', 'task-2'], ['task-2', 'task-1']) // => true
+ */
+const haveSameTaskSelection = (
+  currentTaskIds: string[],
+  savedTaskIds: string[]
+): boolean => {
+  if (currentTaskIds.length !== savedTaskIds.length) {
+    return false
+  }
+
+  const savedTaskIdSet = new Set(savedTaskIds)
+  return currentTaskIds.every((taskId) => savedTaskIdSet.has(taskId))
+}
+
+/**
+ * Presents preset tasks as a modal picker for assigning habits to the active day.
+ * @param props - The visible state, task lists, and callbacks provided by day-view screens.
+ * @returns A modal task-selection flow with local draft state until the user saves.
+ * @example
+ * <TaskPicker isVisible selectedTasks={[]} presetTasks={tasks} categories={categories} ... />
+ */
 export const TaskPicker: React.FC<TaskPickerProps> = ({
   isVisible,
   presetTasks,
@@ -49,6 +78,11 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
       ([, categoryTasks]) => categoryTasks.length > 0
     ),
     [tasksByCategory]
+  )
+  const selectedTaskCount = localSelectedTasks.length
+  const hasSelectionChanges = useMemo(
+    () => !haveSameTaskSelection(localSelectedTasks, selectedTasks),
+    [localSelectedTasks, selectedTasks]
   )
 
   useEffect(() => {
@@ -147,16 +181,38 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
       <SafeAreaView className="flex-1 bg-white">
         <VStack space="md" className="p-4 border-b border-gray-200">
           <HStack className="items-center justify-between">
-            <Text className="text-headline text-label">
-              {t('daySheet.selectTasks')}
-            </Text>
+            <VStack className="flex-1 mr-3" space="xs">
+              <Text className="text-headline text-label">
+                {t('daySheet.selectTasks')}
+              </Text>
+              <Text
+                className="text-footnote text-secondary-label"
+                testID="task-picker-selected-count"
+              >
+                {t('taskPicker.selectedCount', {
+                  count: selectedTaskCount,
+                })}
+              </Text>
+              {hasSelectionChanges && (
+                <Text
+                  className="text-footnote text-system-orange"
+                  testID="task-picker-unsaved-changes"
+                >
+                  {t('taskPicker.unsavedChanges')}
+                </Text>
+              )}
+            </VStack>
             <AppPressable
               onPress={handleCancel}
               disabled={isSaving}
               className="p-3 touch-target-minimum"
               pressedClassName="bg-system-gray-6 rounded-full"
               testID="task-picker-close"
-              accessibilityLabel={t('common.close')}
+              accessibilityLabel={
+                hasSelectionChanges
+                  ? t('taskPicker.discardChangesAndClose')
+                  : t('common.close')
+              }
               accessibilityRole="button"
             >
               <IconSymbol name="xmark" size={24} color="#666" />
@@ -208,6 +264,16 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
                           onPress={() => toggleTaskSelection(task.id)}
                           feedback="select"
                           selected={isSelected}
+                          accessibilityValue={{
+                            text: t(
+                              isSelected
+                                ? 'taskPicker.selectedStatus'
+                                : 'taskPicker.notSelectedStatus'
+                            ),
+                          }}
+                          accessibilityHint={t(
+                            'taskPicker.toggleSelectionHint'
+                          )}
                           className={`
                             p-4 rounded-lg border-2 transition-colors touch-target-minimum
                             ${
@@ -243,24 +309,31 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
                               )}
                             </VStack>
 
-                            <Box
-                              className={`
-                                w-6 h-6 rounded-full border-2 items-center justify-center
-                                ${
-                                  isSelected
-                                    ? 'bg-system-blue border-system-blue'
-                                    : 'border-system-gray-3 bg-system-background'
-                                }
-                              `}
-                            >
+                            <HStack className="items-center" space="sm">
                               {isSelected && (
-                                <IconSymbol
-                                  name="checkmark"
-                                  size={16}
-                                  color="white"
-                                />
+                                <Text className="text-caption-1 font-semibold text-system-blue">
+                                  {t('taskPicker.selectedStatus')}
+                                </Text>
                               )}
-                            </Box>
+                              <Box
+                                className={`
+                                  w-6 h-6 rounded-full border-2 items-center justify-center
+                                  ${
+                                    isSelected
+                                      ? 'bg-system-blue border-system-blue'
+                                      : 'border-system-gray-3 bg-system-background'
+                                  }
+                                `}
+                              >
+                                {isSelected && (
+                                  <IconSymbol
+                                    name="checkmark"
+                                    size={16}
+                                    color="white"
+                                  />
+                                )}
+                              </Box>
+                            </HStack>
                           </HStack>
                         </AppPressable>
                       )
@@ -311,7 +384,9 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
               accessibilityRole="button"
             >
               <Text className="text-secondary-label font-medium text-center text-callout">
-                {t('common.cancel')}
+                {hasSelectionChanges
+                  ? t('taskPicker.discardChanges')
+                  : t('common.cancel')}
               </Text>
             </AppPressable>
 
@@ -323,6 +398,9 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
               pressedClassName="bg-business-dark"
               testID="task-picker-confirm"
               accessibilityRole="button"
+              accessibilityLabel={t('taskPicker.saveSelection', {
+                count: selectedTaskCount,
+              })}
             >
               <Text
                 className="text-white font-medium text-center text-callout"

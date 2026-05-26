@@ -58,13 +58,14 @@ describe('TaskPicker', () => {
 
   it('shows selectable preset tasks grouped by category', () => {
     // Arrange & Act
-    const { getByText } = render(<TaskPicker {...defaultProps} />)
+    const { getByTestId, getByText } = render(<TaskPicker {...defaultProps} />)
 
     // Assert
     expect(getByText('事業')).toBeTruthy()
     expect(getByText('生活')).toBeTruthy()
     expect(getByText('ネットワーキング')).toBeTruthy()
     expect(getByText('運動')).toBeTruthy()
+    expect(getByTestId('task-picker-selected-count')).toBeTruthy()
   })
 
   it('submits the locally selected task ids after the user confirms', async () => {
@@ -84,17 +85,45 @@ describe('TaskPicker', () => {
 
   it('exposes selected accessibility state on selected task items', () => {
     // Arrange & Act
-    const { getByTestId } = render(
+    const { getByTestId, getByText } = render(
       <TaskPicker {...defaultProps} selectedTasks={['task1']} />
     )
 
     // Assert
-    expect(getByTestId('task-picker-item-task1').props.accessibilityState).toMatchObject({
+    expect(
+      getByTestId('task-picker-item-task1').props.accessibilityState
+    ).toMatchObject({
       selected: true,
     })
-    expect(getByTestId('task-picker-item-task2').props.accessibilityState).toMatchObject({
+    expect(
+      getByTestId('task-picker-item-task2').props.accessibilityState
+    ).toMatchObject({
       selected: false,
     })
+    expect(getByText('taskPicker.selectedStatus')).toBeTruthy()
+    expect(
+      getByTestId('task-picker-item-task1').props.accessibilityValue
+    ).toMatchObject({
+      text: 'taskPicker.selectedStatus',
+    })
+    expect(
+      getByTestId('task-picker-item-task1').props.accessibilityHint
+    ).toBe('taskPicker.toggleSelectionHint')
+  })
+
+  it('shows unsaved-change affordances after the local selection changes', () => {
+    // Arrange
+    const { getByTestId, getByText } = render(<TaskPicker {...defaultProps} />)
+
+    // Act
+    fireEvent.press(getByTestId('task-picker-item-task1'))
+
+    // Assert
+    expect(getByText('taskPicker.unsavedChanges')).toBeTruthy()
+    expect(getByText('taskPicker.discardChanges')).toBeTruthy()
+    expect(getByTestId('task-picker-close').props.accessibilityLabel).toBe(
+      'taskPicker.discardChangesAndClose'
+    )
   })
 
   it('resyncs local selected state when the picker reopens with different tasks', async () => {

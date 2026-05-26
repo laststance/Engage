@@ -38,10 +38,28 @@ tags:
     id: "task-picker-cancel"
 - assertVisible:
     id: "task-picker-confirm"
+- extendedWaitUntil:
+    visible:
+      text: "0 selected"
+    timeout: 5000
 
 # Select first task item
 - tapOn:
-    text: "Hobby & Relaxation"
+    text: "Hobby & Relaxation, Not selected"
+
+# Verify the picker explains the changed selection before saving
+- extendedWaitUntil:
+    visible:
+      text: "1 selected"
+    timeout: 5000
+- extendedWaitUntil:
+    visible:
+      text: "Unsaved changes"
+    timeout: 5000
+- extendedWaitUntil:
+    visible:
+      text: "Hobby & Relaxation, Selected"
+    timeout: 5000
 
 # Confirm selection
 - tapOn:
