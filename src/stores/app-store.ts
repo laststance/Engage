@@ -225,10 +225,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   toggleTaskCompletion: async (date: string, taskId: string) => {
     const state = get()
-    const previousCompletions = state.completions
+    const previousTaskCompletion = (state.completions[date] || []).find(
+      (completion) => completion.taskId === taskId
+    )
 
-    // Optimistic update: flip completed field
-    const updatedCompletions = { ...previousCompletions }
+    // Optimistic update: flip only the requested completion row.
+    const updatedCompletions = { ...state.completions }
     const dayCompletions = updatedCompletions[date] || []
     const existingCompletion = dayCompletions.find(
       (c) => c.taskId === taskId
@@ -274,11 +276,31 @@ export const useAppStore = create<AppState>((set, get) => ({
         change,
       }
     } catch (error) {
-      // Rollback on failure
+      // Roll back only this task so concurrent successful updates stay intact.
       console.error('Failed to toggle task completion:', error)
-      set({
-        completions: previousCompletions,
-        error: 'Failed to toggle task completion. Please try again.',
+      set((current) => {
+        const currentDayCompletions = current.completions[date] || []
+        const revertedDayCompletions = previousTaskCompletion
+          ? currentDayCompletions.map((completion) =>
+            completion.taskId === taskId
+              ? previousTaskCompletion
+              : completion
+          )
+          : currentDayCompletions.filter(
+            (completion) => completion.taskId !== taskId
+          )
+        const revertedCompletions = { ...current.completions }
+
+        if (revertedDayCompletions.length > 0) {
+          revertedCompletions[date] = revertedDayCompletions
+        } else {
+          delete revertedCompletions[date]
+        }
+
+        return {
+          completions: revertedCompletions,
+          error: 'Failed to toggle task completion. Please try again.',
+        }
       })
 
       return {
@@ -365,21 +387,30 @@ export const useAppStore = create<AppState>((set, get) => ({
           removedTaskIds
         )
 
-      // Update local state
-      const updatedCompletions = { ...state.completions }
-      const remainingCompletions = existingCompletions.filter(
-        (c) => selectedTaskIds.has(c.taskId)
-      )
-      updatedCompletions[date] = [
-        ...remainingCompletions,
-        ...createdCompletions,
-      ]
+      set((current) => {
+        const updatedCompletions = { ...current.completions }
+        const currentDayCompletions = updatedCompletions[date] || []
+        const currentTaskIds = new Set(
+          currentDayCompletions.map((completion) => completion.taskId)
+        )
+        const newCreatedCompletions = createdCompletions.filter(
+          (completion) => !currentTaskIds.has(completion.taskId)
+        )
+        const remainingCompletions = currentDayCompletions.filter(
+          (completion) => selectedTaskIds.has(completion.taskId)
+        )
 
-      if (updatedCompletions[date].length === 0) {
-        delete updatedCompletions[date]
-      }
+        updatedCompletions[date] = [
+          ...remainingCompletions,
+          ...newCreatedCompletions,
+        ]
 
-      set({ completions: updatedCompletions })
+        if (updatedCompletions[date].length === 0) {
+          delete updatedCompletions[date]
+        }
+
+        return { completions: updatedCompletions }
+      })
 
       console.log(
         `Tasks updated for ${date}: +${createdCompletions.length} -${removedTaskIds.length}`

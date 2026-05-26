@@ -222,6 +222,55 @@ describe('useAppStore', () => {
         'Failed to toggle task completion. Please try again.'
       )
     })
+
+    it('keeps another successful completion update when rollback is needed', async () => {
+      // Arrange
+      const concurrentCompletion = {
+        id: 'comp2',
+        date: '2025-01-15',
+        taskId: 'task2',
+        completed: true,
+        createdAt: Date.now(),
+      }
+      let rejectToggle: (error: Error) => void = () => undefined
+      ;(completionRepository.toggle as jest.Mock).mockImplementation(
+        () =>
+          new Promise((_resolve, reject) => {
+            rejectToggle = reject
+          })
+      )
+      useAppStore.setState({
+        completions: {
+          '2025-01-15': [mockCompletions[0]],
+        },
+      })
+
+      // Act
+      const store = useAppStore.getState()
+      const resultPromise = store.toggleTaskCompletion('2025-01-15', 'task1')
+      useAppStore.setState((current) => ({
+        completions: {
+          ...current.completions,
+          '2025-01-15': [
+            ...(current.completions['2025-01-15'] || []),
+            concurrentCompletion,
+          ],
+        },
+      }))
+      rejectToggle(new Error('SQLite is unavailable'))
+      const result = await resultPromise
+
+      // Assert
+      const state = useAppStore.getState()
+      expect(result.success).toBe(false)
+      expect(state.completions['2025-01-15']).toEqual([
+        mockCompletions[0],
+        concurrentCompletion,
+      ])
+      expect(state.error).toBe(
+        'Failed to toggle task completion. Please try again.'
+      )
+    })
   })
 
   describe('addTasksToDate', () => {
@@ -307,6 +356,65 @@ describe('useAppStore', () => {
       })
       expect(state.completions['2025-01-15']).toEqual([mockCompletions[0]])
       expect(state.error).toBe('SQLite is unavailable')
+    })
+
+    it('keeps the latest visible completion while task assignment save finishes', async () => {
+      // Arrange
+      const assignedCompletion = {
+        id: 'comp2',
+        date: '2025-01-15',
+        taskId: 'task2',
+        completed: false,
+        createdAt: Date.now(),
+      }
+      const concurrentlyUpdatedCompletion = {
+        ...mockCompletions[0],
+        completed: false,
+      }
+      type AssignedCompletion = typeof assignedCompletion
+      let resolveAssignment: (
+        completions: AssignedCompletion[]
+      ) => void = () => undefined
+      ;(
+        completionRepository.updateTaskAssignmentsForDate as jest.Mock
+      ).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveAssignment = resolve
+          })
+      )
+      useAppStore.setState({
+        completions: {
+          '2025-01-15': [mockCompletions[0]],
+        },
+      })
+
+      // Act
+      const store = useAppStore.getState()
+      const resultPromise = store.addTasksToDate('2025-01-15', [
+        'task1',
+        'task2',
+      ])
+      useAppStore.setState({
+        completions: {
+          '2025-01-15': [concurrentlyUpdatedCompletion],
+        },
+      })
+      resolveAssignment([assignedCompletion])
+      const result = await resultPromise
+
+      // Assert
+      const state = useAppStore.getState()
+      expect(result).toEqual({
+        success: true,
+        date: '2025-01-15',
+        addedCount: 1,
+        removedCount: 0,
+      })
+      expect(state.completions['2025-01-15']).toEqual([
+        concurrentlyUpdatedCompletion,
+        assignedCompletion,
+      ])
     })
   })
 
