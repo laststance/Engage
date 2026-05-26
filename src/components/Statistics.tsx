@@ -25,6 +25,7 @@ export const Statistics: React.FC<StatisticsProps> = ({
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month'>('week')
 
   const currentStats = selectedPeriod === 'week' ? weeklyStats : monthlyStats
+  const hasPeriodCompletions = currentStats.totalTasks > 0
 
   // Get category color
   const getCategoryColor = (categoryId: string) => {
@@ -164,6 +165,20 @@ export const Statistics: React.FC<StatisticsProps> = ({
             </HStack>
           </VStack>
 
+          <Box
+            className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3"
+            testID="stats-period-recap"
+          >
+            <Text className="text-sm font-medium leading-5 text-blue-700">
+              {hasPeriodCompletions
+                ? t('stats.periodRecap', {
+                    count: currentStats.totalTasks,
+                    days: currentStats.activeDays,
+                  })
+                : t('stats.periodEmptyNextAction')}
+            </Text>
+          </Box>
+
           {/* Today's Achievements */}
           <VStack space="sm">
             <Text className="text-xl font-semibold text-gray-800">
@@ -268,7 +283,9 @@ export const Statistics: React.FC<StatisticsProps> = ({
                               className={`w-4 h-4 rounded-full ${categoryColor}`}
                             />
                             <Text className="font-medium text-gray-800">
-                              {category ? getCategoryDisplayName(category) : 'Unknown Category'}
+                              {category
+                                ? getCategoryDisplayName(category)
+                                : t('stats.unknownCategory')}
                             </Text>
                           </HStack>
                           <Text className="text-sm text-gray-600">

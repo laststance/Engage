@@ -34,6 +34,11 @@ const en = {
     monthlySummaryCompleted: '{{count}} completed',
     monthlySummaryActiveDays: '{{count}} active days',
     monthlySummaryEmpty: 'No completions yet',
+    monthlySummaryEmptyHint:
+      'Complete a habit from Today to start filling this calendar.',
+    monthlySummaryHint:
+      'This updates automatically as you finish habits from Today.',
+    selectedDateCompleted: '{{count}} completed on the selected day',
     thisMonth: 'This Month',
     thisWeek: 'This Week',
     dateA11y: '{{day}}',
@@ -128,6 +133,10 @@ const en = {
     streakEncourageGreat: 'Amazing consistency!',
     streakEncourageAmazing: 'Incredible dedication!',
     periodStats: '{{period}} Stats',
+    periodRecap:
+      '{{count}} completed tasks across {{days}} active days. Calendar and Stats update from Today completions.',
+    periodEmptyNextAction:
+      'Complete one Today task to start filling Calendar and Stats.',
     totalTasks: 'Total Tasks',
     dailyAverage: 'Daily Average',
     dailyAverageValue: '{{value}}',
@@ -136,6 +145,7 @@ const en = {
     journalDaysValue: '{{count}} days',
     journalDaysSubtitle: '{{percentage}} of total',
     categoryBreakdown: 'Category Breakdown',
+    unknownCategory: 'Unknown category',
     categoryNoData: 'No data yet',
     categoryNoDataHint: 'Complete tasks to see statistics',
     categoryCompletionRate: 'Rate: {{rate}}',

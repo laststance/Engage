@@ -130,6 +130,15 @@ export const Calendar: React.FC<CalendarProps> = ({
       completedTasks: currentMonthDates.reduce((sum, count) => sum + count, 0),
     }
   }, [achievementData, calendarData])
+  const selectedDateIsInCurrentMonth = useMemo(() => {
+    // Hide the selected-day recap after month navigation moves that date off-screen.
+    return calendarData.some((week) =>
+      week.some(
+        (day) => day.isCurrentMonth && day.dateString === selectedDate
+      )
+    )
+  }, [calendarData, selectedDate])
+  const selectedDateCompletionCount = achievementData[selectedDate] || 0
 
   const getHeatmapColor = (completionCount: number): string => {
     if (completionCount === 0) return 'bg-gray-100'
@@ -316,25 +325,49 @@ export const Calendar: React.FC<CalendarProps> = ({
       </HStack>
 
       <Box className="mx-4 mt-6 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4">
-        <HStack className="items-center justify-between">
-          <VStack space="xs">
-            <Text className="text-xs font-semibold uppercase text-blue-500">
-              {t('calendar.monthlySummary')}
+        <VStack space="sm">
+          <HStack className="items-center justify-between">
+            <VStack space="xs">
+              <Text className="text-xs font-semibold uppercase text-blue-500">
+                {t('calendar.monthlySummary')}
+              </Text>
+              <Text className="text-sm font-medium text-gray-700">
+                {monthlySummary.completedTasks > 0
+                  ? t('calendar.monthlySummaryCompleted', {
+                      count: monthlySummary.completedTasks,
+                    })
+                  : t('calendar.monthlySummaryEmpty')}
+              </Text>
+            </VStack>
+            <Text className="text-sm font-semibold text-blue-700">
+              {t('calendar.monthlySummaryActiveDays', {
+                count: monthlySummary.activeDays,
+              })}
             </Text>
-            <Text className="text-sm font-medium text-gray-700">
-              {monthlySummary.completedTasks > 0
-                ? t('calendar.monthlySummaryCompleted', {
-                    count: monthlySummary.completedTasks,
-                  })
-                : t('calendar.monthlySummaryEmpty')}
-            </Text>
-          </VStack>
-          <Text className="text-sm font-semibold text-blue-700">
-            {t('calendar.monthlySummaryActiveDays', {
-              count: monthlySummary.activeDays,
-            })}
+          </HStack>
+
+          <Text
+            className="text-xs leading-5 text-blue-700"
+            testID="calendar-monthly-summary-hint"
+          >
+            {monthlySummary.completedTasks > 0
+              ? t('calendar.monthlySummaryHint')
+              : t('calendar.monthlySummaryEmptyHint')}
           </Text>
-        </HStack>
+
+          {selectedDateIsInCurrentMonth && selectedDateCompletionCount > 0 && (
+            <Box
+              className="rounded-xl border border-green-200 bg-green-50 px-3 py-2"
+              testID="calendar-selected-day-recap"
+            >
+              <Text className="text-xs font-medium text-green-700">
+                {t('calendar.selectedDateCompleted', {
+                  count: selectedDateCompletionCount,
+                })}
+              </Text>
+            </Box>
+          )}
+        </VStack>
       </Box>
     </Box>
   )
