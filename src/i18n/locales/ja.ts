@@ -159,6 +159,18 @@ const ja = {
     dailyReminder: 'デイリーリマインダー',
     dailyReminderDescription:
       '毎日決まった時間に習慣チェックのリマインダーを受け取る',
+    permissionNotDeterminedTitle: '通知許可は未確認です',
+    permissionNotDeterminedBody:
+      'リマインダーをオンにすると、時刻を選んで毎日の習慣通知を許可できます。',
+    permissionDeniedTitle: '通知がブロックされています',
+    permissionDeniedBody:
+      '端末の設定で通知がブロックされています。設定を開いて通知を許可してください。',
+    permissionEnabledTitle: '通知は許可されています',
+    permissionEnabledBody:
+      'リマインダー時刻を選ぶと、毎日の習慣通知を予定できます。',
+    reminderScheduledTitle: 'リマインダー設定済み',
+    reminderScheduledBody:
+      '毎日 {{time}} にリマインダーを送信します。',
     enabledTitle: '通知が有効になりました',
     enabledMessage:
       '毎日 {{time}} にリマインダーを送信します。',
@@ -167,10 +179,20 @@ const ja = {
     permissionAndroid: 'アプリの設定から通知を有効にしてください。',
     disabledTitle: '通知が無効になりました',
     disabledMessage: 'リマインダーをキャンセルしました。',
+    reminderEnabledInline: 'デイリーリマインダーをオンにしました。',
+    reminderDisabledInline: 'デイリーリマインダーをオフにしました。',
+    permissionStillNeeded:
+      '通知がまだブロックされています。端末の設定で通知を許可してください。',
+    permissionRequestFailed: '通知許可をリクエストできませんでした。',
+    settingsUnavailable: '通知設定を読み込めませんでした。',
+    scheduleFailed: 'デイリーリマインダーを設定できませんでした。',
+    cancelFailed: 'デイリーリマインダーを解除できませんでした。',
     timeUpdatedTitle: '時間を更新しました',
     timeUpdatedMessage:
       '毎日 {{time}} にリマインダーを送信します。',
+    timeUpdatedInline: 'リマインダー時刻を更新しました。',
     currentTime: '現在の設定時間:',
+    currentTimeWithValue: '現在の設定時間: {{time}}',
     notSet: '未設定',
     selectTime: 'リマインダー時間を選択:',
     morning8: '朝 8:00',
@@ -180,11 +202,20 @@ const ja = {
     night8: '夜 8:00',
     status: '通知ステータス',
     permissionState: '許可状態:',
+    permission: {
+      notDetermined: '未確認',
+      denied: '拒否',
+      enabled: '許可済み',
+    },
     enabled: '有効',
     disabled: '無効',
     scheduledNotifications: '予定された通知:',
     countUnit: '{{count}}件',
-    refresh: '設定を更新',
+    checkPermissionAgain: '許可状態を確認',
+    openSettings: '設定を開く',
+    controlsDisabledDenied:
+      '通知許可がブロックされているため、リマインダー操作は無効です。',
+    toggleReminderHint: 'デイリーリマインダーのオン/オフを切り替えます。',
     tipTitle: 'ヒント',
     tipBody:
       '通知をタップすると、今日のタスク画面に直接移動できます。通知が届かない場合は、端末の設定で通知が許可されているか確認してください。',

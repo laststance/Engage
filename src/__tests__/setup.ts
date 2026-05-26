@@ -52,6 +52,7 @@ jest.mock('react-native', () => {
     TextInput: createNativeComponent('TextInput'),
     SafeAreaView: createNativeComponent('SafeAreaView'),
     ScrollView: createNativeComponent('ScrollView'),
+    Switch: createNativeComponent('Switch'),
     Pressable,
     Modal,
     Platform: {
@@ -74,6 +75,9 @@ jest.mock('react-native', () => {
     },
     Share: {
       share: jest.fn(),
+    },
+    Linking: {
+      openSettings: jest.fn(() => Promise.resolve()),
     },
   }
 })
@@ -102,6 +106,38 @@ jest.mock('expo-haptics', () => ({
   },
   ImpactFeedbackStyle: {
     Light: 'light',
+  },
+}))
+
+// Mock expo-notifications module
+jest.mock('expo-notifications', () => ({
+  cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
+  getAllScheduledNotificationsAsync: jest.fn(() => Promise.resolve([])),
+  getPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'undetermined', granted: false })
+  ),
+  requestPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'denied', granted: false })
+  ),
+  scheduleNotificationAsync: jest.fn(() =>
+    Promise.resolve('engage-daily-reminder')
+  ),
+  setNotificationHandler: jest.fn(),
+  IosAuthorizationStatus: {
+    NOT_DETERMINED: 0,
+    DENIED: 1,
+    AUTHORIZED: 2,
+    PROVISIONAL: 3,
+    EPHEMERAL: 4,
+  },
+  SchedulableTriggerInputTypes: {
+    CALENDAR: 'calendar',
+    DAILY: 'daily',
+    WEEKLY: 'weekly',
+    MONTHLY: 'monthly',
+    YEARLY: 'yearly',
+    DATE: 'date',
+    TIME_INTERVAL: 'timeInterval',
   },
 }))
 

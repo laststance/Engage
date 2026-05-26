@@ -160,6 +160,18 @@ const en = {
     dailyReminder: 'Daily Reminder',
     dailyReminderDescription:
       'Get daily habit check reminders at a set time',
+    permissionNotDeterminedTitle: 'Permission not requested',
+    permissionNotDeterminedBody:
+      'Turn on reminders to choose a time and allow Engage to send daily habit prompts.',
+    permissionDeniedTitle: 'Notifications blocked',
+    permissionDeniedBody:
+      'Notifications are blocked in system settings. Open Settings to allow reminders again.',
+    permissionEnabledTitle: 'Notifications allowed',
+    permissionEnabledBody:
+      'Choose a reminder time to schedule your daily habit prompt.',
+    reminderScheduledTitle: 'Reminder scheduled',
+    reminderScheduledBody:
+      'Your daily reminder is scheduled for {{time}}.',
     enabledTitle: 'Notifications Enabled',
     enabledMessage:
       'Daily reminder will be sent at {{time}}.',
@@ -168,10 +180,20 @@ const en = {
     permissionAndroid: 'Please enable notifications in app settings.',
     disabledTitle: 'Notifications Disabled',
     disabledMessage: 'Reminder has been cancelled.',
+    reminderEnabledInline: 'Daily reminder is on.',
+    reminderDisabledInline: 'Daily reminder is off.',
+    permissionStillNeeded:
+      'Notifications are still blocked. Open system settings to allow reminders.',
+    permissionRequestFailed: 'Could not request notification permission.',
+    settingsUnavailable: 'Could not read notification settings.',
+    scheduleFailed: 'Could not schedule the daily reminder.',
+    cancelFailed: 'Could not cancel the daily reminder.',
     timeUpdatedTitle: 'Time Updated',
     timeUpdatedMessage:
       'Daily reminder will be sent at {{time}}.',
+    timeUpdatedInline: 'Reminder time updated.',
     currentTime: 'Current time:',
+    currentTimeWithValue: 'Current time: {{time}}',
     notSet: 'Not set',
     selectTime: 'Select reminder time:',
     morning8: 'Morning 8:00',
@@ -181,11 +203,20 @@ const en = {
     night8: 'Night 8:00',
     status: 'Notification Status',
     permissionState: 'Permission:',
+    permission: {
+      notDetermined: 'Not requested',
+      denied: 'Denied',
+      enabled: 'Allowed',
+    },
     enabled: 'Enabled',
     disabled: 'Disabled',
     scheduledNotifications: 'Scheduled:',
     countUnit: '{{count}}',
-    refresh: 'Refresh Settings',
+    checkPermissionAgain: 'Check permission again',
+    openSettings: 'Open Settings',
+    controlsDisabledDenied:
+      'Reminder controls are disabled because notification permission is blocked.',
+    toggleReminderHint: 'Turn daily reminders on or off.',
     tipTitle: 'Tip',
     tipBody:
       'Tap a notification to go directly to your tasks. If notifications are not arriving, check that they are enabled in your device settings.',
