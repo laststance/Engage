@@ -172,6 +172,7 @@ const en = {
     characterLimitReached: 'Character limit reached',
     savedMinutesAgo: 'Saved {{minutes}} min ago',
     savedHoursAgo: 'Saved {{hours}} hr ago',
+    doneEditingA11y: 'Finish journal editing',
   },
 
   notifications: {

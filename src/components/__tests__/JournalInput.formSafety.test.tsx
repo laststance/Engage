@@ -1,5 +1,6 @@
 import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react-native'
+import { Keyboard } from 'react-native'
 import { JournalInput } from '../JournalInput'
 import { Entry } from '@/src/types'
 
@@ -113,5 +114,20 @@ describe('JournalInput form safety', () => {
 
     // Assert
     expect(getByDisplayValue('Newer local draft')).toBeTruthy()
+  })
+
+  it('shows a keyboard Done control so multiline journal editing can finish', () => {
+    // Arrange
+    const { getByTestId, getByText } = renderJournalInput()
+
+    // Act
+    fireEvent.press(getByTestId('journal-keyboard-done-button'))
+
+    // Assert
+    expect(getByText('common.done')).toBeTruthy()
+    expect(Keyboard.dismiss).toHaveBeenCalledTimes(1)
+    expect(getByTestId('journal-text-input').props.inputAccessoryViewID).toEqual(
+      expect.stringContaining('journal-input-accessory')
+    )
   })
 })

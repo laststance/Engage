@@ -171,6 +171,7 @@ const ja = {
     characterLimitReached: '文字数の上限に達しました',
     savedMinutesAgo: '{{minutes}}分前に保存',
     savedHoursAgo: '{{hours}}時間前に保存',
+    doneEditingA11y: '日記の入力を完了',
   },
 
   notifications: {

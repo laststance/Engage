@@ -1,11 +1,12 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react'
-import { TextInput } from 'react-native'
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { InputAccessoryView, Keyboard, Platform, TextInput } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { HStack } from '@/components/ui/hstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
+import { AppPressable } from '@/src/components/AppPressable'
 import {
   OperationFeedback,
   type OperationFeedbackKind,
@@ -19,6 +20,9 @@ import {
 } from '@/src/constants/journal'
 import { useInteractionFeedback } from '@/src/hooks/useInteractionFeedback'
 import { Entry } from '@/src/types'
+
+const JOURNAL_INPUT_ACCESSORY_VIEW_ID_PREFIX = 'journal-input-accessory'
+const NATIVE_ID_UNSUPPORTED_CHARACTERS = /[^A-Za-z0-9_-]/g
 
 interface JournalInputProps {
   date: string
@@ -71,6 +75,12 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   const [lastFailedText, setLastFailedText] = useState<string | null>(null)
   const [characterCount, setCharacterCount] = useState(entry?.note?.length || 0)
 
+  const reactId = useId()
+  const inputAccessoryViewID = `${JOURNAL_INPUT_ACCESSORY_VIEW_ID_PREFIX}-${reactId.replace(
+    NATIVE_ID_UNSUPPORTED_CHARACTERS,
+    ''
+  )}`
+  const shouldShowKeyboardDoneButton = Platform.OS === 'ios'
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const saveRequestIdRef = useRef(0)
   const textInputRef = useRef<TextInput>(null)
@@ -171,6 +181,11 @@ export const JournalInput: React.FC<JournalInputProps> = ({
     }
   }
 
+  const handleKeyboardDone = useCallback(() => {
+    textInputRef.current?.blur()
+    Keyboard.dismiss()
+  }, [])
+
   const formatDate = (dateString: string) => {
     const d = new Date(dateString)
     const formatter = new Intl.DateTimeFormat(undefined, {
@@ -258,12 +273,35 @@ export const JournalInput: React.FC<JournalInputProps> = ({
           className="flex-1 text-gray-800 text-base leading-6"
           testID="journal-text-input"
           maxLength={maxLength}
+          inputAccessoryViewID={
+            shouldShowKeyboardDoneButton ? inputAccessoryViewID : undefined
+          }
           scrollEnabled={true}
           style={{
             minHeight: JOURNAL_TEXT_INPUT_MIN_HEIGHT_PX,
           }}
         />
       </Box>
+
+      {shouldShowKeyboardDoneButton && (
+        <InputAccessoryView nativeID={inputAccessoryViewID}>
+          <Box className="items-end border-t border-gray-200 bg-gray-50 px-3 py-2">
+            <AppPressable
+              accessibilityLabel={t('journal.doneEditingA11y')}
+              accessibilityRole="button"
+              className="rounded-lg px-3 py-2"
+              feedback="select"
+              onPress={handleKeyboardDone}
+              pressedClassName="bg-gray-200"
+              testID="journal-keyboard-done-button"
+            >
+              <Text className="text-base font-semibold text-blue-600">
+                {t('common.done')}
+              </Text>
+            </AppPressable>
+          </Box>
+        </InputAccessoryView>
+      )}
 
       {feedbackKind && (
         <OperationFeedback

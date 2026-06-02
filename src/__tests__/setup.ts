@@ -50,6 +50,8 @@ jest.mock('react-native', () => {
     View: createNativeComponent('View'),
     Text: createNativeComponent('Text'),
     TextInput: createNativeComponent('TextInput'),
+    InputAccessoryView: createNativeComponent('InputAccessoryView'),
+    KeyboardAvoidingView: createNativeComponent('KeyboardAvoidingView'),
     SafeAreaView: createNativeComponent('SafeAreaView'),
     ScrollView: createNativeComponent('ScrollView'),
     Switch: createNativeComponent('Switch'),
@@ -62,6 +64,9 @@ jest.mock('react-native', () => {
     StyleSheet: {
       create: jest.fn((styles) => styles),
       flatten: jest.fn((style) => style),
+    },
+    Keyboard: {
+      dismiss: jest.fn(),
     },
     Dimensions: {
       get: jest.fn(() => ({ width: 375, height: 812 })),
