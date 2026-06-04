@@ -89,7 +89,7 @@ This project uses GitHub Actions for automated testing, security scanning, quali
 
 **Jobs**:
 
-1. **E2E iOS** (45 min timeout, standard GitHub-hosted macOS runner)
+1. **E2E iOS** (60 min timeout, standard GitHub-hosted macOS runner)
    - Sets up the first available preferred iPhone device model on the installed Xcode runtime (for example, `iPhone 17 Pro` on iOS 26.x, then `iPhone 16 Pro`, `iPhone 15 Pro`, or the first available iPhone fallback)
    - Builds production E2E app
    - Runs Maestro tests from `maestro/ios/`
