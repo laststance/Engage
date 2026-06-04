@@ -41,13 +41,13 @@ jobs:
   e2e-ios:
     name: E2E Tests (iOS)
     runs-on: macos-26
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       APP_READY_WAIT_SECONDS: 60
       BUILD_POLL_INTERVAL_SECONDS: 15
       E2E_BUILD_LOG: e2e-build.log
       E2E_BUILD_READY_TEXT: Logs for your project will appear below
-      MAX_BUILD_WAIT_SECONDS: 1200
+      MAX_BUILD_WAIT_SECONDS: 1800
 
     steps:
       - name: Checkout code
@@ -134,12 +134,14 @@ jobs:
           done
 
           if ! kill -0 "$BUILD_PID" 2>/dev/null; then
+            set +e
             wait "$BUILD_PID"
             BUILD_EXIT_CODE=$?
+            set -e
 
             if [ "$BUILD_EXIT_CODE" -ne 0 ]; then
               echo "Build failed with exit code $BUILD_EXIT_CODE"
-              tail -n 120 "$E2E_BUILD_LOG"
+              tail -n 160 "$E2E_BUILD_LOG"
               exit 1
             fi
 
