@@ -129,5 +129,20 @@ describe('JournalInput form safety', () => {
     expect(getByTestId('journal-text-input').props.inputAccessoryViewID).toEqual(
       expect.stringContaining('journal-input-accessory')
     )
+    expect(getByTestId('journal-text-input').props.returnKeyType).toBe('done')
+    expect(getByTestId('journal-text-input').props.submitBehavior).toBe(
+      'blurAndSubmit'
+    )
+  })
+
+  it('dismisses the keyboard when the journal return key submits editing', () => {
+    // Arrange
+    const { getByTestId } = renderJournalInput()
+
+    // Act
+    fireEvent(getByTestId('journal-text-input'), 'submitEditing')
+
+    // Assert
+    expect(Keyboard.dismiss).toHaveBeenCalledTimes(1)
   })
 })

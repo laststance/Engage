@@ -1,6 +1,6 @@
 import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react-native'
-import { Alert } from 'react-native'
+import { Alert, Keyboard } from 'react-native'
 import { Category, Task } from '@/src/types'
 import { PresetTaskEditor } from '../PresetTaskEditor'
 
@@ -86,6 +86,66 @@ describe('PresetTaskEditor form safety', () => {
     expect(getAllByText('presetEditor.duplicateTaskInCategory')).toHaveLength(3)
     expect(getByTestId('preset-editor-save').props.disabled).toBe(true)
     expect(onSave).not.toHaveBeenCalled()
+  })
+
+  it('focuses the newly added task title input so users can type immediately', () => {
+    // Arrange
+    const { getByTestId } = renderEditor()
+
+    // Act
+    fireEvent.press(getByTestId('add-task-button'))
+
+    // Assert
+    expect(getByTestId('task-title-input-2').props.autoFocus).toBe(true)
+    expect(getByTestId('task-title-input-0').props.autoFocus).toBe(false)
+  })
+
+  it('keeps preset text inputs above the keyboard and gives them a Done action', () => {
+    // Arrange
+    const { getAllByText, getByTestId, queryByTestId } = renderEditor()
+
+    // Act
+    fireEvent.press(getByTestId('add-category-button'))
+
+    // Assert
+    const taskTitleInput = getByTestId('task-title-input-0')
+    const taskMinutesInput = getByTestId('task-minutes-input-1')
+    const newCategoryInput = getByTestId('new-category-input')
+
+    expect(getByTestId('preset-editor-keyboard-avoiding-view')).toBeTruthy()
+    expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
+    expect(taskTitleInput.props.inputAccessoryViewID).toEqual(
+      expect.stringContaining('preset-editor-input-accessory')
+    )
+    expect(taskMinutesInput.props.inputAccessoryViewID).toBe(
+      taskTitleInput.props.inputAccessoryViewID
+    )
+    expect(newCategoryInput.props.inputAccessoryViewID).toBe(
+      taskTitleInput.props.inputAccessoryViewID
+    )
+    expect(taskTitleInput.props.returnKeyType).toBe('done')
+    expect(taskTitleInput.props.submitBehavior).toBe('blurAndSubmit')
+    expect(taskMinutesInput.props.returnKeyType).toBe('done')
+    expect(newCategoryInput.props.returnKeyType).toBe('done')
+    fireEvent(newCategoryInput, 'focus')
+    expect(getByTestId('preset-editor-inline-keyboard-done-button')).toBeTruthy()
+    expect(getAllByText('common.done').length).toBeGreaterThan(0)
+  })
+
+  it('dismisses the preset keyboard from the Done controls and return key', () => {
+    // Arrange
+    const { getByTestId, queryByTestId } = renderEditor()
+
+    // Act
+    fireEvent.press(getByTestId('preset-editor-keyboard-done-button'))
+    fireEvent(getByTestId('task-title-input-0'), 'focus')
+    fireEvent.press(getByTestId('preset-editor-inline-keyboard-done-button'))
+    fireEvent(getByTestId('task-title-input-0'), 'focus')
+    fireEvent(getByTestId('task-title-input-0'), 'submitEditing')
+
+    // Assert
+    expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
+    expect(Keyboard.dismiss).toHaveBeenCalledTimes(3)
   })
 
   it('exposes selected state on category chips for screen readers', () => {

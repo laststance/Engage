@@ -1,5 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { Modal, SafeAreaView, ScrollView, Alert, TextInput } from 'react-native'
+import React, { useState, useEffect, useMemo, useRef, useId } from 'react'
+import {
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  Alert,
+  TextInput,
+  LayoutChangeEvent,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -11,8 +21,17 @@ import {
   OperationFeedback,
   OperationFeedbackKind,
 } from '@/src/components/OperationFeedback'
+import { KeyboardDoneAccessory } from '@/src/components/KeyboardDoneAccessory'
 import { Task, Category } from '@/src/types'
 import { getCategoryDisplayName } from '@/src/i18n/config'
+import {
+  PRESET_EDITOR_KEYBOARD_EXTRA_SCROLL_PADDING_PX,
+  PRESET_TASK_FOCUS_SCROLL_OFFSET_PX,
+} from '@/src/constants/interaction'
+
+const PRESET_EDITOR_INPUT_ACCESSORY_VIEW_ID_PREFIX =
+  'preset-editor-input-accessory'
+const NATIVE_ID_UNSUPPORTED_CHARACTERS = /[^A-Za-z0-9_-]/g
 
 interface PresetTaskEditorProps {
   isVisible: boolean
@@ -143,8 +162,22 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   const [isLoading, setSaving] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false)
+  const [pendingFocusedTaskIndex, setPendingFocusedTaskIndex] = useState<
+    number | null
+  >(null)
+  const [isPresetKeyboardDoneVisible, setIsPresetKeyboardDoneVisible] =
+    useState(false)
   const [operationFeedback, setOperationFeedback] =
     useState<PresetEditorFeedback | null>(null)
+  const taskListScrollViewRef = useRef<ScrollView>(null)
+  const taskTitleInputRefs = useRef<Record<number, TextInput | null>>({})
+  const taskMinutesInputRefs = useRef<Record<number, TextInput | null>>({})
+  const newCategoryInputRef = useRef<TextInput>(null)
+  const reactId = useId()
+  const inputAccessoryViewID = `${PRESET_EDITOR_INPUT_ACCESSORY_VIEW_ID_PREFIX}-${reactId.replace(
+    NATIVE_ID_UNSUPPORTED_CHARACTERS,
+    ''
+  )}`
   const taskValidation = useMemo(
     () => validatePresetTaskDrafts(editingTasks),
     [editingTasks]
@@ -156,6 +189,10 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   useEffect(() => {
     if (isVisible) {
       setOperationFeedback(null)
+      setPendingFocusedTaskIndex(null)
+      setIsPresetKeyboardDoneVisible(false)
+      taskTitleInputRefs.current = {}
+      taskMinutesInputRefs.current = {}
       setEditingTasks(
         tasks.map((task) => ({
           id: task.id,
@@ -195,7 +232,76 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       archived: false,
       isNew: true,
     }
+    setPendingFocusedTaskIndex(editingTasks.length)
     setEditingTasks((prev) => [...prev, newTask])
+  }
+
+  /**
+   * Finishes preset text editing from the keyboard accessory or return key.
+   * @returns Nothing; blurs known inputs and asks iOS to dismiss the keyboard.
+   * @example
+   * handleKeyboardDone() // closes the active preset editor keyboard
+   */
+  const handleKeyboardDone = (): void => {
+    Object.values(taskTitleInputRefs.current).forEach((input) => {
+      input?.blur?.()
+    })
+    Object.values(taskMinutesInputRefs.current).forEach((input) => {
+      input?.blur?.()
+    })
+    newCategoryInputRef.current?.blur?.()
+    Keyboard.dismiss()
+    setIsPresetKeyboardDoneVisible(false)
+  }
+
+  /**
+   * Shows the in-app Done control when a preset input receives focus in simulator hardware-keyboard mode.
+   * @returns Nothing; keeps the dismissal action visible until editing is explicitly finished.
+   * @example
+   * handlePresetInputFocus() // reveals the preset editor Done button
+   */
+  const handlePresetInputFocus = (): void => {
+    setIsPresetKeyboardDoneVisible(true)
+  }
+
+  /**
+   * Moves the editor to a newly added task so the next keystroke lands in its title field.
+   * @param taskIndex - The editing-task index for the row that just mounted.
+   * @param taskCardY - The vertical position of the task card inside the scroll content.
+   * @returns Nothing; scrolls and requests native focus when the pending row lays out.
+   * @example
+   * focusPendingTaskTitleInput(2, 240) // scrolls near row 2 and focuses its title input
+   */
+  const focusPendingTaskTitleInput = (
+    taskIndex: number,
+    taskCardY: number
+  ): void => {
+    if (pendingFocusedTaskIndex !== taskIndex) {
+      return
+    }
+
+    // Keep the new row slightly below the top edge so the label and input are both visible.
+    taskListScrollViewRef.current?.scrollTo?.({
+      animated: true,
+      y: Math.max(0, taskCardY - PRESET_TASK_FOCUS_SCROLL_OFFSET_PX),
+    })
+    taskTitleInputRefs.current[taskIndex]?.focus?.()
+    setPendingFocusedTaskIndex(null)
+  }
+
+  /**
+   * Captures each task card layout and triggers focus when the just-added row appears.
+   * @param taskIndex - The editing-task index associated with the rendered card.
+   * @param event - React Native layout event emitted after the card is positioned.
+   * @returns Nothing; delegates to the pending focus helper for matching rows.
+   * @example
+   * handleTaskCardLayout(2, layoutEvent) // focuses row 2 when it is the pending new task
+   */
+  const handleTaskCardLayout = (
+    taskIndex: number,
+    event: LayoutChangeEvent
+  ): void => {
+    focusPendingTaskTitleInput(taskIndex, event.nativeEvent.layout.y)
   }
 
   const updateTask = (index: number, updates: Partial<EditingTask>) => {
@@ -330,6 +436,11 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       onRequestClose={handleCancel}
     >
       <SafeAreaView className="flex-1 bg-white">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          className="flex-1"
+          testID="preset-editor-keyboard-avoiding-view"
+        >
         {/* Header */}
         <VStack space="md" className="p-4 border-b border-gray-200">
           <HStack className="items-center justify-between">
@@ -371,7 +482,16 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
         </VStack>
 
         {/* Task List */}
-        <ScrollView className="flex-1 p-4">
+        <ScrollView
+          ref={taskListScrollViewRef}
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+          className="flex-1 p-4"
+          contentContainerStyle={{
+            paddingBottom: PRESET_EDITOR_KEYBOARD_EXTRA_SCROLL_PADDING_PX,
+          }}
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          keyboardShouldPersistTaps="handled"
+        >
           <VStack space="lg">
             {Object.entries(tasksByCategory).map(
               ([categoryId, categoryTasks]) => {
@@ -406,6 +526,9 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                           <Box
                             key={task.index}
                             className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                            onLayout={(event) =>
+                              handleTaskCardLayout(task.index, event)
+                            }
                           >
                             <VStack space="md">
                               {/* Task Title */}
@@ -414,13 +537,25 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                                   {t('presetEditor.taskName')}
                                 </Text>
                                 <TextInput
+                                  ref={(input) => {
+                                    taskTitleInputRefs.current[task.index] =
+                                      input
+                                  }}
                                   value={task.title}
                                   onChangeText={(text) =>
                                     updateTask(task.index, { title: text })
                                   }
+                                  autoFocus={
+                                    task.index === pendingFocusedTaskIndex
+                                  }
+                                  inputAccessoryViewID={inputAccessoryViewID}
+                                  onFocus={handlePresetInputFocus}
+                                  onSubmitEditing={handleKeyboardDone}
                                   placeholder={t(
                                     'presetEditor.taskNamePlaceholder'
                                   )}
+                                  returnKeyType="done"
+                                  submitBehavior="blurAndSubmit"
                                   className={`bg-white border rounded-lg px-3 py-2 text-gray-800 ${
                                     hasValidationError
                                       ? 'border-red-300'
@@ -511,6 +646,10 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                                   {t('presetEditor.estimatedMinutes')}
                                 </Text>
                                 <TextInput
+                                  ref={(input) => {
+                                    taskMinutesInputRefs.current[task.index] =
+                                      input
+                                  }}
                                   value={task.defaultMinutes?.toString() || ''}
                                   onChangeText={(text) => {
                                     const minutes = text
@@ -525,7 +664,12 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                                   placeholder={t(
                                     'presetEditor.estimatedMinutesPlaceholder'
                                   )}
+                                  inputAccessoryViewID={inputAccessoryViewID}
                                   keyboardType="numeric"
+                                  onFocus={handlePresetInputFocus}
+                                  onSubmitEditing={handleKeyboardDone}
+                                  returnKeyType="done"
+                                  submitBehavior="blurAndSubmit"
                                   className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800"
                                   testID={`task-minutes-input-${task.index}`}
                                 />
@@ -583,9 +727,15 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
               {showNewCategoryInput && (
                 <HStack space="sm" className="items-center">
                   <TextInput
+                    ref={newCategoryInputRef}
                     value={newCategoryName}
                     onChangeText={setNewCategoryName}
                     placeholder={t('presetEditor.newCategoryPlaceholder')}
+                    inputAccessoryViewID={inputAccessoryViewID}
+                    onFocus={handlePresetInputFocus}
+                    onSubmitEditing={handleKeyboardDone}
+                    returnKeyType="done"
+                    submitBehavior="blurAndSubmit"
                     className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800"
                     testID="new-category-input"
                   />
@@ -617,6 +767,21 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
 
         {/* Footer */}
         <Box className="p-4 border-t border-gray-200">
+          {isPresetKeyboardDoneVisible && (
+            <Box className="mb-3 items-end">
+              <Pressable
+                accessibilityLabel={t('common.done')}
+                accessibilityRole="button"
+                className="rounded-lg bg-blue-50 px-4 py-2"
+                onPress={handleKeyboardDone}
+                testID="preset-editor-inline-keyboard-done-button"
+              >
+                <Text className="text-base font-semibold text-blue-600">
+                  {t('common.done')}
+                </Text>
+              </Pressable>
+            </Box>
+          )}
           {saveDisabledReason && (
             <Text
               className="mb-3 text-center text-sm font-medium text-red-600"
@@ -657,6 +822,14 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
             </Pressable>
           </HStack>
         </Box>
+        <KeyboardDoneAccessory
+          accessibilityLabel={t('common.done')}
+          nativeID={inputAccessoryViewID}
+          onPress={handleKeyboardDone}
+          testID="preset-editor-keyboard-done-button"
+          title={t('common.done')}
+        />
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
   )

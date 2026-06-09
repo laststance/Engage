@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { InputAccessoryView, Keyboard, Platform, TextInput } from 'react-native'
+import { Keyboard, Platform, TextInput } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { HStack } from '@/components/ui/hstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
-import { AppPressable } from '@/src/components/AppPressable'
+import { KeyboardDoneAccessory } from '@/src/components/KeyboardDoneAccessory'
 import {
   OperationFeedback,
   type OperationFeedbackKind,
@@ -276,7 +276,10 @@ export const JournalInput: React.FC<JournalInputProps> = ({
           inputAccessoryViewID={
             shouldShowKeyboardDoneButton ? inputAccessoryViewID : undefined
           }
+          onSubmitEditing={handleKeyboardDone}
+          returnKeyType="done"
           scrollEnabled={true}
+          submitBehavior="blurAndSubmit"
           style={{
             minHeight: JOURNAL_TEXT_INPUT_MIN_HEIGHT_PX,
           }}
@@ -284,23 +287,13 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       </Box>
 
       {shouldShowKeyboardDoneButton && (
-        <InputAccessoryView nativeID={inputAccessoryViewID}>
-          <Box className="items-end border-t border-gray-200 bg-gray-50 px-3 py-2">
-            <AppPressable
-              accessibilityLabel={t('journal.doneEditingA11y')}
-              accessibilityRole="button"
-              className="rounded-lg px-3 py-2"
-              feedback="select"
-              onPress={handleKeyboardDone}
-              pressedClassName="bg-gray-200"
-              testID="journal-keyboard-done-button"
-            >
-              <Text className="text-base font-semibold text-blue-600">
-                {t('common.done')}
-              </Text>
-            </AppPressable>
-          </Box>
-        </InputAccessoryView>
+        <KeyboardDoneAccessory
+          accessibilityLabel={t('journal.doneEditingA11y')}
+          nativeID={inputAccessoryViewID}
+          onPress={handleKeyboardDone}
+          testID="journal-keyboard-done-button"
+          title={t('common.done')}
+        />
       )}
 
       {feedbackKind && (
