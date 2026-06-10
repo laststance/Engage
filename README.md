@@ -83,7 +83,7 @@ pnpm deploy:full
 app/                    Expo Router screens and tab navigation
 components/             Shared Gluestack UI primitives
 constants/              Theme and design-system tokens
-docs/                   Static support and privacy pages
+docs/                   Internal docs, reports, and planning artifacts
 maestro/ios/            Maestro E2E flows
 src/components/         App feature components
 src/hooks/              App hooks
@@ -91,6 +91,7 @@ src/services/           SQLite, repositories, backup, offline services
 src/stores/             Zustand app store
 src/types/              Domain types
 src/utils/              Date, statistics, and business logic helpers
+website/                Static support and privacy pages published by GitHub Pages
 ```
 
 ## Notes
