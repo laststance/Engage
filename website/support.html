@@ -3,300 +3,746 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Engage support page for setup, FAQs, privacy, backup, and contact information.">
   <title>Engage - Support / サポート</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --serif: 'Newsreader', 'Zen Old Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', Georgia, serif;
+      --sans: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --paper: #f5f6f1;
+      --paper-2: #eef1e8;
+      --leaf: #2f6b43;
+      --leaf-deep: #1f4d30;
+      --ink: #1a221c;
+      --muted: #525c54;
+      --line: #d7ddd0;
+      --white: #ffffff;
+    }
+
+    html { scroll-behavior: smooth; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
       line-height: 1.8;
-      color: #1d1d1f;
-      background: #f5f5f7;
-      padding: 0;
     }
-    .container {
-      max-width: 680px;
+    body.lang-ja { --serif: 'Newsreader', 'Zen Old Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', Georgia, serif; }
+    ::selection { background: #cfe6d3; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; cursor: pointer; }
+    :focus-visible {
+      outline: 3px solid #7fb98d;
+      outline-offset: 4px;
+    }
+    .skip-link {
+      position: absolute;
+      left: 24px;
+      top: -120px;
+      z-index: 100;
+      background: var(--leaf-deep);
+      color: var(--white);
+      padding: 10px 16px;
+      border-radius: 999px;
+      transition: top 0.2s ease;
+    }
+    .skip-link:focus { top: 16px; }
+    .a-wrap {
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 48px 24px 80px;
+      padding: 0 32px;
     }
-    .header {
-      text-align: center;
-      margin-bottom: 48px;
+
+    .a-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(245, 246, 241, 0.82);
+      border-bottom: 1px solid rgba(215, 221, 208, 0.7);
+      backdrop-filter: blur(10px);
     }
-    .header h1 {
-      font-size: 32px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
+    .a-nav .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 20px 32px;
     }
-    .header .subtitle {
-      font-size: 14px;
-      color: #86868b;
+    .a-brand {
+      font-family: var(--serif);
+      font-size: 25px;
+      letter-spacing: 0.01em;
+      color: #16201a;
+    }
+    .a-brand b {
+      color: var(--leaf);
+      font-weight: 600;
+    }
+    .a-links {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .a-links a {
+      color: #46514a;
+      font-size: 14.5px;
+      transition: color 0.2s ease;
+    }
+    .a-links a:hover { color: var(--leaf); }
+    .a-navcta {
+      border-bottom: 1px solid currentColor;
+      color: var(--leaf) !important;
+      font-size: 13.5px;
+      padding-bottom: 2px;
+    }
+
+    .a-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+      gap: 48px;
+      align-items: center;
+      padding: 74px 32px 96px;
+    }
+    .a-eyebrow {
+      color: var(--leaf);
+      font-size: 12px;
+      letter-spacing: 0.34em;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+    }
+    .a-h1 {
+      color: #13201a;
+      font-family: var(--serif);
+      font-size: clamp(46px, 6vw, 82px);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      line-height: 1.02;
+    }
+    .a-h1 em {
+      color: var(--leaf);
+      font-style: italic;
+    }
+    .a-sub {
+      color: #465049;
+      font-size: 18px;
+      line-height: 1.85;
+      margin-top: 32px;
+      max-width: 30em;
+      text-wrap: pretty;
+    }
+    .a-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 42px;
     }
     .lang-toggle {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 40px;
+      display: inline-flex;
+      gap: 6px;
+      padding: 6px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
     }
     .lang-toggle button {
-      padding: 8px 20px;
-      border: 1px solid #d2d2d7;
-      border-radius: 20px;
-      background: white;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
+      min-width: 92px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #46514a;
+      font-size: 13.5px;
+      padding: 8px 14px;
+      transition: background 0.2s ease, color 0.2s ease;
     }
     .lang-toggle button.active {
-      background: #1d1d1f;
-      color: white;
-      border-color: #1d1d1f;
+      background: var(--leaf-deep);
+      color: var(--white);
     }
-    section {
-      background: white;
-      border-radius: 16px;
-      padding: 28px;
-      margin-bottom: 16px;
+    .a-note {
+      color: #7c857d;
+      font-size: 13px;
+      letter-spacing: 0.04em;
     }
-    h2 {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: #1d1d1f;
+    .support-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      background: linear-gradient(145deg, #ffffff, #e9eee3);
+      box-shadow: 0 30px 70px -46px rgba(31, 77, 48, 0.45);
+      padding: 34px;
     }
-    h3 {
+    .support-card::before {
+      content: "";
+      position: absolute;
+      right: -90px;
+      top: -100px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(47, 107, 67, 0.18), transparent 68%);
+    }
+    .support-card h2 {
+      position: relative;
+      font-family: var(--serif);
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 400;
+      line-height: 1.12;
+    }
+    .support-list {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      margin-top: 30px;
+    }
+    .support-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 15.5px;
+      list-style: none;
+    }
+    .support-list li::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      margin-top: 9px;
+      border-radius: 4px;
+      background: var(--leaf);
+      flex: 0 0 auto;
+    }
+
+    .hidden { display: none !important; }
+    .content-panel.hidden { display: none; }
+    .a-section {
+      padding: 104px 0;
+    }
+    .a-section.alt {
+      background: var(--paper-2);
+    }
+    .a-sectitle {
+      color: #16221b;
+      font-family: var(--serif);
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      white-space: pre-line;
+    }
+    .a-intro {
+      background: var(--paper-2);
+      padding: 108px 0;
+      text-align: center;
+    }
+    .a-intro blockquote {
+      color: #1c2a21;
+      font-family: var(--serif);
+      font-size: clamp(28px, 3.6vw, 44px);
+      font-weight: 400;
+      line-height: 1.45;
+      margin: 0 auto;
+      max-width: 18em;
+      text-wrap: balance;
+    }
+    .a-intro .leaf {
+      display: block;
+      width: 30px;
+      height: 30px;
+      margin: 0 auto 36px;
+      border-radius: 7px;
+      background: var(--leaf);
+    }
+    .about-copy {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.85;
+      margin-top: 28px;
+      max-width: 44em;
+      text-wrap: pretty;
+    }
+
+    .a-steps {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 28px;
+      margin-top: 56px;
+    }
+    .a-step .num {
+      color: var(--leaf);
+      font-family: var(--serif);
+      font-size: 56px;
+      font-style: italic;
+      line-height: 1;
+      opacity: 0.85;
+    }
+    .a-step h3 {
+      color: #1a241d;
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 500;
+      line-height: 1.2;
+      margin-top: 18px;
+    }
+    .a-step p {
+      color: var(--muted);
+      font-size: 15.5px;
+      line-height: 1.7;
+      margin-top: 10px;
+    }
+
+    .a-faq {
+      padding: 104px 0;
+    }
+    .a-faqlist {
+      border-top: 1px solid var(--line);
+      margin-top: 50px;
+      max-width: 860px;
+    }
+    .a-q {
+      border-bottom: 1px solid var(--line);
+    }
+    .a-q summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      color: #1a241d;
+      cursor: pointer;
+      font-family: var(--serif);
+      font-size: 21px;
+      font-weight: 500;
+      list-style: none;
+      padding: 26px 4px;
+    }
+    .a-q summary::-webkit-details-marker { display: none; }
+    .a-q .pl {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+    .a-q .pl::before,
+    .a-q .pl::after {
+      content: "";
+      position: absolute;
+      background: var(--leaf);
+      border-radius: 2px;
+      transition: transform 0.25s ease;
+    }
+    .a-q .pl::before {
+      left: 0;
+      top: 8px;
+      width: 18px;
+      height: 2px;
+    }
+    .a-q .pl::after {
+      left: 8px;
+      top: 0;
+      width: 2px;
+      height: 18px;
+    }
+    .a-q[open] .pl::after { transform: scaleY(0); }
+    .a-q p {
+      color: var(--muted);
       font-size: 16px;
-      font-weight: 600;
-      margin-top: 16px;
-      margin-bottom: 8px;
-      color: #1d1d1f;
+      line-height: 1.8;
+      max-width: 46em;
+      padding: 0 4px 28px;
     }
-    p, li {
-      font-size: 15px;
-      color: #424245;
-      margin-bottom: 8px;
+
+    .a-support {
+      background: var(--paper-2);
+      padding: 104px 0;
     }
-    ul, ol {
-      padding-left: 20px;
-      margin-bottom: 8px;
+    .a-support .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
     }
-    li { margin-bottom: 4px; }
-    .highlight {
-      background: #e8f5e9;
-      border-left: 4px solid #4caf50;
-      padding: 16px 20px;
-      border-radius: 0 12px 12px 0;
-      margin: 16px 0;
+    .a-support h2 {
+      color: #16221b;
+      font-family: var(--serif);
+      font-size: clamp(30px, 3.6vw, 46px);
+      font-weight: 400;
+      line-height: 1.15;
     }
-    .highlight p {
-      color: #2e7d32;
-      font-weight: 500;
-      margin: 0;
+    .a-support p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.8;
+      margin-top: 20px;
+      max-width: 30em;
     }
-    .faq-item {
-      border-top: 1px solid #f0f0f0;
-      padding-top: 16px;
-      margin-top: 16px;
+    .a-suplinks {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
-    .faq-item:first-of-type {
-      border-top: none;
-      padding-top: 0;
-      margin-top: 0;
+    .a-suplink {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      color: #1a241d;
+      font-size: 17px;
+      padding: 22px 6px;
+      transition: color 0.25s ease, padding-left 0.25s ease;
     }
-    .faq-q {
-      font-weight: 600;
-      color: #1d1d1f;
-      margin-bottom: 4px;
+    .a-suplink:first-child { border-top: 1px solid var(--line); }
+    .a-suplink:hover {
+      color: var(--leaf);
+      padding-left: 14px;
     }
-    .faq-a {
-      color: #424245;
+    .a-suplink .ar { color: var(--leaf); }
+    .reply-note {
+      color: #7c857d;
+      font-size: 13px;
+      margin-top: 18px;
     }
-    a {
-      color: #0066cc;
-      text-decoration: none;
+
+    .a-foot {
+      padding: 70px 0 64px;
     }
-    a:hover {
-      text-decoration: underline;
+    .a-foot .row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 30px;
+      flex-wrap: wrap;
     }
-    .contact-email {
-      display: inline-block;
-      background: #f5f5f7;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: 500;
+    .a-foot .a-brand { font-size: 30px; }
+    .a-foot .tag {
+      color: var(--muted);
+      font-family: var(--serif);
+      font-size: 18px;
+      font-style: italic;
       margin-top: 8px;
     }
-    .footer {
-      text-align: center;
-      padding: 24px;
-      color: #86868b;
+    .a-foot .rights {
+      color: #8a938b;
       font-size: 13px;
     }
-    .footer a {
-      color: #86868b;
-      text-decoration: underline;
+
+    @media (max-width: 980px) {
+      .a-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-    .hidden { display: none; }
+    @media (max-width: 880px) {
+      .a-hero {
+        grid-template-columns: 1fr;
+        gap: 54px;
+        padding-top: 54px;
+        padding-bottom: 70px;
+        text-align: center;
+      }
+      .a-sub,
+      .about-copy,
+      .a-support p {
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .a-actions { justify-content: center; }
+    }
+    @media (max-width: 760px) {
+      .a-wrap,
+      .a-hero,
+      .a-nav .row {
+        padding-left: 22px;
+        padding-right: 22px;
+      }
+      .a-links a:not(.a-navcta) { display: none; }
+      .a-steps { grid-template-columns: 1fr; }
+      .a-support .grid {
+        grid-template-columns: 1fr;
+        gap: 36px;
+      }
+      .support-card { padding: 28px; }
+      .a-section,
+      .a-faq,
+      .a-support {
+        padding: 78px 0;
+      }
+    }
   </style>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>Engage</h1>
-      <p class="subtitle">Support / サポート</p>
+<body class="lang-ja">
+  <a class="skip-link" href="#main-content">本文へ移動</a>
+
+  <nav class="a-nav" aria-label="Primary navigation">
+    <div class="row">
+      <a class="a-brand" href="support.html" aria-label="Engage support home">Eng<b>age</b></a>
+      <div class="a-links">
+        <a href="#how-ja" data-ja="使い方" data-en="Getting Started" data-ja-href="#how-ja" data-en-href="#how-en">使い方</a>
+        <a href="#faq-ja" data-ja="FAQ" data-en="FAQ" data-ja-href="#faq-ja" data-en-href="#faq-en">FAQ</a>
+        <a href="#contact-ja" data-ja="お問い合わせ" data-en="Contact" data-ja-href="#contact-ja" data-en-href="#contact-en">お問い合わせ</a>
+        <a class="a-navcta" href="privacy-policy.html">Privacy</a>
+      </div>
     </div>
+  </nav>
 
-    <div class="lang-toggle">
-      <button id="btn-ja" class="active" onclick="switchLang('ja')">日本語</button>
-      <button id="btn-en" onclick="switchLang('en')">English</button>
-    </div>
+  <main id="main-content">
+    <header class="a-hero a-wrap">
+      <div>
+        <p class="a-eyebrow">Support / サポート</p>
+        <h1 class="a-h1">
+          <span class="hero-title-ja">Engage の<br><em>サポート</em></span>
+          <span class="hero-title-en hidden">Engage<br><em>Support</em></span>
+        </h1>
+        <p class="a-sub" data-ja="毎日の習慣づくりを静かに支える Engage のヘルプページです。使い方、データ保存、バックアップ、通知、問い合わせ先をまとめています。" data-en="A quiet support page for Engage, with help for setup, data storage, backups, notifications, and contact.">毎日の習慣づくりを静かに支える Engage のヘルプページです。使い方、データ保存、バックアップ、通知、問い合わせ先をまとめています。</p>
+        <div class="a-actions" aria-label="Language selection">
+          <div class="lang-toggle">
+            <button id="btn-ja" class="active" type="button" aria-pressed="true" data-lang="ja">日本語</button>
+            <button id="btn-en" type="button" aria-pressed="false" data-lang="en">English</button>
+          </div>
+          <span class="a-note" data-ja="Offline first. Account free." data-en="Offline first. Account free.">Offline first. Account free.</span>
+        </div>
+      </div>
 
-    <!-- Japanese -->
-    <div id="content-ja">
-      <section>
-        <div class="highlight">
-          <p>Engage は、毎日の習慣づくりをサポートするシンプルな習慣トラッカーアプリです。</p>
+      <aside class="support-card" aria-label="Engage support highlights">
+        <h2 data-ja="必要なことだけ、端末の中で。" data-en="Everything essential, stored on device.">必要なことだけ、端末の中で。</h2>
+        <ul class="support-list">
+          <li data-ja="すべてのデータはデバイス内の SQLite データベースに保存されます。" data-en="All data is stored in a local SQLite database on your device.">すべてのデータはデバイス内の SQLite データベースに保存されます。</li>
+          <li data-ja="アカウント登録やログインは不要です。" data-en="No account registration or login is required.">アカウント登録やログインは不要です。</li>
+          <li data-ja="バックアップ機能でデータのエクスポートとインポートができます。" data-en="The backup feature supports data export and import.">バックアップ機能でデータのエクスポートとインポートができます。</li>
+        </ul>
+      </aside>
+    </header>
+
+    <div id="content-ja" class="content-panel">
+      <section class="a-intro" aria-labelledby="intro-ja-title">
+        <div class="a-wrap">
+          <blockquote id="intro-ja-title"><span class="leaf"></span>Engage は、毎日の習慣づくりをサポートするシンプルな習慣トラッカーアプリです。</blockquote>
         </div>
       </section>
 
-      <section>
-        <h2>アプリについて</h2>
-        <p>Engage は日々のタスク完了、ストリーク追跡、振り返りジャーナルに特化した習慣トラッカーです。すべてのデータはお使いのデバイスにローカル保存され、アカウント登録やインターネット接続は不要です。</p>
+      <section class="a-section a-wrap" aria-labelledby="about-ja-title">
+        <h2 id="about-ja-title" class="a-sectitle">アプリについて</h2>
+        <p class="about-copy">Engage は日々のタスク完了、ストリーク追跡、振り返りジャーナルに特化した習慣トラッカーです。すべてのデータはお使いのデバイスにローカル保存され、アカウント登録やインターネット接続は不要です。</p>
       </section>
 
-      <section>
-        <h2>使い方</h2>
-        <ol>
-          <li><strong>タスクを追加</strong> — 「今日」タブからタスクを選択して、その日の目標を設定します</li>
-          <li><strong>タスクを完了</strong> — 完了したタスクをタップしてチェックを入れます</li>
-          <li><strong>振り返りを記録</strong> — ジャーナルにその日の感想や気づきを書きます</li>
-          <li><strong>統計を確認</strong> — 「統計」タブで達成率やストリークを確認します</li>
-          <li><strong>カレンダーで振り返り</strong> — カレンダーから過去の日付をタップして記録を見返します</li>
-        </ol>
-      </section>
-
-      <section>
-        <h2>よくある質問</h2>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. データはどこに保存されますか？</p>
-          <p class="faq-a">A. すべてのデータはデバイス内の SQLite データベースに保存されます。外部サーバーへの送信は一切ありません。</p>
-        </div>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. データのバックアップはできますか？</p>
-          <p class="faq-a">A. はい。アプリ内のバックアップ機能を使って、データのエクスポートとインポートができます。</p>
-        </div>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. アカウント登録は必要ですか？</p>
-          <p class="faq-a">A. いいえ。Engage は完全にオフラインで動作し、アカウント登録やログインは不要です。</p>
-        </div>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. 通知が届きません</p>
-          <p class="faq-a">A. iPhoneの「設定」→「Engage」→「通知」で通知が許可されているか確認してください。また、アプリ内の設定でリマインダーが有効になっているかもご確認ください。</p>
-        </div>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. データをリセットしたい場合は？</p>
-          <p class="faq-a">A. アプリを削除して再インストールすると、すべてのデータがリセットされます。リセット前にバックアップを取ることをお勧めします。</p>
-        </div>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. プリセットタスクを編集できますか？</p>
-          <p class="faq-a">A. はい。タスク選択画面の「プリセット編集」ボタンから、プリセットタスクの追加・編集・削除ができます。</p>
+      <section class="a-section alt" id="how-ja" aria-labelledby="how-ja-title">
+        <div class="a-wrap">
+          <h2 id="how-ja-title" class="a-sectitle">使い方</h2>
+          <div class="a-steps">
+            <article class="a-step">
+              <div class="num">01</div>
+              <h3>タスクを追加</h3>
+              <p>「今日」タブからタスクを選択して、その日の目標を設定します。</p>
+            </article>
+            <article class="a-step">
+              <div class="num">02</div>
+              <h3>タスクを完了</h3>
+              <p>完了したタスクをタップしてチェックを入れます。</p>
+            </article>
+            <article class="a-step">
+              <div class="num">03</div>
+              <h3>振り返りを記録</h3>
+              <p>ジャーナルにその日の感想や気づきを書きます。</p>
+            </article>
+            <article class="a-step">
+              <div class="num">04</div>
+              <h3>統計を確認</h3>
+              <p>「統計」タブで達成率やストリークを確認します。</p>
+            </article>
+            <article class="a-step">
+              <div class="num">05</div>
+              <h3>カレンダーで振り返り</h3>
+              <p>カレンダーから過去の日付をタップして記録を見返します。</p>
+            </article>
+          </div>
         </div>
       </section>
 
-      <section>
-        <h2>お問い合わせ</h2>
-        <p>ご質問、不具合の報告、ご要望がありましたら、以下のメールアドレスまでお気軽にお問い合わせください。</p>
-        <p class="contact-email">📧 <a href="mailto:ryota.murakami@laststance.io">ryota.murakami@laststance.io</a></p>
-        <p style="margin-top: 12px; font-size: 13px; color: #86868b;">通常 2〜3 営業日以内に返信いたします。</p>
-      </section>
-    </div>
-
-    <!-- English -->
-    <div id="content-en" class="hidden">
-      <section>
-        <div class="highlight">
-          <p>Engage is a simple habit tracker app designed to help you build better daily routines.</p>
+      <section class="a-faq a-wrap" id="faq-ja" aria-labelledby="faq-ja-title">
+        <h2 id="faq-ja-title" class="a-sectitle">よくある質問</h2>
+        <div class="a-faqlist">
+          <details class="a-q">
+            <summary><span>データはどこに保存されますか？</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>すべてのデータはデバイス内の SQLite データベースに保存されます。外部サーバーへの送信は一切ありません。</p>
+          </details>
+          <details class="a-q">
+            <summary><span>データのバックアップはできますか？</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>はい。アプリ内のバックアップ機能を使って、データのエクスポートとインポートができます。</p>
+          </details>
+          <details class="a-q">
+            <summary><span>アカウント登録は必要ですか？</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>いいえ。Engage は完全にオフラインで動作し、アカウント登録やログインは不要です。</p>
+          </details>
+          <details class="a-q">
+            <summary><span>通知が届きません</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>iPhoneの「設定」→「Engage」→「通知」で通知が許可されているか確認してください。また、アプリ内の設定でリマインダーが有効になっているかもご確認ください。</p>
+          </details>
+          <details class="a-q">
+            <summary><span>データをリセットしたい場合は？</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>アプリを削除して再インストールすると、すべてのデータがリセットされます。リセット前にバックアップを取ることをお勧めします。</p>
+          </details>
+          <details class="a-q">
+            <summary><span>プリセットタスクを編集できますか？</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>はい。タスク選択画面の「プリセット編集」ボタンから、プリセットタスクの追加・編集・削除ができます。</p>
+          </details>
         </div>
       </section>
 
-      <section>
-        <h2>About the App</h2>
-        <p>Engage is a habit tracker focused on daily task completion, streak tracking, and reflective journaling. All data is stored locally on your device — no account registration or internet connection required.</p>
-      </section>
-
-      <section>
-        <h2>Getting Started</h2>
-        <ol>
-          <li><strong>Add tasks</strong> — From the "Today" tab, select tasks to set your daily goals</li>
-          <li><strong>Complete tasks</strong> — Tap on completed tasks to check them off</li>
-          <li><strong>Write reflections</strong> — Use the journal to record thoughts and observations</li>
-          <li><strong>View statistics</strong> — Check the "Stats" tab to see your completion rate and streaks</li>
-          <li><strong>Review past days</strong> — Tap any date on the calendar to review your records</li>
-        </ol>
-      </section>
-
-      <section>
-        <h2>Frequently Asked Questions</h2>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. Where is my data stored?</p>
-          <p class="faq-a">A. All data is stored in a local SQLite database on your device. Nothing is ever sent to external servers.</p>
+      <section class="a-support" id="contact-ja" aria-labelledby="contact-ja-title">
+        <div class="a-wrap grid">
+          <div>
+            <h2 id="contact-ja-title">お問い合わせ</h2>
+            <p>ご質問、不具合の報告、ご要望がありましたら、以下のメールアドレスまでお気軽にお問い合わせください。</p>
+            <p class="reply-note">通常 2〜3 営業日以内に返信いたします。</p>
+          </div>
+          <div class="a-suplinks">
+            <a class="a-suplink" href="mailto:ryota.murakami@laststance.io">ryota.murakami@laststance.io <span class="ar">→</span></a>
+            <a class="a-suplink" href="privacy-policy.html">Privacy Policy / プライバシーポリシー <span class="ar">→</span></a>
+          </div>
         </div>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. Can I backup my data?</p>
-          <p class="faq-a">A. Yes. Use the in-app backup feature to export and import your data.</p>
-        </div>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. Do I need to create an account?</p>
-          <p class="faq-a">A. No. Engage works completely offline and requires no account registration or login.</p>
-        </div>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. Notifications are not working</p>
-          <p class="faq-a">A. Go to iPhone Settings → Engage → Notifications and make sure notifications are enabled. Also check that reminders are turned on in the app's settings.</p>
-        </div>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. How do I reset my data?</p>
-          <p class="faq-a">A. Delete and reinstall the app to reset all data. We recommend creating a backup before resetting.</p>
-        </div>
-
-        <div class="faq-item">
-          <p class="faq-q">Q. Can I edit preset tasks?</p>
-          <p class="faq-a">A. Yes. Use the "Edit Presets" button on the task selection screen to add, edit, or delete preset tasks.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2>Contact Us</h2>
-        <p>If you have questions, want to report a bug, or have feature requests, please feel free to reach out.</p>
-        <p class="contact-email">📧 <a href="mailto:ryota.murakami@laststance.io">ryota.murakami@laststance.io</a></p>
-        <p style="margin-top: 12px; font-size: 13px; color: #86868b;">We typically respond within 2–3 business days.</p>
       </section>
     </div>
 
-    <div class="footer">
-      <p>Engage — Laststance.io</p>
-      <p><a href="privacy-policy.html">Privacy Policy / プライバシーポリシー</a></p>
-      <p>Last updated: March 23, 2026</p>
+    <div id="content-en" class="content-panel hidden">
+      <section class="a-intro" aria-labelledby="intro-en-title">
+        <div class="a-wrap">
+          <blockquote id="intro-en-title"><span class="leaf"></span>Engage is a simple habit tracker app designed to help you build better daily routines.</blockquote>
+        </div>
+      </section>
+
+      <section class="a-section a-wrap" aria-labelledby="about-en-title">
+        <h2 id="about-en-title" class="a-sectitle">About the App</h2>
+        <p class="about-copy">Engage is a habit tracker focused on daily task completion, streak tracking, and reflective journaling. All data is stored locally on your device - no account registration or internet connection required.</p>
+      </section>
+
+      <section class="a-section alt" id="how-en" aria-labelledby="how-en-title">
+        <div class="a-wrap">
+          <h2 id="how-en-title" class="a-sectitle">Getting Started</h2>
+          <div class="a-steps">
+            <article class="a-step">
+              <div class="num">01</div>
+              <h3>Add tasks</h3>
+              <p>From the "Today" tab, select tasks to set your daily goals.</p>
+            </article>
+            <article class="a-step">
+              <div class="num">02</div>
+              <h3>Complete tasks</h3>
+              <p>Tap on completed tasks to check them off.</p>
+            </article>
+            <article class="a-step">
+              <div class="num">03</div>
+              <h3>Write reflections</h3>
+              <p>Use the journal to record thoughts and observations.</p>
+            </article>
+            <article class="a-step">
+              <div class="num">04</div>
+              <h3>View statistics</h3>
+              <p>Check the "Stats" tab to see your completion rate and streaks.</p>
+            </article>
+            <article class="a-step">
+              <div class="num">05</div>
+              <h3>Review past days</h3>
+              <p>Tap any date on the calendar to review your records.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="a-faq a-wrap" id="faq-en" aria-labelledby="faq-en-title">
+        <h2 id="faq-en-title" class="a-sectitle">Frequently Asked Questions</h2>
+        <div class="a-faqlist">
+          <details class="a-q">
+            <summary><span>Where is my data stored?</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>All data is stored in a local SQLite database on your device. Nothing is ever sent to external servers.</p>
+          </details>
+          <details class="a-q">
+            <summary><span>Can I backup my data?</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>Yes. Use the in-app backup feature to export and import your data.</p>
+          </details>
+          <details class="a-q">
+            <summary><span>Do I need to create an account?</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>No. Engage works completely offline and requires no account registration or login.</p>
+          </details>
+          <details class="a-q">
+            <summary><span>Notifications are not working</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>Go to iPhone Settings -> Engage -> Notifications and make sure notifications are enabled. Also check that reminders are turned on in the app's settings.</p>
+          </details>
+          <details class="a-q">
+            <summary><span>How do I reset my data?</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>Delete and reinstall the app to reset all data. We recommend creating a backup before resetting.</p>
+          </details>
+          <details class="a-q">
+            <summary><span>Can I edit preset tasks?</span><span class="pl" aria-hidden="true"></span></summary>
+            <p>Yes. Use the "Edit Presets" button on the task selection screen to add, edit, or delete preset tasks.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="a-support" id="contact-en" aria-labelledby="contact-en-title">
+        <div class="a-wrap grid">
+          <div>
+            <h2 id="contact-en-title">Contact Us</h2>
+            <p>If you have questions, want to report a bug, or have feature requests, please feel free to reach out.</p>
+            <p class="reply-note">We typically respond within 2-3 business days.</p>
+          </div>
+          <div class="a-suplinks">
+            <a class="a-suplink" href="mailto:ryota.murakami@laststance.io">ryota.murakami@laststance.io <span class="ar">→</span></a>
+            <a class="a-suplink" href="privacy-policy.html">Privacy Policy / プライバシーポリシー <span class="ar">→</span></a>
+          </div>
+        </div>
+      </section>
     </div>
-  </div>
+  </main>
+
+  <footer class="a-foot a-wrap">
+    <div class="row">
+      <div>
+        <div class="a-brand">Eng<b>age</b></div>
+        <div class="tag">A quiet companion for daily habits.</div>
+      </div>
+      <div class="rights">Engage - Laststance.io<br>Last updated: March 23, 2026</div>
+    </div>
+  </footer>
 
   <script>
+    const translatableElements = document.querySelectorAll('[data-ja][data-en]');
+    const hrefElements = document.querySelectorAll('[data-ja-href][data-en-href]');
+    const panels = {
+      ja: document.getElementById('content-ja'),
+      en: document.getElementById('content-en'),
+    };
+    const heroTitles = {
+      ja: document.querySelector('.hero-title-ja'),
+      en: document.querySelector('.hero-title-en'),
+    };
+    const buttons = {
+      ja: document.getElementById('btn-ja'),
+      en: document.getElementById('btn-en'),
+    };
+
     function switchLang(lang) {
-      document.getElementById('content-ja').classList.toggle('hidden', lang !== 'ja');
-      document.getElementById('content-en').classList.toggle('hidden', lang !== 'en');
-      document.getElementById('btn-ja').classList.toggle('active', lang === 'ja');
-      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+      document.documentElement.lang = lang;
+      document.body.classList.toggle('lang-ja', lang === 'ja');
+      document.body.classList.toggle('lang-en', lang === 'en');
+      panels.ja.classList.toggle('hidden', lang !== 'ja');
+      panels.en.classList.toggle('hidden', lang !== 'en');
+      buttons.ja.classList.toggle('active', lang === 'ja');
+      buttons.en.classList.toggle('active', lang === 'en');
+      buttons.ja.setAttribute('aria-pressed', String(lang === 'ja'));
+      buttons.en.setAttribute('aria-pressed', String(lang === 'en'));
+      heroTitles.ja.classList.toggle('hidden', lang !== 'ja');
+      heroTitles.en.classList.toggle('hidden', lang !== 'en');
+
+      translatableElements.forEach((element) => {
+        element.textContent = element.dataset[lang];
+      });
+      hrefElements.forEach((element) => {
+        element.setAttribute('href', element.dataset[`${lang}Href`]);
+      });
     }
+
+    document.querySelectorAll('[data-lang]').forEach((button) => {
+      button.addEventListener('click', () => switchLang(button.dataset.lang));
+    });
   </script>
 </body>
 </html>
