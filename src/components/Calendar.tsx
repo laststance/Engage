@@ -9,6 +9,8 @@ import { AppCard } from '@/src/components/AppCard'
 import { AppPressable } from '@/src/components/AppPressable'
 import { formatDate } from '@/src/utils/dateUtils'
 
+const DARK_HEATMAP_MIN_COMPLETION_COUNT = 3
+
 interface CalendarProps {
   selectedDate: string
   onDateSelect: (date: string) => void
@@ -141,12 +143,47 @@ export const Calendar: React.FC<CalendarProps> = ({
   }, [calendarData, selectedDate])
   const selectedDateCompletionCount = achievementData[selectedDate] || 0
 
+  /**
+   * Calendar date rendering calls this to darken each day as completed tasks accumulate.
+   * @param completionCount - Number of completed tasks for the date cell.
+   * @returns Tailwind background class for the matching heatmap level.
+   * @example
+   * getHeatmapColor(3) // => 'bg-green-600'
+   */
   const getHeatmapColor = (completionCount: number): string => {
     if (completionCount === 0) return 'bg-gray-100'
     if (completionCount === 1) return 'bg-green-200'
     if (completionCount === 2) return 'bg-green-400'
     if (completionCount === 3) return 'bg-green-600'
     return 'bg-green-700' // 4+ completions
+  }
+
+  /**
+   * Calendar date rendering calls this so dark heatmap cells keep legible day numbers.
+   * @param completionCount - Number of completed tasks for the date cell.
+   * @param isCurrentMonth - Whether the date belongs to the visible month.
+   * @param isSelectedDate - Whether the user-selected date matches the cell.
+   * @param isCurrentDate - Whether the cell represents today.
+   * @returns Tailwind text color class, with white reserved for dark green heatmap cells.
+   * @example
+   * getDateTextColor(3, true, false, false) // => 'text-white'
+   */
+  const getDateTextColor = (
+    completionCount: number,
+    isCurrentMonth: boolean,
+    isSelectedDate: boolean,
+    isCurrentDate: boolean
+  ): string => {
+    if (!isCurrentMonth) return 'text-gray-300'
+
+    // Dark heatmap cells need contrast more than accent-colored day numbers.
+    if (completionCount >= DARK_HEATMAP_MIN_COMPLETION_COUNT) {
+      return 'text-white'
+    }
+
+    if (isCurrentDate) return 'text-orange-600'
+    if (isSelectedDate) return 'text-blue-600'
+    return 'text-gray-800'
   }
 
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -285,6 +322,12 @@ export const Calendar: React.FC<CalendarProps> = ({
               const isInteractiveDate = dayData.isCurrentMonth
               const isSelectedDate =
                 isInteractiveDate && isSelected(dayData.dateString)
+              const dateTextColor = getDateTextColor(
+                completionCount,
+                dayData.isCurrentMonth,
+                isSelectedDate,
+                isCurrentDate
+              )
               const dateAccessibilityValue = getDateA11yValue(
                 isInteractiveDate,
                 isCurrentDate
@@ -330,15 +373,10 @@ export const Calendar: React.FC<CalendarProps> = ({
                     `}
                   >
                     <Text
+                      testID={`calendar-date-label-${dayData.dateString}`}
                       className={`
                         text-sm font-medium
-                        ${
-                          dayData.isCurrentMonth
-                            ? 'text-gray-800'
-                            : 'text-gray-300'
-                        }
-                        ${isSelectedDate ? 'text-blue-600' : ''}
-                        ${isCurrentDate ? 'text-orange-600' : ''}
+                        ${dateTextColor}
                       `}
                     >
                       {dayData.date}

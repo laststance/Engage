@@ -38,6 +38,31 @@ describe('Calendar completion causality', () => {
     expect(getByText('calendar.selectedDateCompleted')).toBeTruthy()
   })
 
+  it('keeps high-completion day numbers readable when the heatmap turns dark green', () => {
+    // Arrange
+    const { getByTestId } = render(
+      <Calendar
+        achievementData={{
+          '2026-05-10': 2,
+          '2026-05-20': 3,
+          '2026-05-21': 4,
+        }}
+        onDateSelect={jest.fn()}
+        selectedDate="2026-05-05"
+      />
+    )
+
+    // Act
+    const mediumCompletionDay = getByTestId('calendar-date-label-2026-05-10')
+    const highCompletionDay = getByTestId('calendar-date-label-2026-05-20')
+    const highestCompletionDay = getByTestId('calendar-date-label-2026-05-21')
+
+    // Assert
+    expect(mediumCompletionDay.props.className).toContain('text-gray-800')
+    expect(highCompletionDay.props.className).toContain('text-white')
+    expect(highestCompletionDay.props.className).toContain('text-white')
+  })
+
   it('hides the selected-day recap when month navigation leaves that date behind', () => {
     // Arrange
     const { getByTestId, queryByTestId } = render(
