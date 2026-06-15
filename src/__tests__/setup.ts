@@ -66,6 +66,7 @@ jest.mock('react-native', () => {
       flatten: jest.fn((style) => style),
     },
     Keyboard: {
+      addListener: jest.fn(() => ({ remove: jest.fn() })),
       dismiss: jest.fn(),
     },
     Dimensions: {

@@ -182,8 +182,13 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     () => validatePresetTaskDrafts(editingTasks),
     [editingTasks]
   )
+  const indexedEditingTasks = useMemo(
+    () => editingTasks.map((task, index) => ({ ...task, index })),
+    [editingTasks]
+  )
   const saveDisabledReason = taskValidation.formMessages[0] ?? null
   const isSaveDisabled = isLoading || !taskValidation.isValid
+  const shouldShowPresetEditorActions = !isPresetKeyboardDoneVisible
 
   // Initialize editing tasks when modal opens
   useEffect(() => {
@@ -206,7 +211,27 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     }
   }, [isVisible, tasks])
 
-  // Get category color (lookup by category ID)
+  useEffect(() => {
+    const keyboardDidHideSubscription = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        // Native keyboard dismissal should restore the footer actions too.
+        setIsPresetKeyboardDoneVisible(false)
+      }
+    )
+
+    return () => {
+      keyboardDidHideSubscription.remove()
+    }
+  }, [])
+
+  /**
+   * Resolves a chip color for preset categories when the editor renders task rows.
+   * @param categoryId - The category ID assigned to the editable task.
+   * @returns A NativeWind background class for the category dot.
+   * @example
+   * getCategoryColor('business') // => 'bg-blue-500'
+   */
   const getCategoryColor = (categoryId: string) => {
     // Default colors for preset categories
     if (categoryId === 'business') return 'bg-blue-500'
@@ -224,6 +249,12 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     return colors[index]
   }
 
+  /**
+   * Appends a blank preset row when the Add Task button is pressed.
+   * @returns Nothing; queues focus so users can type the new title immediately.
+   * @example
+   * addNewTask() // adds a blank row and focuses its title input
+   */
   const addNewTask = () => {
     const newTask: EditingTask = {
       title: '',
@@ -262,6 +293,16 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
    */
   const handlePresetInputFocus = (): void => {
     setIsPresetKeyboardDoneVisible(true)
+  }
+
+  /**
+   * Restores the preset footer after native text inputs lose focus.
+   * @returns Nothing; hides the temporary keyboard Done action.
+   * @example
+   * handlePresetInputBlur() // restores Save and Cancel after editing ends
+   */
+  const handlePresetInputBlur = (): void => {
+    setIsPresetKeyboardDoneVisible(false)
   }
 
   /**
@@ -304,6 +345,14 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     focusPendingTaskTitleInput(taskIndex, event.nativeEvent.layout.y)
   }
 
+  /**
+   * Applies a small draft update from text fields or category chips.
+   * @param index - The editing-task index to update.
+   * @param updates - The partial task draft fields changed by the control.
+   * @returns Nothing; updates local draft state and clears stale feedback.
+   * @example
+   * updateTask(0, { categoryId: 'life' }) // changes row 0 to Life
+   */
   const updateTask = (index: number, updates: Partial<EditingTask>) => {
     setOperationFeedback(null)
     setEditingTasks((prev) =>
@@ -419,15 +468,6 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     )
   }
 
-  // Group tasks by category for display
-  const tasksByCategory = editingTasks.reduce((acc, task, index) => {
-    if (!acc[task.categoryId]) {
-      acc[task.categoryId] = []
-    }
-    acc[task.categoryId].push({ ...task, index })
-    return acc
-  }, {} as Record<string, (EditingTask & { index: number })[]>)
-
   return (
     <Modal
       visible={isVisible}
@@ -493,216 +533,179 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
           keyboardShouldPersistTaps="handled"
         >
           <VStack space="lg">
-            {Object.entries(tasksByCategory).map(
-              ([categoryId, categoryTasks]) => {
-                const category = categories.find((c) => c.id === categoryId)
-                const categoryColor = getCategoryColor(categoryId)
+            {indexedEditingTasks.map((task) => {
+              const validationMessages =
+                taskValidation.taskMessages[task.index] ?? []
+              const hasValidationError = validationMessages.length > 0
+              const isLatestNewTask =
+                task.isNew === true &&
+                task.index === indexedEditingTasks.length - 1
 
-                return (
-                  <VStack key={categoryId} space="sm">
-                    {/* Category Header */}
-                    <HStack className="items-center justify-between">
-                      <HStack className="items-center" space="sm">
-                        <Box
-                          className={`w-4 h-4 rounded-full ${categoryColor}`}
-                        />
-                        <Text className="text-lg font-semibold text-gray-800">
-                          {category
-                            ? getCategoryDisplayName(category)
-                            : t('presetEditor.unknownCategory')}
+              return (
+                <Box
+                  key={task.index}
+                  className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                  onLayout={(event) => handleTaskCardLayout(task.index, event)}
+                >
+                  <VStack space="md">
+                    {/* Task Title */}
+                    <VStack space="xs">
+                      <Text className="text-sm font-medium text-gray-700">
+                        {t('presetEditor.taskName')}
+                      </Text>
+                      <TextInput
+                        ref={(input) => {
+                          taskTitleInputRefs.current[task.index] = input
+                        }}
+                        value={task.title}
+                        onChangeText={(text) =>
+                          updateTask(task.index, { title: text })
+                        }
+                        autoFocus={task.index === pendingFocusedTaskIndex}
+                        inputAccessoryViewID={inputAccessoryViewID}
+                        onFocus={handlePresetInputFocus}
+                        onBlur={handlePresetInputBlur}
+                        onSubmitEditing={handleKeyboardDone}
+                        placeholder={t('presetEditor.taskNamePlaceholder')}
+                        returnKeyType="done"
+                        submitBehavior="blurAndSubmit"
+                        className={`bg-white border rounded-lg px-3 py-2 text-gray-800 ${
+                          hasValidationError
+                            ? 'border-red-300'
+                            : 'border-gray-300'
+                        }`}
+                        testID={`task-title-input-${task.index}`}
+                        accessibilityHint={
+                          hasValidationError
+                            ? validationMessages
+                                .map((messageKey) => t(messageKey))
+                                .join(' ')
+                            : undefined
+                        }
+                      />
+                      {validationMessages.map((messageKey) => (
+                        <Text
+                          key={`${task.index}-${messageKey}`}
+                          className="text-xs font-medium text-red-600"
+                          testID={`task-title-error-${task.index}`}
+                        >
+                          {t(messageKey)}
                         </Text>
-                      </HStack>
-                    </HStack>
-
-                    {/* Tasks in Category */}
-                    <VStack space="sm">
-                      {categoryTasks.map((task) => {
-                        const validationMessages =
-                          taskValidation.taskMessages[task.index] ?? []
-                        const hasValidationError =
-                          validationMessages.length > 0
-
-                        return (
-                          <Box
-                            key={task.index}
-                            className="p-4 bg-gray-50 rounded-lg border border-gray-200"
-                            onLayout={(event) =>
-                              handleTaskCardLayout(task.index, event)
-                            }
-                          >
-                            <VStack space="md">
-                              {/* Task Title */}
-                              <VStack space="xs">
-                                <Text className="text-sm font-medium text-gray-700">
-                                  {t('presetEditor.taskName')}
-                                </Text>
-                                <TextInput
-                                  ref={(input) => {
-                                    taskTitleInputRefs.current[task.index] =
-                                      input
-                                  }}
-                                  value={task.title}
-                                  onChangeText={(text) =>
-                                    updateTask(task.index, { title: text })
-                                  }
-                                  autoFocus={
-                                    task.index === pendingFocusedTaskIndex
-                                  }
-                                  inputAccessoryViewID={inputAccessoryViewID}
-                                  onFocus={handlePresetInputFocus}
-                                  onSubmitEditing={handleKeyboardDone}
-                                  placeholder={t(
-                                    'presetEditor.taskNamePlaceholder'
-                                  )}
-                                  returnKeyType="done"
-                                  submitBehavior="blurAndSubmit"
-                                  className={`bg-white border rounded-lg px-3 py-2 text-gray-800 ${
-                                    hasValidationError
-                                      ? 'border-red-300'
-                                      : 'border-gray-300'
-                                  }`}
-                                  testID={`task-title-input-${task.index}`}
-                                  accessibilityHint={
-                                    hasValidationError
-                                      ? validationMessages
-                                          .map((messageKey) => t(messageKey))
-                                          .join(' ')
-                                      : undefined
-                                  }
-                                />
-                                {validationMessages.map((messageKey) => (
-                                  <Text
-                                    key={`${task.index}-${messageKey}`}
-                                    className="text-xs font-medium text-red-600"
-                                    testID={`task-title-error-${task.index}`}
-                                  >
-                                    {t(messageKey)}
-                                  </Text>
-                                ))}
-                              </VStack>
-
-                              {/* Category Selection */}
-                              <VStack space="xs">
-                                <Text className="text-sm font-medium text-gray-700">
-                                  {t('presetEditor.category')}
-                                </Text>
-                                <ScrollView
-                                  horizontal
-                                  showsHorizontalScrollIndicator={false}
-                                >
-                                  <HStack space="sm">
-                                    {categories.map((cat) => {
-                                      const isSelected =
-                                        task.categoryId === cat.id
-                                      const catColor = getCategoryColor(cat.id)
-
-                                      return (
-                                        <Pressable
-                                          key={cat.id}
-                                          onPress={() =>
-                                            updateTask(task.index, {
-                                              categoryId: cat.id,
-                                            })
-                                          }
-                                          className={`
-                                          px-3 py-2 rounded-full border-2 flex-row items-center
-                                          ${
-                                            isSelected
-                                              ? 'border-blue-500 bg-blue-50'
-                                              : 'border-gray-300 bg-white'
-                                          }
-                                        `}
-                                          testID={`category-option-${cat.id}-${task.index}`}
-                                          accessibilityLabel={getCategoryDisplayName(
-                                            cat
-                                          )}
-                                          accessibilityRole="button"
-                                          accessibilityState={{
-                                            selected: isSelected,
-                                          }}
-                                        >
-                                          <Box
-                                            className={`w-3 h-3 rounded-full ${catColor} mr-2`}
-                                          />
-                                          <Text
-                                            className={`text-sm ${
-                                              isSelected
-                                                ? 'text-blue-700'
-                                                : 'text-gray-700'
-                                            }`}
-                                          >
-                                            {getCategoryDisplayName(cat)}
-                                          </Text>
-                                        </Pressable>
-                                      )
-                                    })}
-                                  </HStack>
-                                </ScrollView>
-                              </VStack>
-
-                              {/* Default Minutes */}
-                              <VStack space="xs">
-                                <Text className="text-sm font-medium text-gray-700">
-                                  {t('presetEditor.estimatedMinutes')}
-                                </Text>
-                                <TextInput
-                                  ref={(input) => {
-                                    taskMinutesInputRefs.current[task.index] =
-                                      input
-                                  }}
-                                  value={task.defaultMinutes?.toString() || ''}
-                                  onChangeText={(text) => {
-                                    const minutes = text
-                                      ? parseInt(text, 10)
-                                      : undefined
-                                    updateTask(task.index, {
-                                      defaultMinutes: isNaN(minutes!)
-                                        ? undefined
-                                        : minutes,
-                                    })
-                                  }}
-                                  placeholder={t(
-                                    'presetEditor.estimatedMinutesPlaceholder'
-                                  )}
-                                  inputAccessoryViewID={inputAccessoryViewID}
-                                  keyboardType="numeric"
-                                  onFocus={handlePresetInputFocus}
-                                  onSubmitEditing={handleKeyboardDone}
-                                  returnKeyType="done"
-                                  submitBehavior="blurAndSubmit"
-                                  className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800"
-                                  testID={`task-minutes-input-${task.index}`}
-                                />
-                              </VStack>
-
-                              {/* Actions */}
-                              <HStack className="justify-end">
-                                <Pressable
-                                  onPress={() => deleteTask(task.index)}
-                                  className="bg-red-500 rounded-lg px-4 py-2"
-                                  testID={`delete-task-${task.index}`}
-                                >
-                                  <HStack className="items-center" space="xs">
-                                    <IconSymbol
-                                      name="trash"
-                                      size={16}
-                                      color="white"
-                                    />
-                                    <Text className="text-white text-sm font-medium">
-                                      {t('common.delete')}
-                                    </Text>
-                                  </HStack>
-                                </Pressable>
-                              </HStack>
-                            </VStack>
-                          </Box>
-                        )
-                      })}
+                      ))}
                     </VStack>
+
+                    {/* Category Selection */}
+                    <VStack space="xs">
+                      <Text className="text-sm font-medium text-gray-700">
+                        {t('presetEditor.category')}
+                      </Text>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                      >
+                        <HStack space="sm">
+                          {categories.map((cat) => {
+                            const isSelected = task.categoryId === cat.id
+                            const catColor = getCategoryColor(cat.id)
+
+                            return (
+                              <Pressable
+                                key={cat.id}
+                                onPress={() =>
+                                  updateTask(task.index, {
+                                    categoryId: cat.id,
+                                  })
+                                }
+                                className={`
+                                  px-3 py-2 rounded-full border-2 flex-row items-center
+                                  ${
+                                    isSelected
+                                      ? 'border-blue-500 bg-blue-50'
+                                      : 'border-gray-300 bg-white'
+                                  }
+                                `}
+                                testID={
+                                  isLatestNewTask
+                                    ? `latest-new-task-category-option-${cat.id}`
+                                    : `category-option-${cat.id}-${task.index}`
+                                }
+                                accessibilityLabel={getCategoryDisplayName(cat)}
+                                accessibilityRole="button"
+                                accessibilityState={{
+                                  selected: isSelected,
+                                }}
+                              >
+                                <Box
+                                  className={`w-3 h-3 rounded-full ${catColor} mr-2`}
+                                />
+                                <Text
+                                  className={`text-sm ${
+                                    isSelected
+                                      ? 'text-blue-700'
+                                      : 'text-gray-700'
+                                  }`}
+                                >
+                                  {getCategoryDisplayName(cat)}
+                                </Text>
+                              </Pressable>
+                            )
+                          })}
+                        </HStack>
+                      </ScrollView>
+                    </VStack>
+
+                    {/* Default Minutes */}
+                    <VStack space="xs">
+                      <Text className="text-sm font-medium text-gray-700">
+                        {t('presetEditor.estimatedMinutes')}
+                      </Text>
+                      <TextInput
+                        ref={(input) => {
+                          taskMinutesInputRefs.current[task.index] = input
+                        }}
+                        value={task.defaultMinutes?.toString() || ''}
+                        onChangeText={(text) => {
+                          const minutes = text ? parseInt(text, 10) : undefined
+                          updateTask(task.index, {
+                            defaultMinutes: isNaN(minutes!)
+                              ? undefined
+                              : minutes,
+                          })
+                        }}
+                        placeholder={t(
+                          'presetEditor.estimatedMinutesPlaceholder'
+                        )}
+                        inputAccessoryViewID={inputAccessoryViewID}
+                        keyboardType="numeric"
+                        onFocus={handlePresetInputFocus}
+                        onBlur={handlePresetInputBlur}
+                        onSubmitEditing={handleKeyboardDone}
+                        returnKeyType="done"
+                        submitBehavior="blurAndSubmit"
+                        className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-800"
+                        testID={`task-minutes-input-${task.index}`}
+                      />
+                    </VStack>
+
+                    {/* Actions */}
+                    <HStack className="justify-end">
+                      <Pressable
+                        onPress={() => deleteTask(task.index)}
+                        className="bg-red-500 rounded-lg px-4 py-2"
+                        testID={`delete-task-${task.index}`}
+                      >
+                        <HStack className="items-center" space="xs">
+                          <IconSymbol name="trash" size={16} color="white" />
+                          <Text className="text-white text-sm font-medium">
+                            {t('common.delete')}
+                          </Text>
+                        </HStack>
+                      </Pressable>
+                    </HStack>
                   </VStack>
-                )
-              }
-            )}
+                </Box>
+              )
+            })}
 
             {/* New Category Section */}
             <VStack space="sm" className="mb-4">
@@ -733,6 +736,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                     placeholder={t('presetEditor.newCategoryPlaceholder')}
                     inputAccessoryViewID={inputAccessoryViewID}
                     onFocus={handlePresetInputFocus}
+                    onBlur={handlePresetInputBlur}
                     onSubmitEditing={handleKeyboardDone}
                     returnKeyType="done"
                     submitBehavior="blurAndSubmit"
@@ -782,7 +786,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
               </Pressable>
             </Box>
           )}
-          {saveDisabledReason && (
+          {shouldShowPresetEditorActions && saveDisabledReason && (
             <Text
               className="mb-3 text-center text-sm font-medium text-red-600"
               testID="preset-editor-save-disabled-reason"
@@ -790,37 +794,39 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
               {t(saveDisabledReason)}
             </Text>
           )}
-          <HStack space="md">
-            <Pressable
-              onPress={handleCancel}
-              className="flex-1 bg-gray-100 rounded-lg py-3"
-              testID="preset-editor-cancel"
-            >
-              <Text className="text-gray-700 font-medium text-center">
-                {t('common.cancel')}
-              </Text>
-            </Pressable>
+          {shouldShowPresetEditorActions && (
+            <HStack space="md">
+              <Pressable
+                onPress={handleCancel}
+                className="flex-1 bg-gray-100 rounded-lg py-3"
+                testID="preset-editor-cancel"
+              >
+                <Text className="text-gray-700 font-medium text-center">
+                  {t('common.cancel')}
+                </Text>
+              </Pressable>
 
-            <Pressable
-              onPress={handleSave}
-              disabled={isSaveDisabled}
-              className={`flex-1 rounded-lg py-3 ${
-                isSaveDisabled ? 'bg-gray-400' : 'bg-blue-500'
-              }`}
-              testID="preset-editor-save"
-              accessibilityState={{
-                busy: isLoading,
-                disabled: isSaveDisabled,
-              }}
-              accessibilityHint={
-                saveDisabledReason ? t(saveDisabledReason) : undefined
-              }
-            >
-              <Text className="text-white font-medium text-center">
-                {isLoading ? t('common.saving') : t('common.save')}
-              </Text>
-            </Pressable>
-          </HStack>
+              <Pressable
+                onPress={handleSave}
+                disabled={isSaveDisabled}
+                className={`flex-1 rounded-lg py-3 ${
+                  isSaveDisabled ? 'bg-gray-400' : 'bg-blue-500'
+                }`}
+                testID="preset-editor-save"
+                accessibilityState={{
+                  busy: isLoading,
+                  disabled: isSaveDisabled,
+                }}
+                accessibilityHint={
+                  saveDisabledReason ? t(saveDisabledReason) : undefined
+                }
+              >
+                <Text className="text-white font-medium text-center">
+                  {isLoading ? t('common.saving') : t('common.save')}
+                </Text>
+              </Pressable>
+            </HStack>
+          )}
         </Box>
         <KeyboardDoneAccessory
           accessibilityLabel={t('common.done')}

@@ -45,6 +45,32 @@ tags:
 - assertVisible:
     id: "preset-editor-close"
 
+# Regression: Adding a task should focus the new row without showing the
+# preset Save footer above the keyboard.
+- tapOn:
+    id: "add-task-button"
+
+- extendedWaitUntil:
+    visible:
+      id: "preset-editor-inline-keyboard-done-button"
+    timeout: 5000
+
+- inputText: "E2EStableTask"
+
+- assertVisible:
+    text: "E2EStableTask"
+
+- assertNotVisible:
+    id: "preset-editor-save"
+
+# Regression: Changing category while editing should not move the active row
+# out of the visible keyboard-safe area.
+- tapOn:
+    id: "latest-new-task-category-option-life"
+
+- assertVisible:
+    text: "E2EStableTask"
+
 # Close PresetTaskEditor
 - tapOn:
     id: "preset-editor-close"
