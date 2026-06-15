@@ -31,7 +31,7 @@ pnpm test:e2e:production:single maestro/ios/06-calendar-browsing.yaml
 - `04-task-completion.yaml`: task assignment + completion
 - `05-journal-entry.yaml`: journal input + autosave
 - `06-calendar-browsing.yaml`: calendar navigation + DayModal date regression
-- `07-edit-presets.yaml`: TaskPicker to PresetTaskEditor modal flow
+- `07-edit-presets.yaml`: TaskPicker to PresetTaskEditor modal flow + keyboard/category stability regression
 - `10-data-persistence.yaml`: SQLite state survives restart
 - `11-backup-create.yaml`: backup creation regression
 

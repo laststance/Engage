@@ -1,6 +1,6 @@
 import React from 'react'
-import { fireEvent, render, waitFor } from '@testing-library/react-native'
-import { Alert, Keyboard } from 'react-native'
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native'
+import { Alert, Keyboard, TextInput } from 'react-native'
 import { Category, Task } from '@/src/types'
 import { PresetTaskEditor } from '../PresetTaskEditor'
 
@@ -44,6 +44,28 @@ const renderEditor = (overrides = {}) => {
     />
   )
 }
+
+interface RenderedInputWithTestId {
+  props: {
+    testID?: unknown
+  }
+}
+
+/**
+ * Reads task-title input IDs in screen order so category changes cannot reorder the active draft.
+ * @param inputs - The rendered React Native TextInput instances from the editor.
+ * @returns The task title test IDs in their current visual order.
+ * @example
+ * getTaskTitleInputTestIds(inputs) // => ['task-title-input-0', 'task-title-input-1']
+ */
+const getTaskTitleInputTestIds = (
+  inputs: RenderedInputWithTestId[]
+): string[] =>
+  inputs
+    .map((input) => input.props.testID)
+    .filter((testId): testId is string =>
+      String(testId).startsWith('task-title-input-')
+    )
 
 describe('PresetTaskEditor form safety', () => {
   beforeEach(() => {
@@ -98,6 +120,73 @@ describe('PresetTaskEditor form safety', () => {
     // Assert
     expect(getByTestId('task-title-input-2').props.autoFocus).toBe(true)
     expect(getByTestId('task-title-input-0').props.autoFocus).toBe(false)
+  })
+
+  it('hides the preset Save action while users type a newly added task', () => {
+    // Arrange
+    const { getByTestId, queryByTestId } = renderEditor()
+
+    // Act
+    fireEvent.press(getByTestId('add-task-button'))
+    fireEvent(getByTestId('task-title-input-2'), 'focus')
+
+    // Assert
+    expect(queryByTestId('preset-editor-save')).toBeNull()
+    expect(queryByTestId('preset-editor-cancel')).toBeNull()
+    expect(getByTestId('preset-editor-inline-keyboard-done-button')).toBeTruthy()
+  })
+
+  it('restores preset Save and Cancel actions after the native keyboard hides', () => {
+    // Arrange
+    const { getByTestId, queryByTestId } = renderEditor()
+    const keyboardDidHideHandler = (
+      Keyboard.addListener as jest.Mock
+    ).mock.calls.find(([eventName]) => eventName === 'keyboardDidHide')?.[1]
+
+    // Act
+    fireEvent.press(getByTestId('add-task-button'))
+    fireEvent(getByTestId('task-title-input-2'), 'focus')
+    act(() => {
+      keyboardDidHideHandler()
+    })
+
+    // Assert
+    expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
+    expect(getByTestId('preset-editor-save')).toBeTruthy()
+    expect(getByTestId('preset-editor-cancel')).toBeTruthy()
+  })
+
+  it('keeps a newly added task in place when category changes during editing', () => {
+    // Arrange
+    const { UNSAFE_getAllByType, getByTestId } = renderEditor()
+
+    // Act
+    fireEvent.press(getByTestId('add-task-button'))
+    const inputOrderBeforeCategoryChange = getTaskTitleInputTestIds(
+      UNSAFE_getAllByType(TextInput)
+    )
+    fireEvent.changeText(getByTestId('task-title-input-2'), 'Read product notes')
+    fireEvent.press(getByTestId('latest-new-task-category-option-life'))
+    const inputOrderAfterCategoryChange = getTaskTitleInputTestIds(
+      UNSAFE_getAllByType(TextInput)
+    )
+
+    // Assert
+    expect(inputOrderBeforeCategoryChange).toEqual([
+      'task-title-input-0',
+      'task-title-input-1',
+      'task-title-input-2',
+    ])
+    expect(inputOrderAfterCategoryChange).toEqual(inputOrderBeforeCategoryChange)
+    expect(getByTestId('task-title-input-2').props.value).toBe(
+      'Read product notes'
+    )
+    expect(
+      getByTestId('latest-new-task-category-option-life').props
+        .accessibilityState
+    ).toEqual({
+      selected: true,
+    })
   })
 
   it('keeps preset text inputs above the keyboard and gives them a Done action', () => {
