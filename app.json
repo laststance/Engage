@@ -2,7 +2,7 @@
   "expo": {
     "name": "Engage",
     "slug": "engage",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "engage",
@@ -14,7 +14,7 @@
     "description": "A minimal habit tracker focused on building consistent daily routines through task tracking, streak visualization, and reflective journaling.",
     "android": {
       "package": "com.laststance.engage",
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -30,7 +30,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.laststance.engage",
-      "buildNumber": "10",
+      "buildNumber": "11",
       "supportsTablet": false,
       "requireFullScreen": false,
       "infoPlist": {
