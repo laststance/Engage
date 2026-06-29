@@ -1,8 +1,9 @@
 import React from 'react'
-import { fireEvent, render, waitFor } from '@testing-library/react-native'
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native'
 import { Keyboard } from 'react-native'
 import { JournalInput } from '../JournalInput'
 import { Entry } from '@/src/types'
+import { JOURNAL_AUTOSAVE_DELAY_MS } from '@/src/constants/journal'
 
 const defaultEntry: Entry = {
   createdAt: 1700000000000,
@@ -83,6 +84,50 @@ describe('JournalInput form safety', () => {
     expect(onUpdate).toHaveBeenLastCalledWith('Important draft')
   })
 
+  it('shows saved after autosave updates the parent journal entry', async () => {
+    // Arrange
+    let rerenderJournal: ReturnType<typeof render>['rerender']
+    let onUpdate: jest.MockedFunction<(content: string) => Promise<void>>
+    const renderInput = (entry: Entry) => (
+      <JournalInput
+        date="2026-05-27"
+        entry={entry}
+        maxLength={500}
+        onUpdate={onUpdate}
+        placeholder="Write a note"
+      />
+    )
+    onUpdate = jest.fn(async (content: string) => {
+      rerenderJournal(
+        renderInput({
+          ...defaultEntry,
+          note: content,
+          updatedAt: defaultEntry.updatedAt + 1,
+        })
+      )
+    })
+    const { getAllByText, getByTestId, queryByText, rerender } = render(
+      renderInput(defaultEntry)
+    )
+    rerenderJournal = rerender
+
+    // Act
+    fireEvent.changeText(getByTestId('journal-text-input'), 'Persisted draft')
+    await act(async () => {
+      jest.advanceTimersByTime(JOURNAL_AUTOSAVE_DELAY_MS)
+      await Promise.resolve()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(onUpdate).toHaveBeenCalledWith('Persisted draft')
+    })
+    await waitFor(() => {
+      expect(queryByText('common.saving')).toBeNull()
+      expect(getAllByText('journal.saved').length).toBeGreaterThan(0)
+    })
+  })
+
   it('does not replace a newer local draft when an older entry update arrives', () => {
     // Arrange
     const olderSavedEntry: Entry = {
@@ -116,7 +161,7 @@ describe('JournalInput form safety', () => {
     expect(getByDisplayValue('Newer local draft')).toBeTruthy()
   })
 
-  it('shows a keyboard Done control so multiline journal editing can finish', () => {
+  it('keeps the journal return key for line breaks while the Done control closes editing', () => {
     // Arrange
     const { getByTestId, getByText } = renderJournalInput()
 
@@ -129,13 +174,11 @@ describe('JournalInput form safety', () => {
     expect(getByTestId('journal-text-input').props.inputAccessoryViewID).toEqual(
       expect.stringContaining('journal-input-accessory')
     )
-    expect(getByTestId('journal-text-input').props.returnKeyType).toBe('done')
-    expect(getByTestId('journal-text-input').props.submitBehavior).toBe(
-      'blurAndSubmit'
-    )
+    expect(getByTestId('journal-text-input').props.returnKeyType).toBeUndefined()
+    expect(getByTestId('journal-text-input').props.submitBehavior).toBe('newline')
   })
 
-  it('dismisses the keyboard when the journal return key submits editing', () => {
+  it('does not dismiss the keyboard when the multiline journal return key is pressed', () => {
     // Arrange
     const { getByTestId } = renderJournalInput()
 
@@ -143,6 +186,23 @@ describe('JournalInput form safety', () => {
     fireEvent(getByTestId('journal-text-input'), 'submitEditing')
 
     // Assert
-    expect(Keyboard.dismiss).toHaveBeenCalledTimes(1)
+    expect(getByTestId('journal-text-input').props.onSubmitEditing).toBeUndefined()
+    expect(Keyboard.dismiss).not.toHaveBeenCalled()
+  })
+
+  it('keeps newline characters in the journal draft text', () => {
+    // Arrange
+    const { getByDisplayValue, getByTestId } = renderJournalInput()
+
+    // Act
+    fireEvent.changeText(
+      getByTestId('journal-text-input'),
+      'Today was good.\nTomorrow I will continue.'
+    )
+
+    // Assert
+    expect(
+      getByDisplayValue('Today was good.\nTomorrow I will continue.')
+    ).toBeTruthy()
   })
 })
