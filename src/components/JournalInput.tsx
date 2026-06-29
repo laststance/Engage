@@ -91,15 +91,31 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   useEffect(() => {
     const nextPersistedText = entry?.note || ''
     const previousPersistedText = lastPersistedTextRef.current
-    const hasLocalDraft = textRef.current !== previousPersistedText
+    const currentText = textRef.current
+    const hasLocalDraft = currentText !== previousPersistedText
+    const didPersistVisibleText = currentText === nextPersistedText
 
-    saveRequestIdRef.current += 1
     lastPersistedTextRef.current = nextPersistedText
 
-    if (hasLocalDraft) {
+    if (didPersistVisibleText) {
+      if (hasLocalDraft) {
+        // The parent entry caught up to the draft, so this is the successful save echo.
+        setLastSaved(new Date())
+        setSaveStatus('saved')
+        setLastFailedText(null)
+      }
       return
     }
 
+    if (hasLocalDraft) {
+      saveRequestIdRef.current += 1
+      setSaveStatus((currentStatus) =>
+        currentStatus === 'saving' ? 'draft' : currentStatus
+      )
+      return
+    }
+
+    saveRequestIdRef.current += 1
     textRef.current = nextPersistedText
     setText(nextPersistedText)
     setCharacterCount(nextPersistedText.length)
@@ -276,10 +292,8 @@ export const JournalInput: React.FC<JournalInputProps> = ({
           inputAccessoryViewID={
             shouldShowKeyboardDoneButton ? inputAccessoryViewID : undefined
           }
-          onSubmitEditing={handleKeyboardDone}
-          returnKeyType="done"
           scrollEnabled={true}
-          submitBehavior="blurAndSubmit"
+          submitBehavior="newline"
           style={{
             minHeight: JOURNAL_TEXT_INPUT_MIN_HEIGHT_PX,
           }}
