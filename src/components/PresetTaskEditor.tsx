@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useId } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import {
   Modal,
   SafeAreaView,
@@ -21,17 +21,12 @@ import {
   OperationFeedback,
   OperationFeedbackKind,
 } from '@/src/components/OperationFeedback'
-import { KeyboardDoneAccessory } from '@/src/components/KeyboardDoneAccessory'
 import { Task, Category } from '@/src/types'
 import { getCategoryDisplayName } from '@/src/i18n/config'
 import {
   PRESET_EDITOR_KEYBOARD_EXTRA_SCROLL_PADDING_PX,
   PRESET_TASK_FOCUS_SCROLL_OFFSET_PX,
 } from '@/src/constants/interaction'
-
-const PRESET_EDITOR_INPUT_ACCESSORY_VIEW_ID_PREFIX =
-  'preset-editor-input-accessory'
-const NATIVE_ID_UNSUPPORTED_CHARACTERS = /[^A-Za-z0-9_-]/g
 
 interface PresetTaskEditorProps {
   isVisible: boolean
@@ -165,19 +160,13 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   const [pendingFocusedTaskIndex, setPendingFocusedTaskIndex] = useState<
     number | null
   >(null)
-  const [isPresetKeyboardDoneVisible, setIsPresetKeyboardDoneVisible] =
-    useState(false)
+  const [isPresetKeyboardVisible, setIsPresetKeyboardVisible] = useState(false)
   const [operationFeedback, setOperationFeedback] =
     useState<PresetEditorFeedback | null>(null)
   const taskListScrollViewRef = useRef<ScrollView>(null)
   const taskTitleInputRefs = useRef<Record<number, TextInput | null>>({})
   const taskMinutesInputRefs = useRef<Record<number, TextInput | null>>({})
   const newCategoryInputRef = useRef<TextInput>(null)
-  const reactId = useId()
-  const inputAccessoryViewID = `${PRESET_EDITOR_INPUT_ACCESSORY_VIEW_ID_PREFIX}-${reactId.replace(
-    NATIVE_ID_UNSUPPORTED_CHARACTERS,
-    ''
-  )}`
   const taskValidation = useMemo(
     () => validatePresetTaskDrafts(editingTasks),
     [editingTasks]
@@ -188,14 +177,14 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   )
   const saveDisabledReason = taskValidation.formMessages[0] ?? null
   const isSaveDisabled = isLoading || !taskValidation.isValid
-  const shouldShowPresetEditorActions = !isPresetKeyboardDoneVisible
+  const shouldShowPresetEditorActions = !isPresetKeyboardVisible
 
   // Initialize editing tasks when modal opens
   useEffect(() => {
     if (isVisible) {
       setOperationFeedback(null)
       setPendingFocusedTaskIndex(null)
-      setIsPresetKeyboardDoneVisible(false)
+      setIsPresetKeyboardVisible(false)
       taskTitleInputRefs.current = {}
       taskMinutesInputRefs.current = {}
       setEditingTasks(
@@ -216,7 +205,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       'keyboardDidHide',
       () => {
         // Native keyboard dismissal should restore the footer actions too.
-        setIsPresetKeyboardDoneVisible(false)
+        setIsPresetKeyboardVisible(false)
       }
     )
 
@@ -268,7 +257,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   }
 
   /**
-   * Finishes preset text editing from the keyboard accessory or return key.
+   * Finishes preset text editing when a field's keyboard return key is pressed.
    * @returns Nothing; blurs known inputs and asks iOS to dismiss the keyboard.
    * @example
    * handleKeyboardDone() // closes the active preset editor keyboard
@@ -282,27 +271,27 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
     })
     newCategoryInputRef.current?.blur?.()
     Keyboard.dismiss()
-    setIsPresetKeyboardDoneVisible(false)
+    setIsPresetKeyboardVisible(false)
   }
 
   /**
-   * Shows the in-app Done control when a preset input receives focus in simulator hardware-keyboard mode.
-   * @returns Nothing; keeps the dismissal action visible until editing is explicitly finished.
+   * Tracks keyboard visibility so preset Save and Cancel stay hidden while a field is active.
+   * @returns Nothing; marks preset editing as keyboard-active.
    * @example
-   * handlePresetInputFocus() // reveals the preset editor Done button
+   * handlePresetInputFocus() // hides the preset editor footer actions
    */
   const handlePresetInputFocus = (): void => {
-    setIsPresetKeyboardDoneVisible(true)
+    setIsPresetKeyboardVisible(true)
   }
 
   /**
    * Restores the preset footer after native text inputs lose focus.
-   * @returns Nothing; hides the temporary keyboard Done action.
+   * @returns Nothing; marks preset editing as no longer keyboard-active.
    * @example
    * handlePresetInputBlur() // restores Save and Cancel after editing ends
    */
   const handlePresetInputBlur = (): void => {
-    setIsPresetKeyboardDoneVisible(false)
+    setIsPresetKeyboardVisible(false)
   }
 
   /**
@@ -562,7 +551,6 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                           updateTask(task.index, { title: text })
                         }
                         autoFocus={task.index === pendingFocusedTaskIndex}
-                        inputAccessoryViewID={inputAccessoryViewID}
                         onFocus={handlePresetInputFocus}
                         onBlur={handlePresetInputBlur}
                         onSubmitEditing={handleKeyboardDone}
@@ -675,7 +663,6 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                         placeholder={t(
                           'presetEditor.estimatedMinutesPlaceholder'
                         )}
-                        inputAccessoryViewID={inputAccessoryViewID}
                         keyboardType="numeric"
                         onFocus={handlePresetInputFocus}
                         onBlur={handlePresetInputBlur}
@@ -734,7 +721,6 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                     value={newCategoryName}
                     onChangeText={setNewCategoryName}
                     placeholder={t('presetEditor.newCategoryPlaceholder')}
-                    inputAccessoryViewID={inputAccessoryViewID}
                     onFocus={handlePresetInputFocus}
                     onBlur={handlePresetInputBlur}
                     onSubmitEditing={handleKeyboardDone}
@@ -770,31 +756,16 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
         </ScrollView>
 
         {/* Footer */}
-        <Box className="p-4 border-t border-gray-200">
-          {isPresetKeyboardDoneVisible && (
-            <Box className="mb-3 items-end">
-              <Pressable
-                accessibilityLabel={t('common.done')}
-                accessibilityRole="button"
-                className="rounded-lg bg-blue-50 px-4 py-2"
-                onPress={handleKeyboardDone}
-                testID="preset-editor-inline-keyboard-done-button"
+        {shouldShowPresetEditorActions && (
+          <Box className="p-4 border-t border-gray-200">
+            {saveDisabledReason && (
+              <Text
+                className="mb-3 text-center text-sm font-medium text-red-600"
+                testID="preset-editor-save-disabled-reason"
               >
-                <Text className="text-base font-semibold text-blue-600">
-                  {t('common.done')}
-                </Text>
-              </Pressable>
-            </Box>
-          )}
-          {shouldShowPresetEditorActions && saveDisabledReason && (
-            <Text
-              className="mb-3 text-center text-sm font-medium text-red-600"
-              testID="preset-editor-save-disabled-reason"
-            >
-              {t(saveDisabledReason)}
-            </Text>
-          )}
-          {shouldShowPresetEditorActions && (
+                {t(saveDisabledReason)}
+              </Text>
+            )}
             <HStack space="md">
               <Pressable
                 onPress={handleCancel}
@@ -826,15 +797,8 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                 </Text>
               </Pressable>
             </HStack>
-          )}
-        </Box>
-        <KeyboardDoneAccessory
-          accessibilityLabel={t('common.done')}
-          nativeID={inputAccessoryViewID}
-          onPress={handleKeyboardDone}
-          testID="preset-editor-keyboard-done-button"
-          title={t('common.done')}
-        />
+          </Box>
+        )}
         </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
