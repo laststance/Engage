@@ -171,6 +171,14 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
     }
   }
 
+  /**
+   * Reschedules an enabled reminder when the user changes its hour or minute picker.
+   * @param hour - The selected local hour in 24-hour time.
+   * @param minute - The selected local minute.
+   * @returns A promise that settles after the draft and native schedule are updated.
+   * @example
+   * await handleTimeChange(20, 30)
+   */
   const handleTimeChange = async (
     hour: number,
     minute: number

@@ -1,15 +1,29 @@
 import React from 'react'
-import { Text } from 'react-native'
+import { AccessibilityInfo, Text } from 'react-native'
 import { fireEvent, render } from '@testing-library/react-native'
 import { TodayScreenErrorBoundary } from '@/src/components/TodayScreenErrorBoundary'
 
 describe('TodayScreenErrorBoundary', () => {
-  it('restores Today content when a user retries a transient render failure', () => {
-    // Arrange
-    let shouldThrow = true
-    const consoleErrorSpy = jest
+  let consoleErrorSpy: jest.SpyInstance
+  let accessibilityAnnouncementSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    consoleErrorSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => undefined)
+    accessibilityAnnouncementSpy = jest.spyOn(
+      AccessibilityInfo,
+      'announceForAccessibility',
+    )
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('announces a localized fallback without raw diagnostics and restores Today after retry', () => {
+    // Arrange
+    let shouldThrow = true
 
     /**
      * Simulates one transient descendant failure before rendering normally on retry.
@@ -25,7 +39,7 @@ describe('TodayScreenErrorBoundary', () => {
       return <Text>Recovered Today content</Text>
     }
 
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText, queryByText } = render(
       <TodayScreenErrorBoundary
         errorMessage="Unable to load Today"
         retryLabel="Retry"
@@ -36,7 +50,10 @@ describe('TodayScreenErrorBoundary', () => {
     )
 
     expect(getByText('Unable to load Today')).toBeTruthy()
-    expect(getByText('Error: temporary render failure')).toBeTruthy()
+    expect(queryByText('Error: temporary render failure')).toBeNull()
+    expect(accessibilityAnnouncementSpy).toHaveBeenCalledWith(
+      'Unable to load Today',
+    )
 
     // Act
     shouldThrow = false
@@ -45,6 +62,5 @@ describe('TodayScreenErrorBoundary', () => {
     // Assert
     expect(getByText('Recovered Today content')).toBeTruthy()
     expect(consoleErrorSpy).toHaveBeenCalled()
-    consoleErrorSpy.mockRestore()
   })
 })

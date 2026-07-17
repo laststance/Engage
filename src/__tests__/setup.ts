@@ -79,6 +79,9 @@ jest.mock('react-native', () => {
     Alert: {
       alert: jest.fn(),
     },
+    AccessibilityInfo: {
+      announceForAccessibility: jest.fn(),
+    },
     Share: {
       share: jest.fn(),
     },

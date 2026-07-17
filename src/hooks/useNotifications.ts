@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Linking } from 'react-native'
 import * as Notifications from 'expo-notifications'
 import {
@@ -147,6 +147,7 @@ export function useNotifications() {
   )
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const isMountedRef = useRef(false)
 
   /**
    * Loads Expo notification state after the native reads settle, for mount and manual refresh callers.
@@ -156,12 +157,24 @@ export function useNotifications() {
    */
   const loadNotificationSettings = useCallback(async (): Promise<void> => {
     try {
-      setSettings(await readNotificationSettings())
+      const nextSettings = await readNotificationSettings()
+
+      // Manual refreshes may outlive their screen, so only mounted owners receive results.
+      if (!isMountedRef.current) {
+        return
+      }
+
+      setSettings(nextSettings)
     } catch (error) {
       console.error('Failed to refresh notification settings:', error)
-      setErrorMessage('notifications.settingsUnavailable')
+
+      if (isMountedRef.current) {
+        setErrorMessage('notifications.settingsUnavailable')
+      }
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) {
+        setIsLoading(false)
+      }
     }
   }, [])
 
@@ -172,6 +185,10 @@ export function useNotifications() {
    * await refreshSettings()
    */
   const refreshSettings = useCallback(async (): Promise<void> => {
+    if (!isMountedRef.current) {
+      return
+    }
+
     setIsLoading(true)
     setErrorMessage(null)
     await loadNotificationSettings()
@@ -179,6 +196,7 @@ export function useNotifications() {
 
   useEffect(() => {
     let shouldIgnoreResult = false
+    isMountedRef.current = true
 
     void readNotificationSettings()
       .then((nextSettings) => {
@@ -202,6 +220,7 @@ export function useNotifications() {
 
     return () => {
       shouldIgnoreResult = true
+      isMountedRef.current = false
     }
   }, [])
 
@@ -220,7 +239,11 @@ export function useNotifications() {
       return getNotificationPermissionState(permissions) === 'enabled'
     } catch (error) {
       console.error('Failed to request notification permissions:', error)
-      setErrorMessage('notifications.permissionRequestFailed')
+
+      if (isMountedRef.current) {
+        setErrorMessage('notifications.permissionRequestFailed')
+      }
+
       return false
     }
   }, [refreshSettings])
@@ -258,7 +281,11 @@ export function useNotifications() {
         return true
       } catch (error) {
         console.error('Failed to schedule daily reminder:', error)
-        setErrorMessage('notifications.scheduleFailed')
+
+        if (isMountedRef.current) {
+          setErrorMessage('notifications.scheduleFailed')
+        }
+
         await refreshSettings()
         return false
       }
@@ -276,7 +303,11 @@ export function useNotifications() {
       await refreshSettings()
     } catch (error) {
       console.error('Failed to cancel daily reminder:', error)
-      setErrorMessage('notifications.cancelFailed')
+
+      if (isMountedRef.current) {
+        setErrorMessage('notifications.cancelFailed')
+      }
+
       await refreshSettings()
     }
   }, [refreshSettings])

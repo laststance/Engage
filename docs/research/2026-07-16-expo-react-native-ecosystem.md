@@ -108,7 +108,7 @@ Engage's backup service still uses <code>expo-file-system/legacy</code> alongsid
 | React Native DevTools theme emulation | RN 0.86 | Test light/dark themes without changing the simulator or device theme. |
 | Expo SQLite typed SQL template | SDK 57 | Evaluate <code>db.sql</code> for safely escaped, inferred queries in repositories; do not bypass the current repository abstraction. |
 | Expo SQLite ArrayBuffer BLOB support | SDK 56+ | Enables binary backup or attachment data without manual byte-array conversions if Engage adds richer journal media later. |
-| Expo SQLite inspector and change sessions | SDK 56+ | Inspect data from the dev menu and build efficient change-set based backup/sync experiments. |
+| Expo SQLite inspector and change sessions | SDK 56+ | Inspect data from the dev menu and build efficient change-set-based backup/sync experiments. |
 | Expo UI | Stable in SDK 56 | Prototype a small settings surface with native SwiftUI/Jetpack Compose primitives. It is not a reason to rewrite the existing design system. |
 | Inline Expo native modules | Stable SDK 56 workflow | Add a tiny native capability directly from the app if a future habit or health integration needs one, without publishing a separate module package. |
 | Expo Router Native Tabs | Alpha in current docs | A system-native tab-bar experiment could improve platform fidelity, but it should remain separate from this upgrade because Engage has a custom haptic JS tab button and the API is still subject to change. |

@@ -1,6 +1,12 @@
 import React from 'react'
 import { Alert } from 'react-native'
-import { fireEvent, render, waitFor } from '@testing-library/react-native'
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from '@testing-library/react-native'
 import { BackupManager } from '@/src/components/BackupManager'
 
 const mockUseAppStore = jest.fn()
@@ -42,6 +48,34 @@ describe('BackupManager', () => {
     )
   })
 
+  it('shows generic metadata loading without announcing backup operations', () => {
+    // Arrange
+    store.listBackups.mockReturnValue(new Promise(() => undefined))
+    store.getBackupStats.mockReturnValue(new Promise(() => undefined))
+
+    // Act
+    const { getByTestId, getByText } = render(<BackupManager />)
+
+    // Assert
+    expect(getByTestId('backup-metadata-loading-feedback')).toBeTruthy()
+    expect(getByText('common.loading')).toBeTruthy()
+    expect(getByText('backup.create')).toBeTruthy()
+    expect(getByText('backup.export')).toBeTruthy()
+    expect(getByText('backup.import')).toBeTruthy()
+
+    // Initial loading disables every operation without claiming any one is active.
+    for (const testID of [
+      'backup-create-button',
+      'backup-export-button',
+      'backup-import-button',
+    ]) {
+      expect(getByTestId(testID).props.accessibilityState).toMatchObject({
+        busy: false,
+        disabled: true,
+      })
+    }
+  })
+
   it('shows inline success feedback instead of a blocking alert after creating a backup', async () => {
     // Arrange
     store.createBackup.mockResolvedValue({
@@ -51,6 +85,9 @@ describe('BackupManager', () => {
       errors: [],
     })
     const { getByTestId } = render(<BackupManager />)
+    await waitFor(() => {
+      expect(getByTestId('backup-create-button').props.disabled).toBe(false)
+    })
 
     // Act
     fireEvent.press(getByTestId('backup-create-button'))
@@ -63,7 +100,7 @@ describe('BackupManager', () => {
     expect(Alert.alert).not.toHaveBeenCalled()
   })
 
-  it('exposes busy and disabled state while a backup is being created', async () => {
+  it('marks only Create as busy while a backup is being created', async () => {
     // Arrange
     let resolveBackup: (result: {
       success: boolean
@@ -76,7 +113,10 @@ describe('BackupManager', () => {
         resolveBackup = resolve
       })
     )
-    const { getByTestId } = render(<BackupManager />)
+    const { getByTestId, getByText } = render(<BackupManager />)
+    await waitFor(() => {
+      expect(getByTestId('backup-create-button').props.disabled).toBe(false)
+    })
 
     // Act
     fireEvent.press(getByTestId('backup-create-button'))
@@ -90,11 +130,25 @@ describe('BackupManager', () => {
         disabled: true,
       })
     })
-    resolveBackup({
-      success: true,
-      fileName: 'engage-backup.json',
-      size: 2048,
-      errors: [],
+    expect(
+      getByTestId('backup-export-button').props.accessibilityState
+    ).toMatchObject({ busy: false, disabled: true })
+    expect(
+      getByTestId('backup-import-button').props.accessibilityState
+    ).toMatchObject({ busy: false, disabled: true })
+    expect(
+      within(getByTestId('backup-create-button')).getByText('backup.creating')
+    ).toBeTruthy()
+    expect(getByText('backup.export')).toBeTruthy()
+    expect(getByText('backup.import')).toBeTruthy()
+
+    await act(async () => {
+      resolveBackup({
+        success: true,
+        fileName: 'engage-backup.json',
+        size: 2048,
+        errors: [],
+      })
     })
   })
 })

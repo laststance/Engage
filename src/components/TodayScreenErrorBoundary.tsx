@@ -1,4 +1,5 @@
 import React from 'react'
+import { AccessibilityInfo } from 'react-native'
 import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 import { AppPressable } from '@/src/components/AppPressable'
@@ -12,12 +13,10 @@ interface TodayScreenErrorBoundaryProps {
 }
 
 interface TodayScreenErrorBoundaryState {
-  error: Error | null
   hasError: boolean
 }
 
 const INITIAL_ERROR_STATE: TodayScreenErrorBoundaryState = {
-  error: null,
   hasError: false,
 }
 
@@ -35,27 +34,25 @@ export class TodayScreenErrorBoundary extends React.Component<
   state: TodayScreenErrorBoundaryState = INITIAL_ERROR_STATE
 
   /**
-   * Records a render failure when React retries this boundary with fallback state.
-   * @param error - The descendant render error captured by React.
+   * Selects fallback state when React retries this boundary after a descendant failure.
    * @returns Error state that selects the localized fallback.
    * @example
-   * TodayScreenErrorBoundary.getDerivedStateFromError(new Error('render')) // => { hasError: true, error }
+   * TodayScreenErrorBoundary.getDerivedStateFromError() // => { hasError: true }
    */
-  static getDerivedStateFromError(
-    error: Error
-  ): TodayScreenErrorBoundaryState {
-    return { error, hasError: true }
+  static getDerivedStateFromError(): TodayScreenErrorBoundaryState {
+    return { hasError: true }
   }
 
   /**
-   * Reports a caught Today render failure after React commits the fallback.
+   * Reports and announces a caught Today render failure after React commits the fallback.
    * @param error - The descendant render error captured by React.
-   * @returns Nothing; the error is written to the diagnostic console.
+   * @returns Nothing; diagnostics are logged and localized fallback copy is announced.
    * @example
    * boundary.componentDidCatch(new Error('render'))
    */
   componentDidCatch(error: Error): void {
     console.error('TodayScreen: Render error', error)
+    AccessibilityInfo.announceForAccessibility(this.props.errorMessage)
   }
 
   /**
@@ -82,9 +79,6 @@ export class TodayScreenErrorBoundary extends React.Component<
           <VStack className="flex-1 justify-center items-center p-4">
             <Text className="text-red-600 text-center">
               {this.props.errorMessage}
-            </Text>
-            <Text className="text-gray-600 text-center text-sm mt-2">
-              {this.state.error?.toString()}
             </Text>
             <AppPressable
               accessibilityLabel={this.props.retryLabel}

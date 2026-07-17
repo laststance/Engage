@@ -6,9 +6,9 @@ alwaysApply: true
 
 ## Tech Stack (Exact Versions)
 
-**Core**: React Native 0.81.4 + React 19.1.0 + Expo ~54.0.7 + TypeScript ~5.9.2  
-**UI**: NativeWind 4.2.0 + Gluestack UI + TailwindCSS 3.4.17 + Reanimated 4.1.0  
-**State**: Zustand 5.0.8 + Expo SQLite 16.0.8 + AsyncStorage 2.2.0
+**Core**: React Native 0.86.0 + React 19.2.3 + Expo ~57.0.6 + TypeScript ~6.0.3
+**UI**: NativeWind 4.2.6 + Gluestack UI + TailwindCSS 3.4.19 + Reanimated 4.5.0
+**State**: Zustand 5.0.14 + Expo SQLite 57.0.1 + AsyncStorage 2.2.0
 
 ## Critical Rules
 

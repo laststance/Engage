@@ -59,6 +59,13 @@ const getJournalFeedbackKind = (
   return 'success'
 }
 
+/**
+ * Edits and autosaves one day's journal whenever DaySheet renders its reflection field.
+ * @param props - The active date, persisted entry, update callback, and input limits.
+ * @returns A keyboard-aware journal field with validation and save feedback.
+ * @example
+ * <JournalInput date="2026-07-17" entry={entry} onUpdate={saveEntry} />
+ */
 export const JournalInput: React.FC<JournalInputProps> = ({
   date,
   entry,
