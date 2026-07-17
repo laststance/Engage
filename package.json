@@ -6,6 +6,7 @@
     "start": "expo start --port 8090",
     "android": "expo run:android --port 8090",
     "ios": "expo run:ios --port 8090",
+    "ios:headless": "node scripts/ios-headless.js",
     "web": "expo start --web --port 8090",
     "lint": "expo lint --max-warnings 0",
     "quality:fallow": "pnpm fallow:dead-code && pnpm fallow:dupes",
