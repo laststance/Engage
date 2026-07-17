@@ -5,6 +5,14 @@ import { Category, Task } from '@/src/types'
 import { PresetTaskEditor } from '../PresetTaskEditor'
 
 jest.spyOn(Alert, 'alert')
+globalThis.requestAnimationFrame = jest.fn()
+globalThis.cancelAnimationFrame = jest.fn()
+
+const pendingAnimationFrameCallbacks = new Map<
+  number,
+  Parameters<typeof requestAnimationFrame>[0]
+>()
+let nextAnimationFrameId = 0
 
 const mockCategories: Category[] = [
   { id: 'business', name: 'Business' },
@@ -70,6 +78,16 @@ const getTaskTitleInputTestIds = (
 describe('PresetTaskEditor form safety', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    pendingAnimationFrameCallbacks.clear()
+    nextAnimationFrameId = 0
+    jest.mocked(requestAnimationFrame).mockImplementation((callback) => {
+      nextAnimationFrameId += 1
+      pendingAnimationFrameCallbacks.set(nextAnimationFrameId, callback)
+      return nextAnimationFrameId
+    })
+    jest.mocked(cancelAnimationFrame).mockImplementation((frameId) => {
+      pendingAnimationFrameCallbacks.delete(frameId)
+    })
   })
 
   it('shows inline task-name validation while typing and explains disabled Save', () => {
@@ -133,7 +151,8 @@ describe('PresetTaskEditor form safety', () => {
     // Assert
     expect(queryByTestId('preset-editor-save')).toBeNull()
     expect(queryByTestId('preset-editor-cancel')).toBeNull()
-    expect(getByTestId('preset-editor-inline-keyboard-done-button')).toBeTruthy()
+    expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
+    expect(queryByTestId('preset-editor-keyboard-done-button')).toBeNull()
   })
 
   it('restores preset Save and Cancel actions after the native keyboard hides', () => {
@@ -189,9 +208,9 @@ describe('PresetTaskEditor form safety', () => {
     })
   })
 
-  it('keeps preset text inputs above the keyboard and gives them a Done action', () => {
+  it('keeps preset text inputs above the keyboard without custom Done controls', () => {
     // Arrange
-    const { getAllByText, getByTestId, queryByTestId } = renderEditor()
+    const { getByTestId, queryByTestId } = renderEditor()
 
     // Act
     fireEvent.press(getByTestId('add-category-button'))
@@ -203,38 +222,52 @@ describe('PresetTaskEditor form safety', () => {
 
     expect(getByTestId('preset-editor-keyboard-avoiding-view')).toBeTruthy()
     expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
-    expect(taskTitleInput.props.inputAccessoryViewID).toEqual(
-      expect.stringContaining('preset-editor-input-accessory')
-    )
-    expect(taskMinutesInput.props.inputAccessoryViewID).toBe(
-      taskTitleInput.props.inputAccessoryViewID
-    )
-    expect(newCategoryInput.props.inputAccessoryViewID).toBe(
-      taskTitleInput.props.inputAccessoryViewID
-    )
+    expect(queryByTestId('preset-editor-keyboard-done-button')).toBeNull()
+    expect(taskTitleInput.props.inputAccessoryViewID).toBeUndefined()
+    expect(taskMinutesInput.props.inputAccessoryViewID).toBeUndefined()
+    expect(newCategoryInput.props.inputAccessoryViewID).toBeUndefined()
     expect(taskTitleInput.props.returnKeyType).toBe('done')
     expect(taskTitleInput.props.submitBehavior).toBe('blurAndSubmit')
     expect(taskMinutesInput.props.returnKeyType).toBe('done')
     expect(newCategoryInput.props.returnKeyType).toBe('done')
     fireEvent(newCategoryInput, 'focus')
-    expect(getByTestId('preset-editor-inline-keyboard-done-button')).toBeTruthy()
-    expect(getAllByText('common.done').length).toBeGreaterThan(0)
+    expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
+    expect(queryByTestId('preset-editor-keyboard-done-button')).toBeNull()
   })
 
-  it('dismisses the preset keyboard from the Done controls and return key', () => {
+  it('dismisses the preset keyboard from the return key without custom controls', () => {
     // Arrange
     const { getByTestId, queryByTestId } = renderEditor()
 
     // Act
-    fireEvent.press(getByTestId('preset-editor-keyboard-done-button'))
-    fireEvent(getByTestId('task-title-input-0'), 'focus')
-    fireEvent.press(getByTestId('preset-editor-inline-keyboard-done-button'))
     fireEvent(getByTestId('task-title-input-0'), 'focus')
     fireEvent(getByTestId('task-title-input-0'), 'submitEditing')
 
     // Assert
     expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
-    expect(Keyboard.dismiss).toHaveBeenCalledTimes(3)
+    expect(queryByTestId('preset-editor-keyboard-done-button')).toBeNull()
+    expect(Keyboard.dismiss).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps preset actions hidden while focus moves from title to minutes', () => {
+    // Arrange
+    const { getByTestId, queryByTestId } = renderEditor()
+    const taskTitleInput = getByTestId('task-title-input-0')
+    const taskMinutesInput = getByTestId('task-minutes-input-0')
+
+    // Act
+    fireEvent(taskTitleInput, 'focus')
+    fireEvent(taskTitleInput, 'blur')
+    fireEvent(taskMinutesInput, 'focus')
+    act(() => {
+      // Run any uncancelled frame callbacks to prove the footer cannot return after handoff.
+      pendingAnimationFrameCallbacks.forEach((callback) => callback(0))
+    })
+
+    // Assert
+    expect(queryByTestId('preset-editor-save')).toBeNull()
+    expect(queryByTestId('preset-editor-cancel')).toBeNull()
+    expect(cancelAnimationFrame).toHaveBeenCalledTimes(1)
   })
 
   it('exposes selected state on category chips for screen readers', () => {
