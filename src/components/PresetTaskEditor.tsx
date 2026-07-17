@@ -167,6 +167,9 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   const taskTitleInputRefs = useRef<Record<number, TextInput | null>>({})
   const taskMinutesInputRefs = useRef<Record<number, TextInput | null>>({})
   const newCategoryInputRef = useRef<TextInput>(null)
+  const pendingFooterRestoreFrameRef = useRef<
+    ReturnType<typeof requestAnimationFrame> | null
+  >(null)
   const taskValidation = useMemo(
     () => validatePresetTaskDrafts(editingTasks),
     [editingTasks]
@@ -205,12 +208,20 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       'keyboardDidHide',
       () => {
         // Native keyboard dismissal should restore the footer actions too.
+        if (pendingFooterRestoreFrameRef.current !== null) {
+          cancelAnimationFrame(pendingFooterRestoreFrameRef.current)
+          pendingFooterRestoreFrameRef.current = null
+        }
         setIsPresetKeyboardVisible(false)
       }
     )
 
     return () => {
       keyboardDidHideSubscription.remove()
+      // Cancel deferred UI work when the editor unmounts.
+      if (pendingFooterRestoreFrameRef.current !== null) {
+        cancelAnimationFrame(pendingFooterRestoreFrameRef.current)
+      }
     }
   }, [])
 
@@ -281,17 +292,26 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
    * handlePresetInputFocus() // hides the preset editor footer actions
    */
   const handlePresetInputFocus = (): void => {
+    // A new field claimed focus before the footer could return, so keep it hidden.
+    if (pendingFooterRestoreFrameRef.current !== null) {
+      cancelAnimationFrame(pendingFooterRestoreFrameRef.current)
+      pendingFooterRestoreFrameRef.current = null
+    }
     setIsPresetKeyboardVisible(true)
   }
 
   /**
-   * Restores the preset footer after native text inputs lose focus.
-   * @returns Nothing; marks preset editing as no longer keyboard-active.
+   * Restores the preset footer after focus leaves every preset input for a full frame.
+   * @returns Nothing; defers restoration so field-to-field focus handoffs remain keyboard-active.
    * @example
-   * handlePresetInputBlur() // restores Save and Cancel after editing ends
+   * handlePresetInputBlur() // restores Save and Cancel unless another input receives focus
    */
   const handlePresetInputBlur = (): void => {
-    setIsPresetKeyboardVisible(false)
+    // Wait one frame so a title-to-minutes handoff can cancel this restoration.
+    pendingFooterRestoreFrameRef.current = requestAnimationFrame(() => {
+      pendingFooterRestoreFrameRef.current = null
+      setIsPresetKeyboardVisible(false)
+    })
   }
 
   /**

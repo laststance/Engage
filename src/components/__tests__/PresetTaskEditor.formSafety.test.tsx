@@ -5,6 +5,14 @@ import { Category, Task } from '@/src/types'
 import { PresetTaskEditor } from '../PresetTaskEditor'
 
 jest.spyOn(Alert, 'alert')
+globalThis.requestAnimationFrame = jest.fn()
+globalThis.cancelAnimationFrame = jest.fn()
+
+const pendingAnimationFrameCallbacks = new Map<
+  number,
+  Parameters<typeof requestAnimationFrame>[0]
+>()
+let nextAnimationFrameId = 0
 
 const mockCategories: Category[] = [
   { id: 'business', name: 'Business' },
@@ -70,6 +78,16 @@ const getTaskTitleInputTestIds = (
 describe('PresetTaskEditor form safety', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    pendingAnimationFrameCallbacks.clear()
+    nextAnimationFrameId = 0
+    jest.mocked(requestAnimationFrame).mockImplementation((callback) => {
+      nextAnimationFrameId += 1
+      pendingAnimationFrameCallbacks.set(nextAnimationFrameId, callback)
+      return nextAnimationFrameId
+    })
+    jest.mocked(cancelAnimationFrame).mockImplementation((frameId) => {
+      pendingAnimationFrameCallbacks.delete(frameId)
+    })
   })
 
   it('shows inline task-name validation while typing and explains disabled Save', () => {
@@ -229,6 +247,27 @@ describe('PresetTaskEditor form safety', () => {
     expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
     expect(queryByTestId('preset-editor-keyboard-done-button')).toBeNull()
     expect(Keyboard.dismiss).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps preset actions hidden while focus moves from title to minutes', () => {
+    // Arrange
+    const { getByTestId, queryByTestId } = renderEditor()
+    const taskTitleInput = getByTestId('task-title-input-0')
+    const taskMinutesInput = getByTestId('task-minutes-input-0')
+
+    // Act
+    fireEvent(taskTitleInput, 'focus')
+    fireEvent(taskTitleInput, 'blur')
+    fireEvent(taskMinutesInput, 'focus')
+    act(() => {
+      // Run any uncancelled frame callbacks to prove the footer cannot return after handoff.
+      pendingAnimationFrameCallbacks.forEach((callback) => callback(0))
+    })
+
+    // Assert
+    expect(queryByTestId('preset-editor-save')).toBeNull()
+    expect(queryByTestId('preset-editor-cancel')).toBeNull()
+    expect(cancelAnimationFrame).toHaveBeenCalledTimes(1)
   })
 
   it('exposes selected state on category chips for screen readers', () => {
