@@ -32,9 +32,16 @@ pnpm install
 ```bash
 pnpm start
 pnpm ios
+pnpm ios:headless
 pnpm android
 pnpm web
 ```
+
+`pnpm ios:headless` uses Expo's generic build-only mode plus `simctl` to build
+an embedded Release bundle, boot a dedicated `Engage Headless` device, and
+launch the app without opening `Simulator.app` or starting a persistent Metro
+development server. Override the dedicated device with
+`IOS_HEADLESS_UDID=<udid>` when needed.
 
 ## Quality Checks
 
