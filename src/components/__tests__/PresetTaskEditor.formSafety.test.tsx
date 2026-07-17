@@ -211,6 +211,34 @@ describe('PresetTaskEditor form safety', () => {
     })
   })
 
+  it('keeps the Add Category label inside its button when the section heading needs more width', () => {
+    // Arrange
+    const { getByTestId, getByText } = renderEditor()
+
+    // Act
+    const categoryManagementHeading = getByText(
+      'presetEditor.categoryManagement'
+    )
+    const addCategoryButton = getByTestId('add-category-button')
+
+    // Assert
+    expect(categoryManagementHeading.props.className).toContain('flex-1')
+    expect(categoryManagementHeading.props.className).toContain('mr-2')
+    expect(addCategoryButton.props.className).toContain('shrink-0')
+    expect(getByText('presetEditor.addCategory')).toBeTruthy()
+  })
+
+  it('centers the Add Category label vertically within its minimum touch target', () => {
+    // Arrange
+    const { getByTestId } = renderEditor()
+
+    // Act
+    const addCategoryButton = getByTestId('add-category-button')
+
+    // Assert
+    expect(addCategoryButton.props.className).toContain('justify-center')
+  })
+
   it('keeps preset text inputs above the keyboard without custom Done controls', () => {
     // Arrange
     const { getByTestId, queryByTestId } = renderEditor()
