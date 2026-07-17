@@ -6,9 +6,7 @@ import { AppListRow } from '../AppListRow'
 import { AppScreen } from '../AppScreen'
 import { AppSection } from '../AppSection'
 
-jest.mock('@expo/vector-icons', () => ({
-  Ionicons: 'Ionicons',
-}))
+jest.mock('@react-native-vector-icons/ionicons', () => 'Ionicons')
 
 describe('App layout primitives', () => {
   it('renders the shared screen title and description without custom headers', () => {

@@ -18,6 +18,13 @@ interface StatisticsProps {
   categories: Category[]
 }
 
+/**
+ * Renders weekly and monthly progress whenever the Stats tab supplies aggregate data.
+ * @param props - The aggregate periods and categories used by the dashboard.
+ * @returns The interactive statistics dashboard for the selected period.
+ * @example
+ * <Statistics weeklyStats={weeklyStats} monthlyStats={monthlyStats} categories={categories} />
+ */
 export const Statistics: React.FC<StatisticsProps> = ({
   weeklyStats,
   monthlyStats,
@@ -53,24 +60,6 @@ export const Statistics: React.FC<StatisticsProps> = ({
   const formatPercentage = (value: number) => {
     return `${Math.round(value * 100)}%`
   }
-
-  const StatCard: React.FC<{
-    title: string
-    value: string | number
-    subtitle?: string
-    color?: string
-  }> = ({ title, value, subtitle, color = 'text-blue-600' }) => (
-    <AppCard>
-      <VStack space="sm">
-        <HStack className="items-center justify-between">
-          <Text className="text-sm font-medium text-gray-600">{title}</Text>
-          <IconSymbol name="chart.bar" size={14} color="#9CA3AF" />
-        </HStack>
-        <Text className={`text-2xl font-bold ${color}`}>{value}</Text>
-        {subtitle && <Text className="text-xs text-gray-500">{subtitle}</Text>}
-      </VStack>
-    </AppCard>
-  )
 
   /**
    * Get localized streak encouragement message based on streak count.
@@ -317,3 +306,35 @@ export const Statistics: React.FC<StatisticsProps> = ({
     </Box>
   )
 }
+
+interface StatCardProps {
+  title: string
+  value: string | number
+  subtitle?: string
+  color?: string
+}
+
+/**
+ * Renders one metric card whenever Statistics lays out the selected period summary.
+ * @param props - The metric label, value, optional detail, and value color.
+ * @returns A consistently styled statistics card.
+ * @example
+ * <StatCard title="Completion" value="80%" color="text-green-600" />
+ */
+const StatCard: React.FC<StatCardProps> = ({
+  title,
+  value,
+  subtitle,
+  color = 'text-blue-600',
+}) => (
+  <AppCard>
+    <VStack space="sm">
+      <HStack className="items-center justify-between">
+        <Text className="text-sm font-medium text-gray-600">{title}</Text>
+        <IconSymbol name="chart.bar" size={14} color="#9CA3AF" />
+      </HStack>
+      <Text className={`text-2xl font-bold ${color}`}>{value}</Text>
+      {subtitle && <Text className="text-xs text-gray-500">{subtitle}</Text>}
+    </VStack>
+  </AppCard>
+)

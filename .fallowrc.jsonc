@@ -27,9 +27,13 @@
     "@expo/metro-runtime",
     "@gluestack-ui/core",
     "@gluestack-ui/utils",
+    // Android resolves this fallback while static analysis selects icon-symbol.ios.tsx.
+    "@react-native-vector-icons/material-icons",
     "babel-plugin-module-resolver",
     "expo",
     "expo-device",
+    // Expo config and runtime integration load these outside the source import graph.
+    "expo-font",
     "expo-image",
     "expo-notifications",
     "expo-splash-screen",
@@ -40,8 +44,10 @@
     "nativewind",
     "react-native-css-interop",
     "react-native-gesture-handler",
+    "react-native-reanimated",
     "react-native-svg",
     "react-native-web",
+    "react-native-worklets",
     "tailwind-variants"
   ],
 

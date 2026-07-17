@@ -1,16 +1,21 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Text } from '@/components/ui/text'
-import { VStack } from '@/components/ui/vstack'
 import { AppScreen } from '@/src/components/AppScreen'
 import { DaySheet } from '@/src/components/DaySheet'
 import { TaskPicker } from '@/src/components/TaskPicker'
 import { PresetTaskEditor } from '@/src/components/PresetTaskEditor'
+import { TodayScreenErrorBoundary } from '@/src/components/TodayScreenErrorBoundary'
 import { useAppStore } from '@/src/stores/app-store'
 import { Task } from '@/src/types'
 import { useDayView } from '@/src/hooks/useDayView'
 import { formatDate } from '@/src/utils/dateUtils'
 
+/**
+ * Renders today's assigned habits whenever the Today tab is active.
+ * @returns The Today task, journal, picker, and preset-editor experience.
+ * @example
+ * <TodayScreen />
+ */
 export default function TodayScreen() {
   const { t } = useTranslation()
   const isPresetEditorVisible = useAppStore(
@@ -38,8 +43,12 @@ export default function TodayScreen() {
     setPresetEditorVisible(false)
   }
 
-  try {
-    return (
+  return (
+    <TodayScreenErrorBoundary
+      errorMessage={t('today.errorLoading')}
+      retryLabel={t('common.retry')}
+      title={t('today.title')}
+    >
       <AppScreen
         description={t('today.description')}
         descriptionTestID="today-description"
@@ -78,20 +87,6 @@ export default function TodayScreen() {
           onCreateCategory={day.handleCreateCategory}
         />
       </AppScreen>
-    )
-  } catch (error) {
-    console.error('TodayScreen: Render error', error)
-    return (
-      <AppScreen testID="today-screen" title={t('today.title')}>
-        <VStack className="flex-1 justify-center items-center p-4">
-          <Text className="text-red-600 text-center">
-            {t('today.errorLoading')}
-          </Text>
-          <Text className="text-gray-600 text-center text-sm mt-2">
-            {error?.toString()}
-          </Text>
-        </VStack>
-      </AppScreen>
-    )
-  }
+    </TodayScreenErrorBoundary>
+  )
 }

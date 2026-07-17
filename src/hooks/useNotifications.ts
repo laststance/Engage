@@ -148,31 +148,15 @@ export function useNotifications() {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const refreshSettings = useCallback(async (): Promise<void> => {
-    setIsLoading(true)
-    setErrorMessage(null)
-
+  /**
+   * Loads Expo notification state after the native reads settle, for mount and manual refresh callers.
+   * @returns A promise that settles after local settings and loading state are updated.
+   * @example
+   * await loadNotificationSettings()
+   */
+  const loadNotificationSettings = useCallback(async (): Promise<void> => {
     try {
-      const [permissions, scheduledNotifications] = await Promise.all([
-        Notifications.getPermissionsAsync(),
-        Notifications.getAllScheduledNotificationsAsync(),
-      ])
-      const permissionStatus = getNotificationPermissionState(permissions)
-      const dailyReminder = scheduledNotifications.find(
-        (notification) =>
-          notification.identifier === DAILY_REMINDER_NOTIFICATION_ID
-      )
-      const dailyReminderTime = dailyReminder
-        ? getReminderTimeFromTrigger(dailyReminder.trigger)
-        : null
-
-      setSettings({
-        enabled: permissionStatus === 'enabled' && Boolean(dailyReminder),
-        permissionStatus,
-        dailyReminderTime,
-        scheduledCount: scheduledNotifications.length,
-        isScheduled: Boolean(dailyReminder),
-      })
+      setSettings(await readNotificationSettings())
     } catch (error) {
       console.error('Failed to refresh notification settings:', error)
       setErrorMessage('notifications.settingsUnavailable')
@@ -181,9 +165,45 @@ export function useNotifications() {
     }
   }, [])
 
+  /**
+   * Starts a user-requested refresh before delegating the asynchronous native reads.
+   * @returns A promise that settles after notification settings are refreshed.
+   * @example
+   * await refreshSettings()
+   */
+  const refreshSettings = useCallback(async (): Promise<void> => {
+    setIsLoading(true)
+    setErrorMessage(null)
+    await loadNotificationSettings()
+  }, [loadNotificationSettings])
+
   useEffect(() => {
-    void refreshSettings()
-  }, [refreshSettings])
+    let shouldIgnoreResult = false
+
+    void readNotificationSettings()
+      .then((nextSettings) => {
+        // An unmounted settings screen must not receive its late native result.
+        if (!shouldIgnoreResult) {
+          setSettings(nextSettings)
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to refresh notification settings:', error)
+
+        if (!shouldIgnoreResult) {
+          setErrorMessage('notifications.settingsUnavailable')
+        }
+      })
+      .finally(() => {
+        if (!shouldIgnoreResult) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      shouldIgnoreResult = true
+    }
+  }, [])
 
   const requestPermissions = useCallback(async (): Promise<boolean> => {
     setErrorMessage(null)
@@ -274,5 +294,34 @@ export function useNotifications() {
     cancelDailyReminder,
     refreshSettings,
     openNotificationSettings,
+  }
+}
+
+/**
+ * Reads Expo permission and schedule data for hook mount and manual refresh paths.
+ * @returns The normalized notification settings used by the Settings UI.
+ * @example
+ * const settings = await readNotificationSettings()
+ */
+async function readNotificationSettings(): Promise<NotificationSettings> {
+  const [permissions, scheduledNotifications] = await Promise.all([
+    Notifications.getPermissionsAsync(),
+    Notifications.getAllScheduledNotificationsAsync(),
+  ])
+  const permissionStatus = getNotificationPermissionState(permissions)
+  const dailyReminder = scheduledNotifications.find(
+    (notification) =>
+      notification.identifier === DAILY_REMINDER_NOTIFICATION_ID
+  )
+  const dailyReminderTime = dailyReminder
+    ? getReminderTimeFromTrigger(dailyReminder.trigger)
+    : null
+
+  return {
+    enabled: permissionStatus === 'enabled' && Boolean(dailyReminder),
+    permissionStatus,
+    dailyReminderTime,
+    scheduledCount: scheduledNotifications.length,
+    isScheduled: Boolean(dailyReminder),
   }
 }

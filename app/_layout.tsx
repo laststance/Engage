@@ -2,13 +2,12 @@ import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
-} from '@react-navigation/native'
+} from 'expo-router/react-navigation'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useEffect } from 'react'
 import { LogBox } from 'react-native'
-import 'react-native-reanimated'
 import '@/src/i18n/config'
 
 import { useColorScheme } from '@/hooks/use-color-scheme'

@@ -45,15 +45,18 @@ tags:
 - assertVisible:
     id: "preset-editor-close"
 
-# Regression: Adding a task should focus the new row without showing the
-# preset Save footer above the keyboard.
+# Regression: Adding a task should focus the new row without restoring the
+# preset Save footer or the removed custom Done control above the keyboard.
 - tapOn:
     id: "add-task-button"
 
 - extendedWaitUntil:
     visible:
-      id: "preset-editor-inline-keyboard-done-button"
+      text: "Enter task name"
     timeout: 5000
+
+- assertNotVisible:
+    id: "preset-editor-inline-keyboard-done-button"
 
 - inputText: "E2EStableTask"
 

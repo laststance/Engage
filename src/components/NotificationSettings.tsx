@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { ScrollView, Switch, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { VStack } from '@/components/ui/vstack'
@@ -109,9 +109,9 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
     openNotificationSettings,
   } = useNotifications()
 
-  const [reminderTime, setReminderTime] = useState({
-    hour: settings.dailyReminderTime?.hour ?? DEFAULT_REMINDER_HOUR,
-    minute: settings.dailyReminderTime?.minute ?? DEFAULT_REMINDER_MINUTE,
+  const [draftReminderTime, setDraftReminderTime] = useState({
+    hour: DEFAULT_REMINDER_HOUR,
+    minute: DEFAULT_REMINDER_MINUTE,
   })
   const [operationMessage, setOperationMessage] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -121,12 +121,7 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
   )
   const isDenied = settings.permissionStatus === 'denied'
   const canEditReminder = settings.permissionStatus === 'enabled'
-
-  useEffect(() => {
-    if (settings.dailyReminderTime) {
-      setReminderTime(settings.dailyReminderTime)
-    }
-  }, [settings.dailyReminderTime])
+  const reminderTime = settings.dailyReminderTime ?? draftReminderTime
 
   const handleEnableReminder = async (): Promise<void> => {
     setIsSaving(true)
@@ -180,7 +175,7 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
     hour: number,
     minute: number
   ): Promise<void> => {
-    setReminderTime({ hour, minute })
+    setDraftReminderTime({ hour, minute })
 
     if (!canEditReminder || isSaving) {
       return

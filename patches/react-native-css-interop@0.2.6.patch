@@ -1,5 +1,5 @@
 diff --git a/dist/css-to-rn/parseDeclaration.js b/dist/css-to-rn/parseDeclaration.js
-index 59ea66e459dbf6922bcd80a6ac014408ca13c2af..f586ca5f4cbd1eb9a3f89a0b1b634c6d6b02a558 100644
+index 59ea66e459dbf6922bcd80a6ac014408ca13c2af..3bb9a2314670c2dd0f7df5cb3097d193c1aca682 100644
 --- a/dist/css-to-rn/parseDeclaration.js
 +++ b/dist/css-to-rn/parseDeclaration.js
 @@ -1757,17 +1757,19 @@ function parseDisplay(display, options) {

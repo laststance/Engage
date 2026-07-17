@@ -1,5 +1,7 @@
 import React from 'react'
-import { Ionicons } from '@expo/vector-icons'
+import Ionicons, {
+  type IoniconsIconName,
+} from '@react-native-vector-icons/ionicons'
 import { Box } from '@/components/ui/box'
 import { HStack } from '@/components/ui/hstack'
 import { Text } from '@/components/ui/text'
@@ -9,7 +11,7 @@ import { classNames } from '@/src/utils/classNames'
 
 interface AppListRowProps
   extends Omit<React.ComponentProps<typeof AppPressable>, 'children'> {
-  icon?: keyof typeof Ionicons.glyphMap
+  icon?: IoniconsIconName
   rightAccessory?: React.ReactNode
   showChevron?: boolean
   subtitle?: string

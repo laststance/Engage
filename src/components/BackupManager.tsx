@@ -34,14 +34,17 @@ interface BackupFeedback {
 }
 
 /**
- * Component for managing data backups and exports
+ * Renders backup controls whenever Settings opens the local data-management screen.
+ * @returns Backup creation, import, export, deletion, and status controls.
+ * @example
+ * <BackupManager />
  */
 export const BackupManager: React.FC = () => {
   const { t } = useTranslation()
   const triggerFeedback = useInteractionFeedback()
   const [backups, setBackups] = useState<BackupInfo[]>([])
   const [stats, setStats] = useState<BackupStats | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [operationFeedback, setOperationFeedback] =
     useState<BackupFeedback | null>(null)
 
@@ -56,13 +59,26 @@ export const BackupManager: React.FC = () => {
     clearError,
   } = useAppStore()
 
-  const loadBackupData = useCallback(async () => {
+  /**
+   * Reads backup files and aggregate statistics without changing component state.
+   * @returns A promise containing the backup list and its aggregate statistics.
+   * @example
+   * const [backupList, backupStats] = await readBackupData()
+   */
+  const readBackupData = useCallback(
+    () => Promise.all([listBackups(), getBackupStats()]),
+    [getBackupStats, listBackups]
+  )
+
+  /**
+   * Reloads rendered backup data after a user-triggered backup operation completes.
+   * @returns A promise that settles after backup state and loading state are updated.
+   * @example
+   * await loadBackupData()
+   */
+  const loadBackupData = useCallback(async (): Promise<void> => {
     try {
-      setIsLoading(true)
-      const [backupList, backupStats] = await Promise.all([
-        listBackups(),
-        getBackupStats(),
-      ])
+      const [backupList, backupStats] = await readBackupData()
       setBackups(backupList)
       setStats(backupStats)
     } catch (error) {
@@ -70,11 +86,34 @@ export const BackupManager: React.FC = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [getBackupStats, listBackups])
+  }, [readBackupData])
 
   useEffect(() => {
-    loadBackupData()
-  }, [loadBackupData])
+    let shouldIgnoreResult = false
+
+    void readBackupData()
+      .then(([backupList, backupStats]) => {
+        // A closed Settings screen must not receive its late native result.
+        if (shouldIgnoreResult) {
+          return
+        }
+
+        setBackups(backupList)
+        setStats(backupStats)
+      })
+      .catch((error) => {
+        console.error('Failed to load backup data:', error)
+      })
+      .finally(() => {
+        if (!shouldIgnoreResult) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      shouldIgnoreResult = true
+    }
+  }, [readBackupData])
 
   const handleCreateBackup = async () => {
     try {

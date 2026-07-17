@@ -54,7 +54,25 @@ type TranslateDaySheetDate = (
 const JAPANESE_LANGUAGE_PREFIX = 'ja'
 const MONTH_INDEX_OFFSET = 1
 
-export const DaySheet: React.FC<DaySheetProps> = ({
+/**
+ * Starts a date-keyed day session so pending actions and feedback never leak across days.
+ * @param props - The active date, day data, and user action callbacks.
+ * @returns The day sheet session associated with the supplied date.
+ * @example
+ * <DaySheet date="2026-07-16" tasks={tasks} completions={[]} {...actions} />
+ */
+export const DaySheet: React.FC<DaySheetProps> = (props) => {
+  return <DaySheetSession key={props.date} {...props} />
+}
+
+/**
+ * Owns transient completion state while one calendar date remains active.
+ * @param props - The active date, day data, and user action callbacks.
+ * @returns The interactive tasks and journal view for one date.
+ * @example
+ * <DaySheetSession date="2026-07-16" tasks={tasks} completions={[]} {...actions} />
+ */
+const DaySheetSession: React.FC<DaySheetProps> = ({
   date,
   tasks,
   completions,
@@ -92,16 +110,12 @@ export const DaySheet: React.FC<DaySheetProps> = ({
   )
 
   useEffect(() => {
-    setTaskFeedback(null)
-    pendingTaskIdRef.current = null
-    setPendingTaskId(null)
-
     return () => {
       if (feedbackTimeoutRef.current) {
         clearTimeout(feedbackTimeoutRef.current)
       }
     }
-  }, [date])
+  }, [])
 
   const showTaskFeedback = useCallback(
     (feedback: DaySheetTaskFeedback, shouldAutoClear: boolean) => {

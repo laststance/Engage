@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import {
   Modal,
-  SafeAreaView,
   ScrollView,
   Alert,
   TextInput,
@@ -10,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -144,7 +144,39 @@ const validatePresetTaskDrafts = (
   }
 }
 
+/**
+ * Opens a fresh preset-editing session so closed modals cannot retain stale drafts.
+ * @param props - Visibility, source tasks, categories, and persistence callbacks.
+ * @returns The active editor session, or `null` while the modal is closed.
+ * @example
+ * <PresetTaskEditor isVisible tasks={tasks} categories={categories} {...actions} />
+ */
 export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
+  isVisible,
+  ...presetTaskEditorProps
+}) => {
+  // Closing the editor discards local form and keyboard state in one step.
+  if (!isVisible) {
+    return null
+  }
+
+  return (
+    <PresetTaskEditorSession
+      key={JSON.stringify(presetTaskEditorProps.tasks)}
+      isVisible={isVisible}
+      {...presetTaskEditorProps}
+    />
+  )
+}
+
+/**
+ * Owns the editable task draft for one visible preset-editor session.
+ * @param props - The open editor inputs and persistence callbacks.
+ * @returns The visible preset task editor modal.
+ * @example
+ * <PresetTaskEditorSession isVisible tasks={tasks} categories={categories} {...actions} />
+ */
+const PresetTaskEditorSession: React.FC<PresetTaskEditorProps> = ({
   isVisible,
   tasks,
   categories,
@@ -153,7 +185,16 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   onCreateCategory,
 }) => {
   const { t } = useTranslation()
-  const [editingTasks, setEditingTasks] = useState<EditingTask[]>([])
+  const [editingTasks, setEditingTasks] = useState<EditingTask[]>(() =>
+    tasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      categoryId: task.categoryId,
+      defaultMinutes: task.defaultMinutes,
+      archived: task.archived,
+      isNew: false,
+    }))
+  )
   const [isLoading, setSaving] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false)
@@ -181,27 +222,6 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   const saveDisabledReason = taskValidation.formMessages[0] ?? null
   const isSaveDisabled = isLoading || !taskValidation.isValid
   const shouldShowPresetEditorActions = !isPresetKeyboardVisible
-
-  // Initialize editing tasks when modal opens
-  useEffect(() => {
-    if (isVisible) {
-      setOperationFeedback(null)
-      setPendingFocusedTaskIndex(null)
-      setIsPresetKeyboardVisible(false)
-      taskTitleInputRefs.current = {}
-      taskMinutesInputRefs.current = {}
-      setEditingTasks(
-        tasks.map((task) => ({
-          id: task.id,
-          title: task.title,
-          categoryId: task.categoryId,
-          defaultMinutes: task.defaultMinutes,
-          archived: task.archived,
-          isNew: false,
-        }))
-      )
-    }
-  }, [isVisible, tasks])
 
   useEffect(() => {
     const keyboardDidHideSubscription = Keyboard.addListener(
@@ -554,7 +574,9 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
                 <Box
                   key={task.index}
                   className="p-4 bg-gray-50 rounded-lg border border-gray-200"
-                  onLayout={(event) => handleTaskCardLayout(task.index, event)}
+                  onLayout={(event: LayoutChangeEvent) =>
+                    handleTaskCardLayout(task.index, event)
+                  }
                 >
                   <VStack space="md">
                     {/* Task Title */}

@@ -266,7 +266,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       {/* Text Input Container */}
       <Box
         className={`
-          rounded-lg p-4 min-h-[120px] border-2 transition-colors
+          rounded-lg p-4 min-h-[120px] border-2
           ${
             isFocused
               ? 'bg-blue-50 border-blue-200'

@@ -6,15 +6,15 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "node": "22.19.0"
+      "node": "22.20.0"
     },
     "preview": {
       "extends": "production",
       "distribution": "internal",
-      "node": "22.19.0"
+      "node": "22.20.0"
     },
     "production": {
-      "node": "22.19.0",
+      "node": "22.20.0",
       "env": {
         "NODE_ENV": "production",
         "REACT_NATIVE_NO_DEVTOOLS": "1"

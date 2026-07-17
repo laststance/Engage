@@ -70,7 +70,8 @@
       "expo-web-browser",
       "expo-image",
       "expo-localization",
-      "expo-sharing"
+      "expo-sharing",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true,

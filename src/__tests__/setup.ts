@@ -99,7 +99,7 @@ jest.mock('expo-symbols', () => ({
 }))
 
 // Mock vector icons used by IconSymbol
-jest.mock('@expo/vector-icons/MaterialIcons', () => 'MaterialIcons')
+jest.mock('@react-native-vector-icons/material-icons', () => 'MaterialIcons')
 
 // Mock expo-haptics module
 jest.mock('expo-haptics', () => ({
