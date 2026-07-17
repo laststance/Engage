@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   OperationFeedback,
-  OperationFeedbackKind,
+  type OperationFeedbackKind,
 } from '@/src/components/OperationFeedback'
 import { useInteractionFeedback } from '@/src/hooks/useInteractionFeedback'
 import { useAppStore } from '../stores/app-store'
@@ -33,17 +33,30 @@ interface BackupFeedback {
   onAction?: () => void
 }
 
+type BackupActivity =
+  | 'loadingMetadata'
+  | 'idle'
+  | 'creating'
+  | 'exporting'
+  | 'importing'
+  | `deleting:${string}`
+
 /**
- * Component for managing data backups and exports
+ * Renders backup controls whenever Settings opens the local data-management screen.
+ * @returns Backup creation, import, export, deletion, and status controls.
+ * @example
+ * <BackupManager />
  */
 export const BackupManager: React.FC = () => {
   const { t } = useTranslation()
   const triggerFeedback = useInteractionFeedback()
   const [backups, setBackups] = useState<BackupInfo[]>([])
   const [stats, setStats] = useState<BackupStats | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [activity, setActivity] =
+    useState<BackupActivity>('loadingMetadata')
   const [operationFeedback, setOperationFeedback] =
     useState<BackupFeedback | null>(null)
+  const isMountedRef = useRef(false)
 
   const {
     createBackup,
@@ -56,29 +69,75 @@ export const BackupManager: React.FC = () => {
     clearError,
   } = useAppStore()
 
-  const loadBackupData = useCallback(async () => {
+  /**
+   * Reads backup files and aggregate statistics without changing component state.
+   * @returns A promise containing the backup list and its aggregate statistics.
+   * @example
+   * const [backupList, backupStats] = await readBackupData()
+   */
+  const readBackupData = useCallback(
+    () => Promise.all([listBackups(), getBackupStats()]),
+    [getBackupStats, listBackups]
+  )
+
+  /**
+   * Reloads rendered backup data after a user-triggered backup operation completes.
+   * @returns A promise that settles after backup state and loading state are updated.
+   * @example
+   * await loadBackupData()
+   */
+  const loadBackupData = useCallback(async (): Promise<void> => {
     try {
-      setIsLoading(true)
-      const [backupList, backupStats] = await Promise.all([
-        listBackups(),
-        getBackupStats(),
-      ])
+      const [backupList, backupStats] = await readBackupData()
+
+      // Native reads can finish after Settings closes, so only mounted UI receives them.
+      if (!isMountedRef.current) {
+        return
+      }
+
       setBackups(backupList)
       setStats(backupStats)
     } catch (error) {
       console.error('Failed to load backup data:', error)
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) {
+        setActivity('idle')
+      }
     }
-  }, [getBackupStats, listBackups])
+  }, [readBackupData])
 
   useEffect(() => {
-    loadBackupData()
-  }, [loadBackupData])
+    let shouldIgnoreResult = false
+    isMountedRef.current = true
+
+    void readBackupData()
+      .then(([backupList, backupStats]) => {
+        // A closed Settings screen must not receive its late native result.
+        if (shouldIgnoreResult) {
+          return
+        }
+
+        setBackups(backupList)
+        setStats(backupStats)
+      })
+      .catch((error) => {
+        console.error('Failed to load backup data:', error)
+      })
+      .finally(() => {
+        if (!shouldIgnoreResult && isMountedRef.current) {
+          setActivity('idle')
+        }
+      })
+
+    return () => {
+      shouldIgnoreResult = true
+      isMountedRef.current = false
+    }
+  }, [readBackupData])
 
   const handleCreateBackup = async () => {
     try {
-      setIsLoading(true)
+      setActivity('creating')
       clearError()
       setOperationFeedback({
         kind: 'saving',
@@ -86,6 +145,10 @@ export const BackupManager: React.FC = () => {
       })
 
       const result = await createBackup()
+
+      if (!isMountedRef.current) {
+        return
+      }
 
       if (result.success) {
         triggerFeedback('complete')
@@ -110,6 +173,11 @@ export const BackupManager: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to create backup:', error)
+
+      if (!isMountedRef.current) {
+        return
+      }
+
       triggerFeedback('error')
       setOperationFeedback({
         kind: 'error',
@@ -120,13 +188,15 @@ export const BackupManager: React.FC = () => {
         },
       })
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) {
+        setActivity('idle')
+      }
     }
   }
 
   const handleExportData = async () => {
     try {
-      setIsLoading(true)
+      setActivity('exporting')
       clearError()
       setOperationFeedback({
         kind: 'saving',
@@ -134,6 +204,10 @@ export const BackupManager: React.FC = () => {
       })
 
       const result = await exportData()
+
+      if (!isMountedRef.current) {
+        return
+      }
 
       if (result.success) {
         triggerFeedback('complete')
@@ -154,6 +228,11 @@ export const BackupManager: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to export data:', error)
+
+      if (!isMountedRef.current) {
+        return
+      }
+
       triggerFeedback('error')
       setOperationFeedback({
         kind: 'error',
@@ -164,13 +243,15 @@ export const BackupManager: React.FC = () => {
         },
       })
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) {
+        setActivity('idle')
+      }
     }
   }
 
   const performImportBackup = async () => {
     try {
-      setIsLoading(true)
+      setActivity('importing')
       clearError()
       setOperationFeedback({
         kind: 'saving',
@@ -178,6 +259,10 @@ export const BackupManager: React.FC = () => {
       })
 
       const result = await importBackup()
+
+      if (!isMountedRef.current) {
+        return
+      }
 
       if (result.success) {
         triggerFeedback('complete')
@@ -206,6 +291,11 @@ export const BackupManager: React.FC = () => {
       })
     } catch (error) {
       console.error('Failed to import backup:', error)
+
+      if (!isMountedRef.current) {
+        return
+      }
+
       triggerFeedback('error')
       setOperationFeedback({
         kind: 'error',
@@ -216,7 +306,9 @@ export const BackupManager: React.FC = () => {
         },
       })
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) {
+        setActivity('idle')
+      }
     }
   }
 
@@ -239,12 +331,16 @@ export const BackupManager: React.FC = () => {
 
   const performDeleteBackup = async (fileName: string) => {
     try {
-      setIsLoading(true)
+      setActivity(`deleting:${fileName}`)
       setOperationFeedback({
         kind: 'saving',
         message: t('backup.deleting'),
       })
       const success = await deleteBackup(fileName)
+
+      if (!isMountedRef.current) {
+        return
+      }
 
       if (success) {
         triggerFeedback('complete')
@@ -266,6 +362,11 @@ export const BackupManager: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to delete backup:', error)
+
+      if (!isMountedRef.current) {
+        return
+      }
+
       triggerFeedback('error')
       setOperationFeedback({
         kind: 'error',
@@ -276,7 +377,9 @@ export const BackupManager: React.FC = () => {
         },
       })
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) {
+        setActivity('idle')
+      }
     }
   }
 
@@ -315,8 +418,21 @@ export const BackupManager: React.FC = () => {
     })
   }
 
+  const isMetadataLoading = activity === 'loadingMetadata'
+  const areActionsDisabled = activity !== 'idle'
+
   return (
     <ScrollView className="flex-1 p-4 bg-white">
+      {isMetadataLoading && (
+        <View className="mb-4">
+          <OperationFeedback
+            kind="info"
+            message={t('common.loading')}
+            testID="backup-metadata-loading-feedback"
+          />
+        </View>
+      )}
+
       {error && (
         <View className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           <Text className="text-red-800">{error}</Text>
@@ -342,48 +458,54 @@ export const BackupManager: React.FC = () => {
         <View className="space-y-3">
           <Button
             onPress={handleCreateBackup}
-            disabled={isLoading}
+            disabled={areActionsDisabled}
             accessibilityState={{
-              busy: isLoading,
-              disabled: isLoading,
+              busy: activity === 'creating',
+              disabled: areActionsDisabled,
             }}
             className="w-full"
             testID="backup-create-button"
           >
             <Text className="text-white font-medium">
-              {isLoading ? t('backup.creating') : t('backup.create')}
+              {activity === 'creating'
+                ? t('backup.creating')
+                : t('backup.create')}
             </Text>
           </Button>
 
           <Button
             onPress={handleExportData}
-            disabled={isLoading}
+            disabled={areActionsDisabled}
             accessibilityState={{
-              busy: isLoading,
-              disabled: isLoading,
+              busy: activity === 'exporting',
+              disabled: areActionsDisabled,
             }}
             variant="outline"
             className="w-full"
             testID="backup-export-button"
           >
             <Text className="font-medium">
-              {isLoading ? t('backup.exporting') : t('backup.export')}
+              {activity === 'exporting'
+                ? t('backup.exporting')
+                : t('backup.export')}
             </Text>
           </Button>
 
           <Button
             onPress={handleImportBackup}
-            disabled={isLoading}
+            disabled={areActionsDisabled}
             accessibilityState={{
-              busy: isLoading,
-              disabled: isLoading,
+              busy: activity === 'importing',
+              disabled: areActionsDisabled,
             }}
             variant="outline"
             className="w-full"
             testID="backup-import-button"
           >
             <Text className="font-medium">
-              {isLoading ? t('backup.importing') : t('backup.import')}
+              {activity === 'importing'
+                ? t('backup.importing')
+                : t('backup.import')}
             </Text>
           </Button>
         </View>
@@ -458,14 +580,15 @@ export const BackupManager: React.FC = () => {
 
                 <Button
                   onPress={() => handleDeleteBackup(backup.fileName)}
-                  disabled={isLoading}
+                  disabled={areActionsDisabled}
                   accessibilityState={{
-                    busy: isLoading,
-                    disabled: isLoading,
+                    busy: activity === `deleting:${backup.fileName}`,
+                    disabled: areActionsDisabled,
                   }}
                   variant="outline"
                   size="sm"
                   className="self-start"
+                  testID={`backup-delete-button-${backup.fileName}`}
                 >
                   <Text className="text-red-600 text-sm">{t('common.delete')}</Text>
                 </Button>

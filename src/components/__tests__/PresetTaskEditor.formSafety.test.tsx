@@ -86,7 +86,10 @@ describe('PresetTaskEditor form safety', () => {
       return nextAnimationFrameId
     })
     jest.mocked(cancelAnimationFrame).mockImplementation((frameId) => {
-      pendingAnimationFrameCallbacks.delete(frameId)
+      // React Native permits an empty frame ID, so only remove callbacks with a real numeric key.
+      if (typeof frameId === 'number') {
+        pendingAnimationFrameCallbacks.delete(frameId)
+      }
     })
   })
 

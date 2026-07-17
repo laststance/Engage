@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { Modal, ScrollView, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
@@ -55,6 +55,31 @@ const haveSameTaskSelection = (
  */
 export const TaskPicker: React.FC<TaskPickerProps> = ({
   isVisible,
+  ...taskPickerProps
+}) => {
+  // A closed picker must drop its draft so reopening starts from saved tasks.
+  if (!isVisible) {
+    return null
+  }
+
+  return (
+    <TaskPickerSession
+      key={JSON.stringify(taskPickerProps.selectedTasks)}
+      isVisible={isVisible}
+      {...taskPickerProps}
+    />
+  )
+}
+
+/**
+ * Owns one visible picker draft and remounts when the saved selection changes.
+ * @param props - The open picker inputs and assignment callbacks.
+ * @returns The visible modal session for selecting tasks.
+ * @example
+ * <TaskPickerSession isVisible selectedTasks={['task-1']} {...props} />
+ */
+const TaskPickerSession: React.FC<TaskPickerProps> = ({
+  isVisible,
   presetTasks,
   categories,
   selectedTasks,
@@ -84,15 +109,6 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
     () => !haveSameTaskSelection(localSelectedTasks, selectedTasks),
     [localSelectedTasks, selectedTasks]
   )
-
-  useEffect(() => {
-    if (isVisible) {
-      setLocalSelectedTasks(selectedTasks)
-      setErrorMessage(null)
-      setIsSaving(false)
-      isSavingRef.current = false
-    }
-  }, [isVisible, selectedTasks])
 
   // Get category color using design system (lookup by category ID)
   const getCategoryColor = (categoryId: string) => {
@@ -277,7 +293,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
                             'taskPicker.toggleSelectionHint'
                           )}
                           className={`
-                            p-4 rounded-lg border-2 transition-colors touch-target-minimum
+                            p-4 rounded-lg border-2 touch-target-minimum
                             ${
                               isSelected
                                 ? `border-system-blue bg-business-light`

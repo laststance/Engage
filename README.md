@@ -4,8 +4,8 @@ Engage is a React Native habit tracker built with Expo. It focuses on daily task
 
 ## Stack
 
-- Expo SDK 55
-- React Native 0.83
+- Expo SDK 57
+- React Native 0.86
 - React 19.2
 - Expo Router
 - SQLite via `expo-sqlite`
@@ -17,9 +17,10 @@ Engage is a React Native habit tracker built with Expo. It focuses on daily task
 ## Requirements
 
 - Node.js 22.20.0
-- pnpm 10.33.4 through Corepack
-- Xcode 16.1 or newer for React Native 0.83 iOS builds
+- pnpm 11.13.0 through Corepack
+- Xcode 26.4 or newer for Expo SDK 57 iOS builds
 - Maestro for E2E testing
+- Expo development and E2E scripts pin Metro to port 8090.
 
 ```bash
 corepack enable
@@ -44,6 +45,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm test:coverage
+pnpm quality:fallow
 pnpm exec expo install --check
 pnpm audit --audit-level=moderate
 ```
@@ -96,6 +98,7 @@ website/                Static support and privacy pages published by GitHub Pag
 
 ## Notes
 
-- Keep native package versions compatible with Expo SDK 55. Use `pnpm exec expo install --check` before merging dependency updates.
+- Keep native package versions compatible with Expo SDK 57. Use `pnpm exec expo install --check` before merging dependency updates.
+- Regenerate ignored `ios/` and `android/` projects with `pnpm exec expo prebuild --clean` after an SDK change; inspect local native customizations first because clean prebuild replaces those directories.
 - Keep Tailwind on v3 while using NativeWind 4.x.
 - Keep task assignment and completion separate: `completed=false` means assigned, `completed=true` means done.
