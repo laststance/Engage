@@ -151,4 +151,64 @@ describe('BackupManager', () => {
       })
     })
   })
+
+  it('marks only the selected backup as busy while it is being deleted', async () => {
+    // Arrange
+    const firstFileName = 'engage-first.json'
+    const secondFileName = 'engage-second.json'
+    store.listBackups.mockResolvedValue([
+      {
+        fileName: firstFileName,
+        filePath: `/backups/${firstFileName}`,
+        size: 1024,
+        createdAt: new Date('2026-07-17T00:00:00.000Z'),
+        isValid: true,
+      },
+      {
+        fileName: secondFileName,
+        filePath: `/backups/${secondFileName}`,
+        size: 2048,
+        createdAt: new Date('2026-07-16T00:00:00.000Z'),
+        isValid: true,
+      },
+    ])
+    let resolveDelete: (didDelete: boolean) => void = () => {}
+    store.deleteBackup.mockReturnValue(
+      new Promise((resolve) => {
+        resolveDelete = resolve
+      })
+    )
+    const { getByTestId } = render(<BackupManager />)
+    const firstDeleteButton = await waitFor(() =>
+      getByTestId(`backup-delete-button-${firstFileName}`)
+    )
+    const secondDeleteButton = getByTestId(
+      `backup-delete-button-${secondFileName}`
+    )
+
+    // Act
+    fireEvent.press(firstDeleteButton)
+    const destructiveAction = jest
+      .mocked(Alert.alert)
+      .mock.calls[0]?.[2]?.find((button) => button.style === 'destructive')
+    act(() => {
+      destructiveAction?.onPress?.()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(firstDeleteButton.props.accessibilityState).toMatchObject({
+        busy: true,
+        disabled: true,
+      })
+    })
+    expect(secondDeleteButton.props.accessibilityState).toMatchObject({
+      busy: false,
+      disabled: true,
+    })
+
+    await act(async () => {
+      resolveDelete(true)
+    })
+  })
 })

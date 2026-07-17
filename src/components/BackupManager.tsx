@@ -39,7 +39,7 @@ type BackupActivity =
   | 'creating'
   | 'exporting'
   | 'importing'
-  | 'deleting'
+  | `deleting:${string}`
 
 /**
  * Renders backup controls whenever Settings opens the local data-management screen.
@@ -331,7 +331,7 @@ export const BackupManager: React.FC = () => {
 
   const performDeleteBackup = async (fileName: string) => {
     try {
-      setActivity('deleting')
+      setActivity(`deleting:${fileName}`)
       setOperationFeedback({
         kind: 'saving',
         message: t('backup.deleting'),
@@ -582,12 +582,13 @@ export const BackupManager: React.FC = () => {
                   onPress={() => handleDeleteBackup(backup.fileName)}
                   disabled={areActionsDisabled}
                   accessibilityState={{
-                    busy: activity === 'deleting',
+                    busy: activity === `deleting:${backup.fileName}`,
                     disabled: areActionsDisabled,
                   }}
                   variant="outline"
                   size="sm"
                   className="self-start"
+                  testID={`backup-delete-button-${backup.fileName}`}
                 >
                   <Text className="text-red-600 text-sm">{t('common.delete')}</Text>
                 </Button>
