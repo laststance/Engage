@@ -45,15 +45,14 @@ tags:
 - assertVisible:
     id: "preset-editor-close"
 
-# Regression: Adding a task should focus the new row without restoring the
-# preset Save footer or the removed custom Done control above the keyboard.
+# Regression: Input proves the new row owns keyboard focus because RN 0.86 does
+# not expose the native first-responder state through Maestro's focused flag.
 - tapOn:
     id: "add-task-button"
 
 - extendedWaitUntil:
     visible:
       text: "Enter task name"
-      focused: true
     timeout: 15000
 
 - assertNotVisible:
