@@ -46,8 +46,8 @@ jobs:
       APP_READY_WAIT_SECONDS: 60
       BUILD_POLL_INTERVAL_SECONDS: 15
       E2E_BUILD_LOG: e2e-build.log
-      E2E_BUILD_READY_TEXT: Logs for your project will appear below
-      MAX_BUILD_WAIT_SECONDS: 1800
+      E2E_BUILD_READY_TEXT: Opening com.laststance.engage
+      MAX_BUILD_WAIT_SECONDS: 2400
 
     steps:
       - name: Checkout code
