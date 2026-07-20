@@ -16,7 +16,6 @@
     "production": {
       "node": "22.20.0",
       "env": {
-        "NODE_ENV": "production",
         "REACT_NATIVE_NO_DEVTOOLS": "1"
       },
       "ios": {
@@ -34,7 +33,6 @@
       "distribution": "internal",
       "env": {
         "E2E_TEST": "true",
-        "NODE_ENV": "production",
         "REACT_NATIVE_NO_DEVTOOLS": "1"
       },
       "ios": {
