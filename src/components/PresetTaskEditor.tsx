@@ -210,7 +210,7 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       onRequestClose={handleCancel}
     >
       <PresetTaskEditorSession
-        key={`${String(isVisible)}:${JSON.stringify(tasks)}`}
+        key={String(isVisible)}
         tasks={tasks}
         categories={categories}
         onSave={onSave}

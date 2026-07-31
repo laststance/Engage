@@ -220,6 +220,32 @@ describe('PresetTaskEditor form safety', () => {
     expect(getByTestId('task-title-input-0').props.value).toBe('Networking')
   })
 
+  it('preserves the active draft when live preset tasks refresh while visible', () => {
+    // Arrange
+    const editorProps = {
+      categories: mockCategories,
+      isVisible: true,
+      onCancel: jest.fn(),
+      onCreateCategory: jest.fn(),
+      onSave: jest.fn(),
+    }
+    const { getByTestId, rerender } = render(
+      <PresetTaskEditor tasks={mockTasks} {...editorProps} />
+    )
+    fireEvent.changeText(getByTestId('task-title-input-0'), 'Active draft')
+
+    // Act
+    rerender(
+      <PresetTaskEditor
+        tasks={[{ ...mockTasks[0], title: 'Refreshed title' }, mockTasks[1]]}
+        {...editorProps}
+      />
+    )
+
+    // Assert
+    expect(getByTestId('task-title-input-0').props.value).toBe('Active draft')
+  })
+
   it('keeps a newly added task in place when category changes during editing', () => {
     // Arrange
     const { UNSAFE_getAllByType, getByTestId } = renderEditor()

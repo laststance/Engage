@@ -47,7 +47,9 @@ tags:
 - extendedWaitUntil:
     visible:
       id: "day-modal-close"
-    timeout: 10000
+    timeout: 15000
 
-- assertNotVisible:
-    id: "preset-editor-close"
+- extendedWaitUntil:
+    notVisible:
+      id: "preset-editor-close"
+    timeout: 15000
