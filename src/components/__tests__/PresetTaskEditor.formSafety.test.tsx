@@ -1,6 +1,6 @@
 import React from 'react'
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native'
-import { Alert, Keyboard, TextInput } from 'react-native'
+import { Alert, Keyboard, Modal, TextInput } from 'react-native'
 import { Category, Task } from '@/src/types'
 import { PresetTaskEditor } from '../PresetTaskEditor'
 
@@ -176,6 +176,74 @@ describe('PresetTaskEditor form safety', () => {
     expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
     expect(getByTestId('preset-editor-save')).toBeTruthy()
     expect(getByTestId('preset-editor-cancel')).toBeTruthy()
+  })
+
+  it('keeps the native Modal mounted while hidden so nested iOS sheets dismiss cleanly', () => {
+    // Arrange
+    const editorProps = {
+      categories: mockCategories,
+      onCancel: jest.fn(),
+      onCreateCategory: jest.fn(),
+      onSave: jest.fn(),
+      tasks: mockTasks,
+    }
+    const { UNSAFE_getByType, rerender } = render(
+      <PresetTaskEditor isVisible {...editorProps} />
+    )
+
+    // Act
+    rerender(<PresetTaskEditor isVisible={false} {...editorProps} />)
+
+    // Assert
+    expect(UNSAFE_getByType(Modal).props.visible).toBe(false)
+  })
+
+  it('reopens with persisted values instead of a discarded preset draft', () => {
+    // Arrange
+    const editorProps = {
+      categories: mockCategories,
+      onCancel: jest.fn(),
+      onCreateCategory: jest.fn(),
+      onSave: jest.fn(),
+      tasks: mockTasks,
+    }
+    const { getByTestId, rerender } = render(
+      <PresetTaskEditor isVisible {...editorProps} />
+    )
+    fireEvent.changeText(getByTestId('task-title-input-0'), 'Discarded draft')
+
+    // Act
+    rerender(<PresetTaskEditor isVisible={false} {...editorProps} />)
+    rerender(<PresetTaskEditor isVisible {...editorProps} />)
+
+    // Assert
+    expect(getByTestId('task-title-input-0').props.value).toBe('Networking')
+  })
+
+  it('preserves the active draft when live preset tasks refresh while visible', () => {
+    // Arrange
+    const editorProps = {
+      categories: mockCategories,
+      isVisible: true,
+      onCancel: jest.fn(),
+      onCreateCategory: jest.fn(),
+      onSave: jest.fn(),
+    }
+    const { getByTestId, rerender } = render(
+      <PresetTaskEditor tasks={mockTasks} {...editorProps} />
+    )
+    fireEvent.changeText(getByTestId('task-title-input-0'), 'Active draft')
+
+    // Act
+    rerender(
+      <PresetTaskEditor
+        tasks={[{ ...mockTasks[0], title: 'Refreshed title' }, mockTasks[1]]}
+        {...editorProps}
+      />
+    )
+
+    // Assert
+    expect(getByTestId('task-title-input-0').props.value).toBe('Active draft')
   })
 
   it('keeps a newly added task in place when category changes during editing', () => {
