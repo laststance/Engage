@@ -37,6 +37,8 @@ interface PresetTaskEditorProps {
   onCreateCategory: (name: string) => Promise<void>
 }
 
+type PresetTaskEditorSessionProps = Omit<PresetTaskEditorProps, 'isVisible'>
+
 interface EditingTask {
   id?: string
   title: string
@@ -71,6 +73,24 @@ interface PresetTaskValidation {
  * normalizeTaskTitle('  Reading  ') // => 'Reading'
  */
 const normalizeTaskTitle = (title: string): string => title.trim()
+
+/**
+ * Copies persisted tasks into editable drafts whenever a preset-editor session opens.
+ * @param tasks - The persisted preset tasks shown by the editor.
+ * @returns Independent drafts that form controls can update safely.
+ * @example
+ * createEditingTasks([{ id: 'task-1', title: 'Read', categoryId: 'life', archived: false, createdAt: 1, updatedAt: 1 }])
+ * // => [{ id: 'task-1', title: 'Read', categoryId: 'life', archived: false, isNew: false }]
+ */
+const createEditingTasks = (tasks: Task[]): EditingTask[] =>
+  tasks.map((task) => ({
+    id: task.id,
+    title: task.title,
+    categoryId: task.categoryId,
+    defaultMinutes: task.defaultMinutes,
+    archived: task.archived,
+    isNew: false,
+  }))
 
 /**
  * Builds inline validation state for the preset task editor as users type.
@@ -145,38 +165,13 @@ const validatePresetTaskDrafts = (
 }
 
 /**
- * Opens a fresh preset-editing session so closed modals cannot retain stale drafts.
+ * Keeps the native Modal mounted so iOS can dismiss it before keyed form content resets.
  * @param props - Visibility, source tasks, categories, and persistence callbacks.
- * @returns The active editor session, or `null` while the modal is closed.
+ * @returns A stable native Modal containing a fresh form for each visibility session.
  * @example
  * <PresetTaskEditor isVisible tasks={tasks} categories={categories} {...actions} />
  */
 export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
-  isVisible,
-  ...presetTaskEditorProps
-}) => {
-  // Closing the editor discards local form and keyboard state in one step.
-  if (!isVisible) {
-    return null
-  }
-
-  return (
-    <PresetTaskEditorSession
-      key={JSON.stringify(presetTaskEditorProps.tasks)}
-      isVisible={isVisible}
-      {...presetTaskEditorProps}
-    />
-  )
-}
-
-/**
- * Owns the editable task draft for one visible preset-editor session.
- * @param props - The open editor inputs and persistence callbacks.
- * @returns The visible preset task editor modal.
- * @example
- * <PresetTaskEditorSession isVisible tasks={tasks} categories={categories} {...actions} />
- */
-const PresetTaskEditorSession: React.FC<PresetTaskEditorProps> = ({
   isVisible,
   tasks,
   categories,
@@ -185,15 +180,64 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorProps> = ({
   onCreateCategory,
 }) => {
   const { t } = useTranslation()
+
+  /**
+   * Confirms discarded edits when the editor close button or native sheet dismissal triggers.
+   * @returns Nothing; invokes the parent cancellation only after confirmation.
+   * @example
+   * handleCancel() // => opens the discard confirmation
+   */
+  const handleCancel = (): void => {
+    Alert.alert(
+      t('presetEditor.discardChangesTitle'),
+      t('presetEditor.discardChangesMessage'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('presetEditor.discard'),
+          style: 'destructive',
+          onPress: onCancel,
+        },
+      ]
+    )
+  }
+
+  return (
+    <Modal
+      visible={isVisible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={handleCancel}
+    >
+      <PresetTaskEditorSession
+        key={`${String(isVisible)}:${JSON.stringify(tasks)}`}
+        tasks={tasks}
+        categories={categories}
+        onSave={onSave}
+        onCancel={handleCancel}
+        onCreateCategory={onCreateCategory}
+      />
+    </Modal>
+  )
+}
+
+/**
+ * Owns the editable form content mounted inside one native preset-editor session.
+ * @param props - The open editor inputs and persistence callbacks.
+ * @returns The preset editor form rendered inside the stable native Modal.
+ * @example
+ * <PresetTaskEditorSession tasks={tasks} categories={categories} {...actions} />
+ */
+const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
+  tasks,
+  categories,
+  onSave,
+  onCancel,
+  onCreateCategory,
+}) => {
+  const { t } = useTranslation()
   const [editingTasks, setEditingTasks] = useState<EditingTask[]>(() =>
-    tasks.map((task) => ({
-      id: task.id,
-      title: task.title,
-      categoryId: task.categoryId,
-      defaultMinutes: task.defaultMinutes,
-      archived: task.archived,
-      isNew: false,
-    }))
+    createEditingTasks(tasks)
   )
   const [isLoading, setSaving] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
@@ -482,29 +526,8 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorProps> = ({
     }
   }
 
-  const handleCancel = () => {
-    Alert.alert(
-      t('presetEditor.discardChangesTitle'),
-      t('presetEditor.discardChangesMessage'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('presetEditor.discard'),
-          style: 'destructive',
-          onPress: onCancel,
-        },
-      ]
-    )
-  }
-
   return (
-    <Modal
-      visible={isVisible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleCancel}
-    >
-      <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white">
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
@@ -517,7 +540,7 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorProps> = ({
               {t('presetEditor.title')}
             </Text>
             <Pressable
-              onPress={handleCancel}
+              onPress={onCancel}
               className="p-2"
               testID="preset-editor-close"
             >
@@ -811,7 +834,7 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorProps> = ({
             )}
             <HStack space="md">
               <Pressable
-                onPress={handleCancel}
+                onPress={onCancel}
                 className="flex-1 bg-gray-100 rounded-lg py-3"
                 testID="preset-editor-cancel"
               >
@@ -844,6 +867,5 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorProps> = ({
         )}
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </Modal>
   )
 }

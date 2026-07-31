@@ -1,0 +1,53 @@
+appId: com.laststance.engage
+tags:
+  - ios
+---
+# QA-12: Calendar Preset Save
+# Verifies saving presets dismisses only the editor and keeps DayModal visible.
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+
+# Open a calendar date so PresetTaskEditor is presented above DayModal.
+- tapOn:
+    id: "calendar-date-.*-01"
+    retryTapIfNoChange: false
+
+- extendedWaitUntil:
+    visible:
+      id: "day-modal-close"
+    timeout: 5000
+
+- tapOn:
+    id: ".*task-selection-button"
+
+- extendedWaitUntil:
+    visible:
+      id: "edit-presets-button"
+    timeout: 5000
+
+- tapOn:
+    id: "edit-presets-button"
+
+- extendedWaitUntil:
+    visible:
+      id: "preset-editor-save"
+    timeout: 5000
+
+# Regression: Save used to unmount the nested native Modal immediately,
+# leaving the iOS app window completely white.
+- tapOn:
+    id: "preset-editor-save"
+
+- extendedWaitUntil:
+    visible:
+      id: "day-modal-close"
+    timeout: 10000
+
+- assertNotVisible:
+    id: "preset-editor-close"
