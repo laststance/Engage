@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react'
 import { Alert, Modal, ScrollView, StyleSheet } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import Swipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable'
@@ -27,6 +28,21 @@ interface TaskPickerProps {
   onClose: () => void
   onEditPresets: () => void
 }
+
+/**
+ * Establishes the gesture boundary Android native modals cannot inherit from the app root.
+ * @param props - Picker content rendered inside the modal-safe gesture and safe-area roots.
+ * @returns A full-screen native-modal surface that can recognize row swipe gestures.
+ * @example
+ * <TaskPickerModalSurface>{pickerContent}</TaskPickerModalSurface>
+ */
+const TaskPickerModalSurface: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => (
+  <GestureHandlerRootView className="flex-1">
+    <SafeAreaView className="flex-1 bg-white">{children}</SafeAreaView>
+  </GestureHandlerRootView>
+)
 
 /**
  * Checks whether two task selections contain the same IDs regardless of tap order.
@@ -68,7 +84,6 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
 
   return (
     <TaskPickerSession
-      key={JSON.stringify(taskPickerProps.selectedTasks)}
       isVisible={isVisible}
       {...taskPickerProps}
     />
@@ -76,7 +91,7 @@ export const TaskPicker: React.FC<TaskPickerProps> = ({
 }
 
 /**
- * Owns one visible picker draft and remounts when the saved selection changes.
+ * Owns one visible picker draft and remounts only after the picker closes and reopens.
  * @param props - The open picker inputs and assignment callbacks.
  * @returns The visible modal session for selecting tasks.
  * @example
@@ -300,7 +315,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
       presentationStyle="pageSheet"
       onRequestClose={handleCancel}
     >
-      <SafeAreaView className="flex-1 bg-white">
+      <TaskPickerModalSurface>
         <VStack space="md" className="p-4 border-b border-gray-200">
           <HStack className="items-center justify-between">
             <VStack className="flex-1 mr-3" space="xs">
@@ -555,7 +570,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
             </AppPressable>
           </HStack>
         </Box>
-      </SafeAreaView>
+      </TaskPickerModalSurface>
     </Modal>
   )
 }

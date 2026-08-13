@@ -442,6 +442,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  /**
+   * Reconciles the complete preset list when PresetTaskEditor or TaskPicker submits a mutation.
+   * @param tasks - The complete preset list that should remain persisted.
+   * @returns A promise that settles after repository and loaded completion state agree.
+   * @example
+   * await useAppStore.getState().updatePresetTasks(remainingTasks)
+   */
   updatePresetTasks: async (tasks: Task[]) => {
     try {
       set({ error: null })
@@ -497,20 +504,25 @@ export const useAppStore = create<AppState>((set, get) => ({
       const updatedTasks = await taskRepository.findAll()
       const deletedTaskIds = new Set(tasksToDelete.map((task) => task.id))
 
-      set((current) => ({
-        tasks: updatedTasks,
-        // Mirror SQLite's cascading delete so loaded day assignments never retain ghost task IDs.
-        completions: Object.fromEntries(
-          Object.entries(current.completions).map(
-            ([date, dateCompletions]) => [
-              date,
-              dateCompletions.filter(
-                (completion) => !deletedTaskIds.has(completion.taskId)
-              ),
-            ]
-          )
-        ),
-      }))
+      // Preserve the completions reference when preset edits contain no deletions.
+      if (deletedTaskIds.size === 0) {
+        set({ tasks: updatedTasks })
+      } else {
+        set((current) => ({
+          tasks: updatedTasks,
+          // Mirror SQLite's cascading delete so loaded day assignments never retain ghost task IDs.
+          completions: Object.fromEntries(
+            Object.entries(current.completions).map(
+              ([date, dateCompletions]) => [
+                date,
+                dateCompletions.filter(
+                  (completion) => !deletedTaskIds.has(completion.taskId)
+                ),
+              ]
+            )
+          ),
+        }))
+      }
 
       console.log('Preset tasks updated successfully', {
         created: tasksToCreate.length,

@@ -42,6 +42,12 @@ export const unstable_settings = {
   anchor: '(tabs)',
 }
 
+/**
+ * Boots shared services and renders the provider tree whenever Expo Router mounts the app.
+ * @returns The application root with navigation, gestures, safe areas, and UI providers.
+ * @example
+ * <RootLayout />
+ */
 export default function RootLayout() {
   const colorScheme = useColorScheme()
   const initializeApp = useAppStore((state) => state.initializeApp)

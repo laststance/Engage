@@ -449,6 +449,24 @@ describe('useAppStore', () => {
         remainingCompletion,
       ])
     })
+
+    it('preserves loaded day references when presets are edited without deletion', async () => {
+      // Arrange
+      const loadedCompletions = {
+        '2025-01-15': mockCompletions,
+      }
+      useAppStore.setState({
+        tasks: mockTasks,
+        completions: loadedCompletions,
+      })
+      jest.mocked(taskRepository.findAll).mockResolvedValue(mockTasks)
+
+      // Act
+      await useAppStore.getState().updatePresetTasks(mockTasks)
+
+      // Assert
+      expect(useAppStore.getState().completions).toBe(loadedCompletions)
+    })
   })
 
   describe('updateJournalEntry', () => {
