@@ -48,7 +48,7 @@ import {
   calculateProductivityTrends,
 } from '../utils/statisticsEngine'
 import { backupService } from '../services/backupService'
-import { databaseService } from '../services/database'
+import { databaseService } from '@/src/services/database'
 
 interface AppState {
   // Data

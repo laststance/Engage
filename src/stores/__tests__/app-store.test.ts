@@ -6,7 +6,7 @@ import {
   categoryRepository,
 } from '../../services/repositories'
 import { journalService } from '../../services/journalService'
-import { databaseService } from '../../services/database'
+import { databaseService } from '@/src/services/database'
 
 // Mock the repositories
 jest.mock('../../services/repositories', () => ({
@@ -45,7 +45,7 @@ jest.mock('../../services/journalService', () => ({
   },
 }))
 
-jest.mock('../../services/database', () => ({
+jest.mock('@/src/services/database', () => ({
   databaseService: {
     executeTransaction: jest.fn(),
   },
