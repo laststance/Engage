@@ -347,6 +347,10 @@ describe('TaskPicker', () => {
     resolveSave(successResult)
     await waitFor(() => {
       expect(mockOnClose).toHaveBeenCalledTimes(1)
+      expect(
+        getByTestId('task-picker-swipeable-task1').props.enabled
+      ).toBe(true)
+      expect(getByTestId('task-picker-delete-task1')).toBeTruthy()
     })
   })
 
