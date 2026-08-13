@@ -81,6 +81,21 @@ export function useDayView(date: string) {
     [updatePresetTasks],
   )
 
+  /**
+   * Deletes one preset from every day view when TaskPicker's swipe action is confirmed.
+   * @param taskId - The persisted preset task ID to remove.
+   * @returns A promise that settles after the shared preset list is persisted.
+   * @example
+   * await handleDeletePresetTask('task-1') // => task-1 is removed from TaskPicker
+   */
+  const handleDeletePresetTask = useCallback(
+    async (taskId: string): Promise<void> => {
+      // Submit the remaining source-of-truth list through the existing preset reconciler.
+      await updatePresetTasks(allTasks.filter((task) => task.id !== taskId))
+    },
+    [allTasks, updatePresetTasks],
+  )
+
   const handleCreateCategory = useCallback(
     async (name: string) => createCategory({ name }),
     [createCategory],
@@ -102,6 +117,7 @@ export function useDayView(date: string) {
     handleTaskPickerClose,
     handleTaskSelect,
     handleUpdatePresets,
+    handleDeletePresetTask,
     handleCreateCategory,
   }
 }

@@ -1,7 +1,48 @@
 import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { Alert } from 'react-native'
+import type { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable'
 import { Category, Task, TaskAssignmentOperationResult } from '@/src/types'
 import { TaskPicker } from '../TaskPicker'
+
+interface SwipeableMockProps {
+  children?: React.ReactNode
+  renderRightActions?: (
+    progress: { value: number },
+    translation: { value: number },
+    swipeableMethods: SwipeableMethods
+  ) => React.ReactNode
+  testID?: string
+}
+
+jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
+  const ReactModule = jest.requireActual<typeof import('react')>('react')
+  const swipeableMethods: SwipeableMethods = {
+    close: jest.fn(),
+    openLeft: jest.fn(),
+    openRight: jest.fn(),
+    reset: jest.fn(),
+  }
+
+  return {
+    __esModule: true,
+    default: ({
+      children,
+      renderRightActions,
+      testID,
+    }: SwipeableMockProps) =>
+      ReactModule.createElement(
+        'ReanimatedSwipeable',
+        { testID },
+        children,
+        renderRightActions?.(
+          { value: 0 },
+          { value: 0 },
+          swipeableMethods
+        )
+      ),
+  }
+})
 
 jest.mock('react-i18next', () => ({
   initReactI18next: {
@@ -16,7 +57,7 @@ jest.mock('react-i18next', () => ({
         'taskPicker.notSelectedStatus': 'Not selected',
         'taskPicker.selectedStatus': 'Selected',
         'taskPicker.toggleSelectionHint':
-          'Double tap to toggle whether this task is assigned for today.',
+          'Double tap to toggle this task for today. Swipe left to delete the preset.',
         'taskPicker.unsavedChanges': 'Unsaved changes',
       }
 
@@ -65,6 +106,7 @@ describe('TaskPicker', () => {
   }
 
   const mockOnTaskSelect = jest.fn<Promise<TaskAssignmentOperationResult>, [string[]]>()
+  const mockOnTaskDeleteAction = jest.fn<Promise<void>, [string]>()
   const mockOnClose = jest.fn()
   const mockOnEditPresets = jest.fn()
 
@@ -74,6 +116,7 @@ describe('TaskPicker', () => {
     presetTasks: mockTasks,
     selectedTasks: [],
     onTaskSelect: mockOnTaskSelect,
+    onTaskDeleteAction: mockOnTaskDeleteAction,
     onClose: mockOnClose,
     onEditPresets: mockOnEditPresets,
   }
@@ -81,6 +124,7 @@ describe('TaskPicker', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockOnTaskSelect.mockResolvedValue(successResult)
+    mockOnTaskDeleteAction.mockResolvedValue()
   })
 
   it('shows selectable preset tasks grouped by category', () => {
@@ -135,7 +179,9 @@ describe('TaskPicker', () => {
     })
     expect(
       getByTestId('task-picker-item-task1').props.accessibilityHint
-    ).toBe('Double tap to toggle whether this task is assigned for today.')
+    ).toBe(
+      'Double tap to toggle this task for today. Swipe left to delete the preset.'
+    )
     expect(
       getByTestId('task-picker-item-task1').props.accessibilityLabel
     ).toBe('ネットワーキング, Selected')
@@ -211,6 +257,23 @@ describe('TaskPicker', () => {
     // Assert
     expect(getByText('taskPicker.noPresetTasks')).toBeTruthy()
     expect(getByText('presetEditor.addTask')).toBeTruthy()
+  })
+
+  it('deletes the swiped preset only after the destructive action is confirmed', async () => {
+    // Arrange
+    const alertMock = jest.mocked(Alert.alert)
+    const { getByTestId } = render(<TaskPicker {...defaultProps} />)
+
+    // Act
+    fireEvent.press(getByTestId('task-picker-delete-task1'))
+    expect(mockOnTaskDeleteAction).not.toHaveBeenCalled()
+    alertMock.mock.calls[0]?.[2]?.[1]?.onPress?.()
+
+    // Assert
+    await waitFor(() => {
+      expect(mockOnTaskDeleteAction).toHaveBeenCalledWith('task1')
+    })
+    expect(mockOnTaskDeleteAction).toHaveBeenCalledTimes(1)
   })
 
   it('prevents duplicate assignment saves while confirm is already pending', async () => {

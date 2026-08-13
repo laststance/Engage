@@ -495,7 +495,22 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       // Reload tasks from database to get accurate state
       const updatedTasks = await taskRepository.findAll()
-      set({ tasks: updatedTasks })
+      const deletedTaskIds = new Set(tasksToDelete.map((task) => task.id))
+
+      set((current) => ({
+        tasks: updatedTasks,
+        // Mirror SQLite's cascading delete so loaded day assignments never retain ghost task IDs.
+        completions: Object.fromEntries(
+          Object.entries(current.completions).map(
+            ([date, dateCompletions]) => [
+              date,
+              dateCompletions.filter(
+                (completion) => !deletedTaskIds.has(completion.taskId)
+              ),
+            ]
+          )
+        ),
+      }))
 
       console.log('Preset tasks updated successfully', {
         created: tasksToCreate.length,

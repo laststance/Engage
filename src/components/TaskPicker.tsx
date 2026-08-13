@@ -1,5 +1,8 @@
 import React, { useMemo, useRef, useState } from 'react'
-import { Modal, ScrollView, StyleSheet } from 'react-native'
+import { Alert, Modal, ScrollView, StyleSheet } from 'react-native'
+import Swipeable, {
+  type SwipeableMethods,
+} from 'react-native-gesture-handler/ReanimatedSwipeable'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { DesignSystem } from '@/constants/design-system'
@@ -20,6 +23,7 @@ interface TaskPickerProps {
   categories: Category[]
   selectedTasks: string[]
   onTaskSelect: (taskIds: string[]) => Promise<TaskAssignmentOperationResult>
+  onTaskDeleteAction: (taskId: string) => Promise<void>
   onClose: () => void
   onEditPresets: () => void
 }
@@ -84,6 +88,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
   categories,
   selectedTasks,
   onTaskSelect,
+  onTaskDeleteAction,
   onClose,
   onEditPresets,
 }) => {
@@ -93,6 +98,8 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
     useState<string[]>(selectedTasks)
   const [isSaving, setIsSaving] = useState(false)
   const isSavingRef = useRef(false)
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null)
+  const deletingTaskIdRef = useRef<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const tasksByCategory = useMemo(
     () => groupTasksByCategory(presetTasks, categories),
@@ -105,6 +112,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
     [tasksByCategory]
   )
   const selectedTaskCount = localSelectedTasks.length
+  const isBusy = isSaving || deletingTaskId !== null
   const hasSelectionChanges = useMemo(
     () => !haveSameTaskSelection(localSelectedTasks, selectedTasks),
     [localSelectedTasks, selectedTasks]
@@ -138,7 +146,8 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
   }
 
   const handleConfirm = async () => {
-    if (isSavingRef.current) {
+    // Do not overlap assignment persistence with a destructive task update.
+    if (isSavingRef.current || deletingTaskIdRef.current !== null) {
       return
     }
 
@@ -170,7 +179,8 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
   }
 
   const handleCancel = () => {
-    if (isSavingRef.current) {
+    // Keep the modal stable while a save or deletion is still persisting.
+    if (isSavingRef.current || deletingTaskIdRef.current !== null) {
       return
     }
 
@@ -180,12 +190,108 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
   }
 
   const handleEditPresets = () => {
-    if (isSavingRef.current) {
+    // Avoid replacing this modal while a task mutation is still running.
+    if (isSavingRef.current || deletingTaskIdRef.current !== null) {
       return
     }
 
     onEditPresets()
   }
+
+  /**
+   * Permanently deletes a swiped preset and removes its stale local selection after confirmation.
+   * @param taskId - The persisted task ID selected by the destructive swipe action.
+   * @returns A promise that settles after persistence and picker state are synchronized.
+   * @example
+   * await deletePresetTask('task-1') // => task-1 disappears from the picker
+   */
+  const deletePresetTask = async (taskId: string): Promise<void> => {
+    // A second destructive tap must not start another database mutation.
+    if (isSavingRef.current || deletingTaskIdRef.current !== null) {
+      return
+    }
+
+    deletingTaskIdRef.current = taskId
+    setDeletingTaskId(taskId)
+    setErrorMessage(null)
+
+    try {
+      await onTaskDeleteAction(taskId)
+      setLocalSelectedTasks((currentTaskIds) =>
+        currentTaskIds.filter((currentTaskId) => currentTaskId !== taskId)
+      )
+    } catch (error) {
+      console.error('Failed to delete preset task:', error)
+      triggerFeedback('error')
+      setErrorMessage(t('taskPicker.deleteFailed'))
+    } finally {
+      deletingTaskIdRef.current = null
+      setDeletingTaskId(null)
+    }
+  }
+
+  /**
+   * Closes the swiped row and asks for confirmation before the destructive callback runs.
+   * @param task - The preset task exposed by the swipe gesture.
+   * @param swipeableMethods - Gesture Handler controls for closing the revealed action.
+   * @returns Nothing; confirmation triggers deletion only when the user accepts.
+   * @example
+   * requestTaskDeletion(task, swipeableMethods) // => shows the delete confirmation
+   */
+  const requestTaskDeletion = (
+    task: Task,
+    swipeableMethods: SwipeableMethods
+  ): void => {
+    // Ignore swipe actions while another picker mutation is active.
+    if (isSavingRef.current || deletingTaskIdRef.current !== null) {
+      swipeableMethods.close()
+      return
+    }
+
+    swipeableMethods.close()
+    Alert.alert(
+      t('presetEditor.deleteTask'),
+      t('presetEditor.deleteTaskConfirm', { title: task.title }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => {
+            void deletePresetTask(task.id)
+          },
+        },
+      ]
+    )
+  }
+
+  /**
+   * Renders the destructive control revealed when a picker row is swiped to the left.
+   * @param task - The preset task represented by the swiped row.
+   * @param swipeableMethods - Gesture Handler controls passed to the action renderer.
+   * @returns An accessible red delete action sized to the full task row.
+   * @example
+   * renderTaskDeleteAction(task, swipeableMethods) // => red Delete button
+   */
+  const renderTaskDeleteAction = (
+    task: Task,
+    swipeableMethods: SwipeableMethods
+  ): React.ReactNode => (
+    <AppPressable
+      onPress={() => requestTaskDeletion(task, swipeableMethods)}
+      disabled={isBusy}
+      feedback="select"
+      className="bg-system-red px-6 items-center justify-center touch-target-minimum"
+      pressedClassName="opacity-80"
+      testID={`task-picker-delete-${task.id}`}
+      accessibilityLabel={t('presetEditor.deleteTask')}
+      accessibilityRole="button"
+    >
+      <Text className="text-white font-semibold text-callout">
+        {t('common.delete')}
+      </Text>
+    </AppPressable>
+  )
 
   return (
     <Modal
@@ -220,7 +326,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
             </VStack>
             <AppPressable
               onPress={handleCancel}
-              disabled={isSaving}
+              disabled={isBusy}
               className="p-3 touch-target-minimum"
               pressedClassName="bg-system-gray-6 rounded-full"
               testID="task-picker-close"
@@ -237,7 +343,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
 
           <AppPressable
             onPress={handleEditPresets}
-            disabled={isSaving}
+            disabled={isBusy}
             feedback="select"
             className="bg-secondary-system-background rounded-lg p-3 touch-target-minimum"
             pressedClassName="bg-system-gray-5"
@@ -280,80 +386,95 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
                       )
 
                       return (
-                        <AppPressable
+                        <Swipeable
                           key={task.id}
-                          onPress={() => toggleTaskSelection(task.id)}
-                          feedback="select"
-                          selected={isSelected}
-                          accessibilityLabel={`${task.title}, ${selectionStatus}`}
-                          accessibilityValue={{
-                            text: selectionStatus,
-                          }}
-                          accessibilityHint={t(
-                            'taskPicker.toggleSelectionHint'
-                          )}
-                          className={`
-                            p-4 rounded-lg border-2 touch-target-minimum
-                            ${
-                              isSelected
-                                ? `border-system-blue bg-business-light`
-                                : 'border-system-gray-4 bg-system-background'
-                            }
-                          `}
-                          pressedClassName="bg-system-gray-6"
-                          testID={`task-picker-item-${task.id}`}
-                          accessibilityRole="button"
+                          enabled={!isBusy}
+                          overshootRight={false}
+                          renderRightActions={(
+                            _swipeProgress,
+                            _swipeTranslation,
+                            swipeableMethods
+                          ) =>
+                            renderTaskDeleteAction(task, swipeableMethods)
+                          }
+                          containerStyle={styles.swipeableContainer}
+                          testID={`task-picker-swipeable-${task.id}`}
                         >
-                          <HStack className="items-center justify-between">
-                            <VStack className="flex-1" space="xs">
-                              <Text
-                                className={`
-                                  text-body font-medium
-                                  ${
-                                    isSelected
-                                      ? 'text-system-blue'
-                                      : 'text-label'
-                                  }
-                                `}
-                              >
-                                {task.title}
-                              </Text>
-                              {task.defaultMinutes && (
-                                <Text className="text-footnote text-tertiary-label">
-                                  {t('taskPicker.estimatedTime', {
-                                    minutes: task.defaultMinutes,
-                                  })}
+                          <AppPressable
+                            onPress={() => toggleTaskSelection(task.id)}
+                            disabled={isBusy}
+                            feedback="select"
+                            selected={isSelected}
+                            accessibilityLabel={`${task.title}, ${selectionStatus}`}
+                            accessibilityValue={{
+                              text: selectionStatus,
+                            }}
+                            accessibilityHint={t(
+                              'taskPicker.toggleSelectionHint'
+                            )}
+                            className={`
+                              p-4 border-2 touch-target-minimum
+                              ${
+                                isSelected
+                                  ? `border-system-blue bg-business-light`
+                                  : 'border-system-gray-4 bg-system-background'
+                              }
+                            `}
+                            pressedClassName="bg-system-gray-6"
+                            testID={`task-picker-item-${task.id}`}
+                            accessibilityRole="button"
+                          >
+                            <HStack className="items-center justify-between">
+                              <VStack className="flex-1" space="xs">
+                                <Text
+                                  className={`
+                                    text-body font-medium
+                                    ${
+                                      isSelected
+                                        ? 'text-system-blue'
+                                        : 'text-label'
+                                    }
+                                  `}
+                                >
+                                  {task.title}
                                 </Text>
-                              )}
-                            </VStack>
-
-                            <HStack className="items-center" space="sm">
-                              {isSelected && (
-                                <Text className="text-caption-1 font-semibold text-system-blue">
-                                  {t('taskPicker.selectedStatus')}
-                                </Text>
-                              )}
-                              <Box
-                                className={`
-                                  w-6 h-6 rounded-full border-2 items-center justify-center
-                                  ${
-                                    isSelected
-                                      ? 'bg-system-blue border-system-blue'
-                                      : 'border-system-gray-3 bg-system-background'
-                                  }
-                                `}
-                              >
-                                {isSelected && (
-                                  <IconSymbol
-                                    name="checkmark"
-                                    size={16}
-                                    color="white"
-                                  />
+                                {task.defaultMinutes && (
+                                  <Text className="text-footnote text-tertiary-label">
+                                    {t('taskPicker.estimatedTime', {
+                                      minutes: task.defaultMinutes,
+                                    })}
+                                  </Text>
                                 )}
-                              </Box>
+                              </VStack>
+
+                              <HStack className="items-center" space="sm">
+                                {isSelected && (
+                                  <Text className="text-caption-1 font-semibold text-system-blue">
+                                    {t('taskPicker.selectedStatus')}
+                                  </Text>
+                                )}
+                                <Box
+                                  className={`
+                                    w-6 h-6 rounded-full border-2 items-center justify-center
+                                    ${
+                                      isSelected
+                                        ? 'bg-system-blue border-system-blue'
+                                        : 'border-system-gray-3 bg-system-background'
+                                    }
+                                  `}
+                                >
+                                  {isSelected && (
+                                    <IconSymbol
+                                      name="checkmark"
+                                      size={16}
+                                      color="white"
+                                    />
+                                  )}
+                                </Box>
+                              </HStack>
                             </HStack>
-                          </HStack>
-                        </AppPressable>
+                          </AppPressable>
+                        </Swipeable>
                       )
                     })}
                   </VStack>
@@ -368,7 +489,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
                 </Text>
                 <AppPressable
                   onPress={handleEditPresets}
-                  disabled={isSaving}
+                  disabled={isBusy}
                   feedback="select"
                   className="bg-system-blue rounded-lg px-6 py-3 touch-target-minimum"
                   pressedClassName="bg-business-dark"
@@ -395,7 +516,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
           <HStack space="md">
             <AppPressable
               onPress={handleCancel}
-              disabled={isSaving}
+              disabled={isBusy}
               className="flex-1 bg-secondary-system-background rounded-lg py-3 touch-target-minimum"
               pressedClassName="bg-system-gray-5"
               testID="task-picker-cancel"
@@ -411,6 +532,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
             <AppPressable
               onPress={handleConfirm}
               busy={isSaving}
+              disabled={isBusy}
               feedback="select"
               className="flex-1 bg-system-blue rounded-lg py-3 touch-target-minimum"
               pressedClassName="bg-business-dark"
@@ -441,5 +563,9 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
 const styles = StyleSheet.create({
   primaryActionLabel: {
     color: DesignSystem.colors.system.systemBackground,
+  },
+  swipeableContainer: {
+    borderRadius: DesignSystem.borderRadius.button,
+    overflow: 'hidden',
   },
 })

@@ -77,11 +77,12 @@ const en = {
     discardChangesAndClose: 'Discard changes and close',
     saveSelection: 'Save {{count}} selected tasks',
     toggleSelectionHint:
-      'Double tap to toggle whether this task is assigned for today.',
+      'Double tap to toggle this task for today. Swipe left to delete the preset.',
     newCategory: 'Create New Category',
     noPresetTasks: 'No preset tasks',
     confirm: 'Save selection ({{count}})',
     saveFailed: 'Failed to save task selection',
+    deleteFailed: 'Failed to delete the preset task',
   },
 
   presetEditor: {

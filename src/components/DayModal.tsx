@@ -86,6 +86,7 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
           categories={day.categories}
           selectedTasks={day.selectedTaskIds}
           onTaskSelect={day.handleTaskSelect}
+          onTaskDeleteAction={day.handleDeletePresetTask}
           onClose={day.handleTaskPickerClose}
           onEditPresets={handleEditPresets}
         />

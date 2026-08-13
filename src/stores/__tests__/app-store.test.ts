@@ -12,6 +12,9 @@ jest.mock('../../services/repositories', () => ({
   taskRepository: {
     findAll: jest.fn(),
     seedDefaultTasks: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
   },
   entryRepository: {
     findRecentEntries: jest.fn(),
@@ -414,6 +417,36 @@ describe('useAppStore', () => {
       expect(state.completions['2025-01-15']).toEqual([
         concurrentlyUpdatedCompletion,
         assignedCompletion,
+      ])
+    })
+  })
+
+  describe('updatePresetTasks', () => {
+    it('removes a deleted preset from task lists and assigned days', async () => {
+      // Arrange
+      const remainingCompletion = {
+        id: 'comp2',
+        date: '2025-01-15',
+        taskId: 'task2',
+        completed: false,
+        createdAt: Date.now(),
+      }
+      useAppStore.setState({
+        tasks: mockTasks,
+        completions: {
+          '2025-01-15': [mockCompletions[0], remainingCompletion],
+        },
+      })
+      jest.mocked(taskRepository.findAll).mockResolvedValue([mockTasks[1]])
+
+      // Act
+      await useAppStore.getState().updatePresetTasks([mockTasks[1]])
+
+      // Assert
+      expect(taskRepository.delete).toHaveBeenCalledWith('task1')
+      expect(useAppStore.getState().tasks).toEqual([mockTasks[1]])
+      expect(useAppStore.getState().completions['2025-01-15']).toEqual([
+        remainingCompletion,
       ])
     })
   })

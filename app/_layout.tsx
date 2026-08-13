@@ -5,6 +5,7 @@ import {
 } from 'expo-router/react-navigation'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useEffect } from 'react'
 import { LogBox } from 'react-native'
@@ -117,21 +118,24 @@ export default function RootLayout() {
   }, [initializeApp])
 
   return (
-    <SafeAreaProvider>
-      <GluestackUIProvider mode="light">
-        <ThemeProvider
-          value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
-        >
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="modal"
-              options={{ presentation: 'modal', headerShown: false }}
-            />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </GluestackUIProvider>
-    </SafeAreaProvider>
+    // Gesture Handler must own the app root so modal task rows receive native swipe events.
+    <GestureHandlerRootView className="flex-1">
+      <SafeAreaProvider>
+        <GluestackUIProvider mode="light">
+          <ThemeProvider
+            value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+          >
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="modal"
+                options={{ presentation: 'modal', headerShown: false }}
+              />
+            </Stack>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </GluestackUIProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   )
 }
