@@ -64,9 +64,10 @@ jest.mock('react-i18next', () => ({
         'taskPicker.discardChanges': 'Discard changes',
         'taskPicker.discardChangesAndClose': 'Discard changes and close',
         'taskPicker.notSelectedStatus': 'Not selected',
+        'taskPicker.deletePresetAction': 'Delete preset',
         'taskPicker.selectedStatus': 'Selected',
         'taskPicker.toggleSelectionHint':
-          'Double tap to toggle this task for today. Swipe left to delete the preset.',
+          'Double tap to toggle this task for today. Swipe left or use the Delete preset action to delete it.',
         'taskPicker.unsavedChanges': 'Unsaved changes',
       }
 
@@ -189,8 +190,11 @@ describe('TaskPicker', () => {
     expect(
       getByTestId('task-picker-item-task1').props.accessibilityHint
     ).toBe(
-      'Double tap to toggle this task for today. Swipe left to delete the preset.'
+      'Double tap to toggle this task for today. Swipe left or use the Delete preset action to delete it.'
     )
+    expect(
+      getByTestId('task-picker-item-task1').props.accessibilityActions
+    ).toEqual([{ name: 'delete', label: 'Delete preset' }])
     expect(
       getByTestId('task-picker-item-task1').props.accessibilityLabel
     ).toBe('ネットワーキング, Selected')
@@ -320,6 +324,24 @@ describe('TaskPicker', () => {
       expect(mockOnTaskDeleteAction).toHaveBeenCalledWith('task1')
     })
     expect(mockOnTaskDeleteAction).toHaveBeenCalledTimes(1)
+  })
+
+  it('lets assistive technology confirm and delete a preset', async () => {
+    // Arrange
+    const alertMock = jest.mocked(Alert.alert)
+    const { getByTestId } = render(<TaskPicker {...defaultProps} />)
+
+    // Act
+    fireEvent(getByTestId('task-picker-item-task1'), 'accessibilityAction', {
+      nativeEvent: { actionName: 'delete' },
+    })
+    expect(alertMock).toHaveBeenCalledTimes(1)
+    alertMock.mock.calls[0]?.[2]?.[1]?.onPress?.()
+
+    // Assert
+    await waitFor(() => {
+      expect(mockOnTaskDeleteAction).toHaveBeenCalledWith('task1')
+    })
   })
 
   it('blocks swipe deletion while task selection is saving', async () => {

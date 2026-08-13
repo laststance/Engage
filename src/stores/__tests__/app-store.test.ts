@@ -6,6 +6,7 @@ import {
   categoryRepository,
 } from '../../services/repositories'
 import { journalService } from '../../services/journalService'
+import { databaseService } from '../../services/database'
 
 // Mock the repositories
 jest.mock('../../services/repositories', () => ({
@@ -41,6 +42,12 @@ jest.mock('../../services/repositories', () => ({
 jest.mock('../../services/journalService', () => ({
   journalService: {
     saveEntry: jest.fn(),
+  },
+}))
+
+jest.mock('../../services/database', () => ({
+  databaseService: {
+    executeTransaction: jest.fn(),
   },
 }))
 
@@ -108,6 +115,14 @@ describe('useAppStore', () => {
 
     // Reset mocks
     jest.clearAllMocks()
+    jest
+      .mocked(databaseService.executeTransaction)
+      .mockImplementation(async (operations) => {
+        // Match production ordering so store tests exercise every transactional operation.
+        for (const operation of operations) {
+          await operation()
+        }
+      })
   })
 
   describe('loadData', () => {
@@ -444,6 +459,7 @@ describe('useAppStore', () => {
 
       // Assert
       expect(taskRepository.delete).toHaveBeenCalledWith('task1')
+      expect(databaseService.executeTransaction).toHaveBeenCalledTimes(1)
       expect(useAppStore.getState().tasks).toEqual([mockTasks[1]])
       expect(useAppStore.getState().completions['2025-01-15']).toEqual([
         remainingCompletion,
@@ -466,6 +482,41 @@ describe('useAppStore', () => {
 
       // Assert
       expect(useAppStore.getState().completions).toBe(loadedCompletions)
+    })
+
+    it('keeps loaded task data unchanged when reconciliation fails after deletion', async () => {
+      // Arrange
+      const loadedCompletions = {
+        '2025-01-15': mockCompletions,
+      }
+      const editedTask = { ...mockTasks[1], title: '朝の運動' }
+      useAppStore.setState({
+        tasks: mockTasks,
+        completions: loadedCompletions,
+      })
+      jest
+        .mocked(taskRepository.update)
+        .mockRejectedValue(new Error('Update failed'))
+
+      // Act
+      const reconciliation = useAppStore
+        .getState()
+        .updatePresetTasks([editedTask])
+
+      // Assert
+      await expect(reconciliation).rejects.toThrow('Update failed')
+      expect(databaseService.executeTransaction).toHaveBeenCalledTimes(1)
+      expect(taskRepository.delete).toHaveBeenCalledWith('task1')
+      expect(taskRepository.update).toHaveBeenCalledWith('task2', {
+        title: '朝の運動',
+        categoryId: 'life',
+        archived: false,
+        updatedAt: mockTasks[1].updatedAt,
+      })
+      expect(taskRepository.findAll).not.toHaveBeenCalled()
+      expect(useAppStore.getState().tasks).toBe(mockTasks)
+      expect(useAppStore.getState().completions).toBe(loadedCompletions)
+      expect(useAppStore.getState().error).toBe('Update failed')
     })
   })
 

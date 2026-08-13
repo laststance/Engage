@@ -1,5 +1,11 @@
 import React, { useMemo, useRef, useState } from 'react'
-import { Alert, Modal, ScrollView, StyleSheet } from 'react-native'
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  type AccessibilityActionEvent,
+} from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import Swipeable, {
   type SwipeableMethods,
@@ -133,8 +139,14 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
     [localSelectedTasks, selectedTasks]
   )
 
-  // Get category color using design system (lookup by category ID)
-  const getCategoryColor = (categoryId: string) => {
+  /**
+   * Maps a preset category to its design token whenever TaskPicker renders a section.
+   * @param categoryId - The persisted category ID for the visible task group.
+   * @returns A NativeWind background-color class with a safe business fallback.
+   * @example
+   * getCategoryColor('life') // => 'bg-life'
+   */
+  const getCategoryColor = (categoryId: string): string => {
     const colorMap: Record<string, string> = {
       business: 'bg-business',
       life: 'bg-life',
@@ -149,7 +161,14 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
     return colorMap[categoryId] || 'bg-business'
   }
 
-  const toggleTaskSelection = (taskId: string) => {
+  /**
+   * Updates the local draft when a user taps a task row before saving the day assignment.
+   * @param taskId - The preset task whose selected state should flip.
+   * @returns Nothing; local draft and visible error state are updated.
+   * @example
+   * toggleTaskSelection('task-1') // => task-1 toggles in the draft
+   */
+  const toggleTaskSelection = (taskId: string): void => {
     setErrorMessage(null)
     setLocalSelectedTasks((prev) => {
       if (prev.includes(taskId)) {
@@ -160,7 +179,13 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
     })
   }
 
-  const handleConfirm = async () => {
+  /**
+   * Persists the picker draft when the user presses Save and closes only after success.
+   * @returns A promise that settles after assignment feedback and modal state are synchronized.
+   * @example
+   * await handleConfirm() // => saves the selected task IDs
+   */
+  const handleConfirm = async (): Promise<void> => {
     // Do not overlap assignment persistence with a destructive task update.
     if (isSavingRef.current || deletingTaskIdRef.current !== null) {
       return
@@ -193,7 +218,13 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
     }
   }
 
-  const handleCancel = () => {
+  /**
+   * Discards the visible draft when the user closes the picker outside an active mutation.
+   * @returns Nothing; saved selections are restored before the modal closes.
+   * @example
+   * handleCancel() // => resets the draft and closes TaskPicker
+   */
+  const handleCancel = (): void => {
     // Keep the modal stable while a save or deletion is still persisting.
     if (isSavingRef.current || deletingTaskIdRef.current !== null) {
       return
@@ -204,7 +235,13 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
     onClose()
   }
 
-  const handleEditPresets = () => {
+  /**
+   * Opens PresetTaskEditor from TaskPicker when no save or deletion is still running.
+   * @returns Nothing; the parent swaps to the preset editing flow.
+   * @example
+   * handleEditPresets() // => opens the preset editor
+   */
+  const handleEditPresets = (): void => {
     // Avoid replacing this modal while a task mutation is still running.
     if (isSavingRef.current || deletingTaskIdRef.current !== null) {
       return
@@ -255,15 +292,15 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
    */
   const requestTaskDeletion = (
     task: Task,
-    swipeableMethods: SwipeableMethods
+    swipeableMethods?: SwipeableMethods
   ): void => {
     // Ignore swipe actions while another picker mutation is active.
     if (isSavingRef.current || deletingTaskIdRef.current !== null) {
-      swipeableMethods.close()
+      swipeableMethods?.close()
       return
     }
 
-    swipeableMethods.close()
+    swipeableMethods?.close()
     Alert.alert(
       t('presetEditor.deleteTask'),
       t('presetEditor.deleteTaskConfirm', { title: task.title }),
@@ -278,6 +315,23 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
         },
       ]
     )
+  }
+
+  /**
+   * Routes assistive-technology delete actions through the same confirmed destructive flow.
+   * @param task - The focused preset task exposed to VoiceOver or TalkBack.
+   * @param event - The accessibility action selected by the user.
+   * @returns Nothing; only the localized delete action opens confirmation.
+   * @example
+   * handleTaskAccessibilityAction(task, deleteActionEvent) // => shows confirmation
+   */
+  const handleTaskAccessibilityAction = (
+    task: Task,
+    event: AccessibilityActionEvent
+  ): void => {
+    if (event.nativeEvent.actionName === 'delete') {
+      requestTaskDeletion(task)
+    }
   }
 
   /**
@@ -427,6 +481,17 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
                             accessibilityHint={t(
                               'taskPicker.toggleSelectionHint'
                             )}
+                            accessibilityActions={[
+                              {
+                                name: 'delete',
+                                label: t('taskPicker.deletePresetAction'),
+                              },
+                            ]}
+                            onAccessibilityAction={(
+                              event: AccessibilityActionEvent
+                            ) =>
+                              handleTaskAccessibilityAction(task, event)
+                            }
                             className={`
                               p-4 border-2 touch-target-minimum
                               ${

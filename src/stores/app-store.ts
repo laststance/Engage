@@ -48,6 +48,7 @@ import {
   calculateProductivityTrends,
 } from '../utils/statisticsEngine'
 import { backupService } from '../services/backupService'
+import { databaseService } from '../services/database'
 
 interface AppState {
   // Data
@@ -497,8 +498,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         })
       })
 
-      // Execute all operations
-      await Promise.all(operations.map((op) => op()))
+      // Keep deletes, creates, and updates atomic so a later failure restores earlier writes.
+      await databaseService.executeTransaction(operations)
 
       // Reload tasks from database to get accurate state
       const updatedTasks = await taskRepository.findAll()
