@@ -48,6 +48,7 @@ import {
   calculateProductivityTrends,
 } from '../utils/statisticsEngine'
 import { backupService } from '../services/backupService'
+import { databaseService } from '@/src/services/database'
 
 interface AppState {
   // Data
@@ -442,6 +443,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  /**
+   * Reconciles the complete preset list when PresetTaskEditor or TaskPicker submits a mutation.
+   * @param tasks - The complete preset list that should remain persisted.
+   * @returns A promise that settles after repository and loaded completion state agree.
+   * @example
+   * await useAppStore.getState().updatePresetTasks(remainingTasks)
+   */
   updatePresetTasks: async (tasks: Task[]) => {
     try {
       set({ error: null })
@@ -490,12 +498,32 @@ export const useAppStore = create<AppState>((set, get) => ({
         })
       })
 
-      // Execute all operations
-      await Promise.all(operations.map((op) => op()))
+      // Keep deletes, creates, and updates atomic so a later failure restores earlier writes.
+      await databaseService.executeTransaction(operations)
 
       // Reload tasks from database to get accurate state
       const updatedTasks = await taskRepository.findAll()
-      set({ tasks: updatedTasks })
+      const deletedTaskIds = new Set(tasksToDelete.map((task) => task.id))
+
+      // Preserve the completions reference when preset edits contain no deletions.
+      if (deletedTaskIds.size === 0) {
+        set({ tasks: updatedTasks })
+      } else {
+        set((current) => ({
+          tasks: updatedTasks,
+          // Mirror SQLite's cascading delete so loaded day assignments never retain ghost task IDs.
+          completions: Object.fromEntries(
+            Object.entries(current.completions).map(
+              ([date, dateCompletions]) => [
+                date,
+                dateCompletions.filter(
+                  (completion) => !deletedTaskIds.has(completion.taskId)
+                ),
+              ]
+            )
+          ),
+        }))
+      }
 
       console.log('Preset tasks updated successfully', {
         created: tasksToCreate.length,

@@ -76,11 +76,14 @@ const ja = {
     discardChanges: '変更を破棄',
     discardChangesAndClose: '変更を破棄して閉じる',
     saveSelection: '{{count}}個の選択を保存',
-    toggleSelectionHint: 'ダブルタップでこのタスクを今日の対象にするか切り替えます。',
+    deletePresetAction: 'プリセットを削除',
+    toggleSelectionHint:
+      'ダブルタップで今日の対象を切り替えます。左にスワイプするか「プリセットを削除」アクションで削除できます。',
     newCategory: '新しいカテゴリーを作成',
     noPresetTasks: 'プリセットタスクがありません',
     confirm: '選択を保存 ({{count}}個)',
     saveFailed: 'タスク選択の保存に失敗しました',
+    deleteFailed: 'プリセットタスクの削除に失敗しました',
   },
 
   presetEditor: {

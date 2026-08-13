@@ -18,6 +18,13 @@ interface DayModalProps {
   onClose: () => void
 }
 
+/**
+ * Presents a selected calendar day and its nested task flows when Calendar opens the day sheet.
+ * @param props - Modal visibility and the parent close callback.
+ * @returns The selected day's tasks, journal, picker, and preset editor.
+ * @example
+ * <DayModal isVisible onClose={handleClose} />
+ */
 export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
   const { t } = useTranslation()
   const selectedDate = useAppStore((state) => state.selectedDate)
@@ -86,6 +93,7 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
           categories={day.categories}
           selectedTasks={day.selectedTaskIds}
           onTaskSelect={day.handleTaskSelect}
+          onTaskDeleteAction={day.handleDeletePresetTask}
           onClose={day.handleTaskPickerClose}
           onEditPresets={handleEditPresets}
         />

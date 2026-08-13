@@ -5,6 +5,7 @@ import {
 } from 'expo-router/react-navigation'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useEffect } from 'react'
 import { LogBox } from 'react-native'
@@ -41,6 +42,12 @@ export const unstable_settings = {
   anchor: '(tabs)',
 }
 
+/**
+ * Boots shared services and renders the provider tree whenever Expo Router mounts the app.
+ * @returns The application root with navigation, gestures, safe areas, and UI providers.
+ * @example
+ * <RootLayout />
+ */
 export default function RootLayout() {
   const colorScheme = useColorScheme()
   const initializeApp = useAppStore((state) => state.initializeApp)
@@ -117,21 +124,24 @@ export default function RootLayout() {
   }, [initializeApp])
 
   return (
-    <SafeAreaProvider>
-      <GluestackUIProvider mode="light">
-        <ThemeProvider
-          value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
-        >
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="modal"
-              options={{ presentation: 'modal', headerShown: false }}
-            />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </GluestackUIProvider>
-    </SafeAreaProvider>
+    // Gesture Handler must own the app root so modal task rows receive native swipe events.
+    <GestureHandlerRootView className="flex-1">
+      <SafeAreaProvider>
+        <GluestackUIProvider mode="light">
+          <ThemeProvider
+            value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+          >
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="modal"
+                options={{ presentation: 'modal', headerShown: false }}
+              />
+            </Stack>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </GluestackUIProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   )
 }
