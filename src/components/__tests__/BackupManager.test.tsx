@@ -194,8 +194,10 @@ describe('BackupManager', () => {
     const destructiveAction = jest
       .mocked(Alert.alert)
       .mock.calls[0]?.[2]?.find((button) => button.style === 'destructive')
+    // React Native types Alert callbacks as void, while the runtime keeps this returned Promise.
+    let deleteBackupAction: void
     await act(() => {
-      destructiveAction?.onPress?.()
+      deleteBackupAction = destructiveAction?.onPress?.()
     })
 
     // Assert
@@ -212,6 +214,7 @@ describe('BackupManager', () => {
 
     await act(async () => {
       resolveDelete(true)
+      await deleteBackupAction
     })
   })
 })

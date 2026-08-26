@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { type ComponentProps } from 'react'
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native'
 import { Alert, Keyboard } from 'react-native'
 import { Category, Task } from '@/src/types'
@@ -39,7 +39,16 @@ const mockTasks: Task[] = [
   },
 ]
 
-const renderEditor = async (overrides = {}) => {
+/**
+ * Renders PresetTaskEditor with type-safe partial props for form-safety test scenarios.
+ * @param overrides - Props replaced for the current scenario.
+ * @returns The awaited React Native test renderer result.
+ * @example
+ * await renderEditor({ isVisible: false })
+ */
+const renderEditor = async (
+  overrides: Partial<ComponentProps<typeof PresetTaskEditor>> = {}
+) => {
   return await render(
     <PresetTaskEditor
       categories={mockCategories}

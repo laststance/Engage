@@ -13,7 +13,16 @@ const defaultEntry: Entry = {
   updatedAt: 1700000000000,
 }
 
-const renderJournalInput = async (overrides = {}) => {
+/**
+ * Renders JournalInput with type-safe partial props for form-safety test scenarios.
+ * @param overrides - Props replaced for the current scenario.
+ * @returns The awaited React Native test renderer result.
+ * @example
+ * await renderJournalInput({ placeholder: 'Reflect on today' })
+ */
+const renderJournalInput = async (
+  overrides: Partial<Parameters<typeof JournalInput>[0]> = {}
+) => {
   return await render(
     <JournalInput
       date="2026-05-27"

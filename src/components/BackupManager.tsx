@@ -392,9 +392,7 @@ export const BackupManager: React.FC = () => {
         {
           text: t('common.delete'),
           style: 'destructive',
-          onPress: () => {
-            void performDeleteBackup(fileName)
-          },
+          onPress: () => performDeleteBackup(fileName),
         },
       ]
     )
