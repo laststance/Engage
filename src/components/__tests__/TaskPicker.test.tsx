@@ -137,9 +137,9 @@ describe('TaskPicker', () => {
     mockOnTaskDeleteAction.mockResolvedValue()
   })
 
-  it('shows selectable preset tasks grouped by category', () => {
+  it('shows selectable preset tasks grouped by category', async () => {
     // Arrange & Act
-    const { getByTestId, getByText } = render(<TaskPicker {...defaultProps} />)
+    const { getByTestId, getByText } = await render(<TaskPicker {...defaultProps} />)
 
     // Assert
     expect(getByText('事業')).toBeTruthy()
@@ -151,11 +151,11 @@ describe('TaskPicker', () => {
 
   it('submits the locally selected task ids after the user confirms', async () => {
     // Arrange
-    const { getByTestId } = render(<TaskPicker {...defaultProps} />)
+    const { getByTestId } = await render(<TaskPicker {...defaultProps} />)
 
     // Act
-    fireEvent.press(getByTestId('task-picker-item-task1'))
-    fireEvent.press(getByTestId('task-picker-confirm'))
+    await fireEvent.press(getByTestId('task-picker-item-task1'))
+    await fireEvent.press(getByTestId('task-picker-confirm'))
 
     // Assert
     await waitFor(() => {
@@ -164,9 +164,9 @@ describe('TaskPicker', () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1)
   })
 
-  it('exposes selected accessibility state on selected task items', () => {
+  it('exposes selected accessibility state on selected task items', async () => {
     // Arrange & Act
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <TaskPicker {...defaultProps} selectedTasks={['task1']} />
     )
 
@@ -203,12 +203,12 @@ describe('TaskPicker', () => {
     ).toBe('運動, Not selected')
   })
 
-  it('shows unsaved-change affordances after the local selection changes', () => {
+  it('shows unsaved-change affordances after the local selection changes', async () => {
     // Arrange
-    const { getByTestId, getByText } = render(<TaskPicker {...defaultProps} />)
+    const { getByTestId, getByText } = await render(<TaskPicker {...defaultProps} />)
 
     // Act
-    fireEvent.press(getByTestId('task-picker-item-task1'))
+    await fireEvent.press(getByTestId('task-picker-item-task1'))
 
     // Assert
     expect(getByText('Unsaved changes')).toBeTruthy()
@@ -220,26 +220,26 @@ describe('TaskPicker', () => {
 
   it('resyncs local selected state when the picker reopens with different tasks', async () => {
     // Arrange
-    const { getByTestId, rerender } = render(
+    const { getByTestId, rerender } = await render(
       <TaskPicker {...defaultProps} selectedTasks={['task1']} />
     )
 
     // Act
-    rerender(
+    await rerender(
       <TaskPicker
         {...defaultProps}
         isVisible={false}
         selectedTasks={['task1']}
       />
     )
-    rerender(
+    await rerender(
       <TaskPicker
         {...defaultProps}
         selectedTasks={['task2']}
         onTaskSelect={mockOnTaskSelect}
       />
     )
-    fireEvent.press(getByTestId('task-picker-confirm'))
+    await fireEvent.press(getByTestId('task-picker-confirm'))
 
     // Assert
     await waitFor(() => {
@@ -250,25 +250,25 @@ describe('TaskPicker', () => {
   it('preserves unsaved selections when an assigned preset is deleted', async () => {
     // Arrange
     const alertMock = jest.mocked(Alert.alert)
-    const { getByTestId, rerender } = render(
+    const { getByTestId, rerender } = await render(
       <TaskPicker {...defaultProps} selectedTasks={['task1']} />
     )
-    fireEvent.press(getByTestId('task-picker-item-task2'))
+    await fireEvent.press(getByTestId('task-picker-item-task2'))
 
     // Act
-    fireEvent.press(getByTestId('task-picker-delete-task1'))
+    await fireEvent.press(getByTestId('task-picker-delete-task1'))
     alertMock.mock.calls[0]?.[2]?.[1]?.onPress?.()
     await waitFor(() => {
       expect(mockOnTaskDeleteAction).toHaveBeenCalledWith('task1')
     })
-    rerender(
+    await rerender(
       <TaskPicker
         {...defaultProps}
         presetTasks={[mockTasks[1]]}
         selectedTasks={[]}
       />
     )
-    fireEvent.press(getByTestId('task-picker-confirm'))
+    await fireEvent.press(getByTestId('task-picker-confirm'))
 
     // Assert
     await waitFor(() => {
@@ -285,10 +285,10 @@ describe('TaskPicker', () => {
       removedCount: 0,
       message: 'Save failed',
     })
-    const { getByTestId, getByText } = render(<TaskPicker {...defaultProps} />)
+    const { getByTestId, getByText } = await render(<TaskPicker {...defaultProps} />)
 
     // Act
-    fireEvent.press(getByTestId('task-picker-confirm'))
+    await fireEvent.press(getByTestId('task-picker-confirm'))
 
     // Assert
     await waitFor(() => {
@@ -297,9 +297,9 @@ describe('TaskPicker', () => {
     expect(mockOnClose).not.toHaveBeenCalled()
   })
 
-  it('shows the first-preset action when there are no preset tasks', () => {
+  it('shows the first-preset action when there are no preset tasks', async () => {
     // Arrange & Act
-    const { getByText } = render(
+    const { getByText } = await render(
       <TaskPicker {...defaultProps} presetTasks={[]} />
     )
 
@@ -311,10 +311,10 @@ describe('TaskPicker', () => {
   it('deletes the swiped preset only after the destructive action is confirmed', async () => {
     // Arrange
     const alertMock = jest.mocked(Alert.alert)
-    const { getByTestId } = render(<TaskPicker {...defaultProps} />)
+    const { getByTestId } = await render(<TaskPicker {...defaultProps} />)
 
     // Act
-    fireEvent.press(getByTestId('task-picker-delete-task1'))
+    await fireEvent.press(getByTestId('task-picker-delete-task1'))
     expect(mockOnTaskDeleteAction).not.toHaveBeenCalled()
     expect(alertMock).toHaveBeenCalledTimes(1)
     alertMock.mock.calls[0]?.[2]?.[1]?.onPress?.()
@@ -329,10 +329,10 @@ describe('TaskPicker', () => {
   it('lets assistive technology confirm and delete a preset', async () => {
     // Arrange
     const alertMock = jest.mocked(Alert.alert)
-    const { getByTestId } = render(<TaskPicker {...defaultProps} />)
+    const { getByTestId } = await render(<TaskPicker {...defaultProps} />)
 
     // Act
-    fireEvent(getByTestId('task-picker-item-task1'), 'accessibilityAction', {
+    await fireEvent(getByTestId('task-picker-item-task1'), 'accessibilityAction', {
       nativeEvent: { actionName: 'delete' },
     })
     expect(alertMock).toHaveBeenCalledTimes(1)
@@ -352,12 +352,12 @@ describe('TaskPicker', () => {
         resolveSave = resolve
       })
     )
-    const { getByTestId, queryByTestId } = render(
+    const { getByTestId, queryByTestId } = await render(
       <TaskPicker {...defaultProps} />
     )
 
     // Act
-    fireEvent.press(getByTestId('task-picker-confirm'))
+    await fireEvent.press(getByTestId('task-picker-confirm'))
 
     // Assert
     await waitFor(() => {
@@ -384,11 +384,11 @@ describe('TaskPicker', () => {
         resolveSave = resolve
       })
     )
-    const { getByTestId } = render(<TaskPicker {...defaultProps} />)
+    const { getByTestId } = await render(<TaskPicker {...defaultProps} />)
 
     // Act
-    fireEvent.press(getByTestId('task-picker-confirm'))
-    fireEvent.press(getByTestId('task-picker-confirm'))
+    await fireEvent.press(getByTestId('task-picker-confirm'))
+    await fireEvent.press(getByTestId('task-picker-confirm'))
 
     // Assert
     await waitFor(() => {

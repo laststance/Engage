@@ -108,7 +108,7 @@ describe('useNotifications', () => {
     ).mockResolvedValue([createDailyReminder(9, 0)])
 
     // Act
-    const { result } = renderHook(() => useNotifications())
+    const { result } = await renderHook(() => useNotifications())
 
     // Assert
     await waitFor(() => {
@@ -128,7 +128,7 @@ describe('useNotifications', () => {
     ;(Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue(
       createPermissionResponse(permissionStatuses.granted, true)
     )
-    const { result } = renderHook(() => useNotifications())
+    const { result } = await renderHook(() => useNotifications())
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
     })

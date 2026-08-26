@@ -37,8 +37,8 @@ describe('JournalInput', () => {
     jest.clearAllMocks()
   })
 
-  it('renders correctly', () => {
-    const { getByTestId, getByPlaceholderText } = render(
+  it('renders correctly', async () => {
+    const { getByTestId, getByPlaceholderText } = await render(
       <JournalInput {...defaultProps} />
     )
 
@@ -49,35 +49,35 @@ describe('JournalInput', () => {
     ).toBeTruthy()
   })
 
-  it('displays the provided entry note', () => {
+  it('displays the provided entry note', async () => {
     const entryWithNote = {
       ...defaultEntry,
       note: '今日は良い一日でした。'
     }
     
-    const { getByDisplayValue } = render(
+    const { getByDisplayValue } = await render(
       <JournalInput {...defaultProps} entry={entryWithNote} />
     )
 
     expect(getByDisplayValue('今日は良い一日でした。')).toBeTruthy()
   })
 
-  it('updates text when user types', () => {
-    const { getByTestId } = render(<JournalInput {...defaultProps} />)
+  it('updates text when user types', async () => {
+    const { getByTestId } = await render(<JournalInput {...defaultProps} />)
 
     const textInput = getByTestId('journal-text-input')
-    fireEvent.changeText(textInput, '新しいテキスト')
+    await fireEvent.changeText(textInput, '新しいテキスト')
 
     // The text should be updated in the input
     expect(textInput.props.value).toBe('新しいテキスト')
   })
 
   it('auto-saves when text input loses focus', async () => {
-    const { getByTestId } = render(<JournalInput {...defaultProps} />)
+    const { getByTestId } = await render(<JournalInput {...defaultProps} />)
 
     const textInput = getByTestId('journal-text-input')
-    fireEvent.changeText(textInput, '更新されたテキスト')
-    fireEvent(textInput, 'blur')
+    await fireEvent.changeText(textInput, '更新されたテキスト')
+    await fireEvent(textInput, 'blur')
 
     // Wait for debounced auto-save to trigger
     await waitFor(() => {
@@ -85,13 +85,13 @@ describe('JournalInput', () => {
     }, { timeout: 5000 })
   })
 
-  it('displays character count', () => {
+  it('displays character count', async () => {
     const entryWithText = {
       ...defaultEntry,
       note: 'テスト'
     }
     
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <JournalInput {...defaultProps} entry={entryWithText} />
     )
 
@@ -99,8 +99,8 @@ describe('JournalInput', () => {
     expect(getByTestId('character-count').props.children).toContain('3')
   })
 
-  it('respects maxLength prop', () => {
-    const { getByTestId } = render(
+  it('respects maxLength prop', async () => {
+    const { getByTestId } = await render(
       <JournalInput {...defaultProps} maxLength={10} />
     )
 
@@ -108,8 +108,8 @@ describe('JournalInput', () => {
     expect(textInput.props.maxLength).toBe(10)
   })
 
-  it('handles null entry gracefully', () => {
-    const { getByTestId } = render(
+  it('handles null entry gracefully', async () => {
+    const { getByTestId } = await render(
       <JournalInput {...defaultProps} entry={null} />
     )
 
@@ -117,23 +117,23 @@ describe('JournalInput', () => {
     expect(textInput.props.value).toBe('')
   })
 
-  it('shows custom placeholder when provided', () => {
+  it('shows custom placeholder when provided', async () => {
     const customPlaceholder = 'カスタムプレースホルダー'
-    const { getByPlaceholderText } = render(
+    const { getByPlaceholderText } = await render(
       <JournalInput {...defaultProps} placeholder={customPlaceholder} />
     )
 
     expect(getByPlaceholderText(customPlaceholder)).toBeTruthy()
   })
 
-  it('handles long text properly', () => {
+  it('handles long text properly', async () => {
     const longText = 'あ'.repeat(400)
     const entryWithLongText = {
       ...defaultEntry,
       note: longText
     }
     
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <JournalInput {...defaultProps} entry={entryWithLongText} />
     )
 
@@ -142,10 +142,10 @@ describe('JournalInput', () => {
   })
 
   it('shows save indicator when auto-saving', async () => {
-    const { getByTestId } = render(<JournalInput {...defaultProps} />)
+    const { getByTestId } = await render(<JournalInput {...defaultProps} />)
 
     const textInput = getByTestId('journal-text-input')
-    fireEvent.changeText(textInput, '自動保存テスト')
+    await fireEvent.changeText(textInput, '自動保存テスト')
     
     // Auto-save should be triggered and save indicator should appear
     await waitFor(() => {
@@ -159,21 +159,21 @@ describe('JournalInput', () => {
       .fn()
       .mockRejectedValueOnce(new Error('Save failed'))
       .mockResolvedValueOnce(undefined)
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <JournalInput {...defaultProps} onUpdate={failingOnUpdate} />
     )
 
     // Act
     const textInput = getByTestId('journal-text-input')
-    fireEvent.changeText(textInput, '保存に失敗するテキスト')
-    fireEvent(textInput, 'blur')
+    await fireEvent.changeText(textInput, '保存に失敗するテキスト')
+    await fireEvent(textInput, 'blur')
 
     // Assert
     await waitFor(() => {
       expect(getByTestId('journal-save-feedback')).toBeTruthy()
     })
 
-    fireEvent.press(getByTestId('journal-save-feedback-action'))
+    await fireEvent.press(getByTestId('journal-save-feedback-action'))
 
     await waitFor(() => {
       expect(failingOnUpdate).toHaveBeenCalledTimes(2)

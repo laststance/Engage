@@ -31,9 +31,9 @@ const activeStats: StatsData = {
 }
 
 describe('Statistics completion causality', () => {
-  it('explains the next action when the selected period has no completions', () => {
+  it('explains the next action when the selected period has no completions', async () => {
     // Arrange
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <Statistics
         categories={categories}
         monthlyStats={emptyStats}
@@ -46,9 +46,9 @@ describe('Statistics completion causality', () => {
     expect(getByText('stats.periodEmptyNextAction')).toBeTruthy()
   })
 
-  it('recaps the completed tasks that feed Calendar and Stats', () => {
+  it('recaps the completed tasks that feed Calendar and Stats', async () => {
     // Arrange
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <Statistics
         categories={categories}
         monthlyStats={activeStats}
@@ -61,9 +61,9 @@ describe('Statistics completion causality', () => {
     expect(getByText('stats.periodRecap')).toBeTruthy()
   })
 
-  it('exposes selected state as the segmented period changes', () => {
+  it('exposes selected state as the segmented period changes', async () => {
     // Arrange
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <Statistics
         categories={categories}
         monthlyStats={activeStats}
@@ -72,7 +72,7 @@ describe('Statistics completion causality', () => {
     )
 
     // Act
-    fireEvent.press(getByTestId('stats-month-toggle'))
+    await fireEvent.press(getByTestId('stats-month-toggle'))
 
     // Assert
     expect(getByTestId('stats-week-toggle').props.accessibilityState).toMatchObject({

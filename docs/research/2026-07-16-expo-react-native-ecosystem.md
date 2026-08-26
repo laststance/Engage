@@ -32,7 +32,7 @@ Keep TypeScript on the newest Expo-supported **6.x** release selected by the SDK
 
 SDK 56 and 57 compile and target Android API 36 and support Android 7+. The complete matrix is maintained in the [Expo SDK 57 reference](https://docs.expo.dev/versions/v57.0.0/).
 
-Engage already pins Node 22.20.0 through Volta, so the Node requirement is satisfied. The user-visible platform trade-off is the loss of iOS 15 support: moving beyond SDK 55 raises the deployment target to iOS 16.4.
+At the time of this research, Engage pinned Node 22.20.0 through Volta; it now pins Node 24.19.0, so the Node requirement remains satisfied. The user-visible platform trade-off is the loss of iOS 15 support: moving beyond SDK 55 raises the deployment target to iOS 16.4.
 
 ## Mandatory compatibility work
 

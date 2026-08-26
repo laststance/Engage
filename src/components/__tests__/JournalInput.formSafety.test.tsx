@@ -13,8 +13,17 @@ const defaultEntry: Entry = {
   updatedAt: 1700000000000,
 }
 
-const renderJournalInput = (overrides = {}) => {
-  return render(
+/**
+ * Renders JournalInput with type-safe partial props for form-safety test scenarios.
+ * @param overrides - Props replaced for the current scenario.
+ * @returns The awaited React Native test renderer result.
+ * @example
+ * await renderJournalInput({ placeholder: 'Reflect on today' })
+ */
+const renderJournalInput = async (
+  overrides: Partial<Parameters<typeof JournalInput>[0]> = {}
+) => {
+  return await render(
     <JournalInput
       date="2026-05-27"
       entry={defaultEntry}
@@ -37,16 +46,16 @@ describe('JournalInput form safety', () => {
     jest.useRealTimers()
   })
 
-  it('shows an unsaved draft state before autosave runs', () => {
+  it('shows an unsaved draft state before autosave runs', async () => {
     // Arrange
     const onUpdate = jest.fn().mockResolvedValue(undefined)
     const { getAllByText, getByDisplayValue, getByTestId, getByText } =
-      renderJournalInput({
+      await renderJournalInput({
         onUpdate,
       })
 
     // Act
-    fireEvent.changeText(getByTestId('journal-text-input'), 'Draft reflection')
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Draft reflection')
 
     // Assert
     expect(getByDisplayValue('Draft reflection')).toBeTruthy()
@@ -62,13 +71,13 @@ describe('JournalInput form safety', () => {
       .mockRejectedValueOnce(new Error('Save failed'))
       .mockResolvedValueOnce(undefined)
     const { getAllByText, getByDisplayValue, getByTestId } =
-      renderJournalInput({
+      await renderJournalInput({
         onUpdate,
       })
 
     // Act
-    fireEvent.changeText(getByTestId('journal-text-input'), 'Important draft')
-    fireEvent(getByTestId('journal-text-input'), 'blur')
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Important draft')
+    await fireEvent(getByTestId('journal-text-input'), 'blur')
 
     // Assert
     await waitFor(() => {
@@ -76,7 +85,7 @@ describe('JournalInput form safety', () => {
     })
     expect(getByDisplayValue('Important draft')).toBeTruthy()
 
-    fireEvent.press(getByTestId('journal-save-feedback-action'))
+    await fireEvent.press(getByTestId('journal-save-feedback-action'))
 
     await waitFor(() => {
       expect(onUpdate).toHaveBeenCalledTimes(2)
@@ -86,7 +95,7 @@ describe('JournalInput form safety', () => {
 
   it('shows saved after autosave updates the parent journal entry', async () => {
     // Arrange
-    let rerenderJournal: ReturnType<typeof render>['rerender']
+    let rerenderJournal: Awaited<ReturnType<typeof render>>['rerender']
     let onUpdate: jest.MockedFunction<(content: string) => Promise<void>>
     const renderInput = (entry: Entry) => (
       <JournalInput
@@ -106,13 +115,13 @@ describe('JournalInput form safety', () => {
         })
       )
     })
-    const { getAllByText, getByTestId, queryByText, rerender } = render(
+    const { getAllByText, getByTestId, queryByText, rerender } = await render(
       renderInput(defaultEntry)
     )
     rerenderJournal = rerender
 
     // Act
-    fireEvent.changeText(getByTestId('journal-text-input'), 'Persisted draft')
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Persisted draft')
     await act(async () => {
       jest.advanceTimersByTime(JOURNAL_AUTOSAVE_DELAY_MS)
       await Promise.resolve()
@@ -128,14 +137,14 @@ describe('JournalInput form safety', () => {
     })
   })
 
-  it('does not replace a newer local draft when an older entry update arrives', () => {
+  it('does not replace a newer local draft when an older entry update arrives', async () => {
     // Arrange
     const olderSavedEntry: Entry = {
       ...defaultEntry,
       note: 'Older saved text',
       updatedAt: 1700000000001,
     }
-    const { getByDisplayValue, getByTestId, rerender } = render(
+    const { getByDisplayValue, getByTestId, rerender } = await render(
       <JournalInput
         date="2026-05-27"
         entry={defaultEntry}
@@ -146,8 +155,8 @@ describe('JournalInput form safety', () => {
     )
 
     // Act
-    fireEvent.changeText(getByTestId('journal-text-input'), 'Newer local draft')
-    rerender(
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Newer local draft')
+    await rerender(
       <JournalInput
         date="2026-05-27"
         entry={olderSavedEntry}
@@ -161,12 +170,12 @@ describe('JournalInput form safety', () => {
     expect(getByDisplayValue('Newer local draft')).toBeTruthy()
   })
 
-  it('keeps the journal return key for line breaks while the Done control closes editing', () => {
+  it('keeps the journal return key for line breaks while the Done control closes editing', async () => {
     // Arrange
-    const { getByTestId, getByText } = renderJournalInput()
+    const { getByTestId, getByText } = await renderJournalInput()
 
     // Act
-    fireEvent.press(getByTestId('journal-keyboard-done-button'))
+    await fireEvent.press(getByTestId('journal-keyboard-done-button'))
 
     // Assert
     expect(getByText('common.done')).toBeTruthy()
@@ -178,24 +187,24 @@ describe('JournalInput form safety', () => {
     expect(getByTestId('journal-text-input').props.submitBehavior).toBe('newline')
   })
 
-  it('does not dismiss the keyboard when the multiline journal return key is pressed', () => {
+  it('does not dismiss the keyboard when the multiline journal return key is pressed', async () => {
     // Arrange
-    const { getByTestId } = renderJournalInput()
+    const { getByTestId } = await renderJournalInput()
 
     // Act
-    fireEvent(getByTestId('journal-text-input'), 'submitEditing')
+    await fireEvent(getByTestId('journal-text-input'), 'submitEditing')
 
     // Assert
     expect(getByTestId('journal-text-input').props.onSubmitEditing).toBeUndefined()
     expect(Keyboard.dismiss).not.toHaveBeenCalled()
   })
 
-  it('keeps newline characters in the journal draft text', () => {
+  it('keeps newline characters in the journal draft text', async () => {
     // Arrange
-    const { getByDisplayValue, getByTestId } = renderJournalInput()
+    const { getByDisplayValue, getByTestId } = await renderJournalInput()
 
     // Act
-    fireEvent.changeText(
+    await fireEvent.changeText(
       getByTestId('journal-text-input'),
       'Today was good.\nTomorrow I will continue.'
     )

@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { type ComponentProps } from 'react'
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native'
-import { Alert, Keyboard, Modal, TextInput } from 'react-native'
+import { Alert, Keyboard } from 'react-native'
 import { Category, Task } from '@/src/types'
 import { PresetTaskEditor } from '../PresetTaskEditor'
 
@@ -39,8 +39,17 @@ const mockTasks: Task[] = [
   },
 ]
 
-const renderEditor = (overrides = {}) => {
-  return render(
+/**
+ * Renders PresetTaskEditor with type-safe partial props for form-safety test scenarios.
+ * @param overrides - Props replaced for the current scenario.
+ * @returns The awaited React Native test renderer result.
+ * @example
+ * await renderEditor({ isVisible: false })
+ */
+const renderEditor = async (
+  overrides: Partial<ComponentProps<typeof PresetTaskEditor>> = {}
+) => {
+  return await render(
     <PresetTaskEditor
       categories={mockCategories}
       isVisible
@@ -93,13 +102,13 @@ describe('PresetTaskEditor form safety', () => {
     })
   })
 
-  it('shows inline task-name validation while typing and explains disabled Save', () => {
+  it('shows inline task-name validation while typing and explains disabled Save', async () => {
     // Arrange
     const onSave = jest.fn()
-    const { getAllByText, getByTestId, getByText } = renderEditor({ onSave })
+    const { getAllByText, getByTestId, getByText } = await renderEditor({ onSave })
 
     // Act
-    fireEvent.changeText(getByTestId('task-title-input-0'), '   ')
+    await fireEvent.changeText(getByTestId('task-title-input-0'), '   ')
 
     // Assert
     expect(getByTestId('task-title-error-0')).toBeTruthy()
@@ -114,14 +123,14 @@ describe('PresetTaskEditor form safety', () => {
     expect(onSave).not.toHaveBeenCalled()
   })
 
-  it('marks both duplicate preset tasks and prevents saving that conflict', () => {
+  it('marks both duplicate preset tasks and prevents saving that conflict', async () => {
     // Arrange
     const onSave = jest.fn()
-    const { getByTestId, getAllByText } = renderEditor({ onSave })
+    const { getByTestId, getAllByText } = await renderEditor({ onSave })
 
     // Act
-    fireEvent.changeText(getByTestId('task-title-input-1'), ' networking ')
-    fireEvent.press(getByTestId('category-option-business-1'))
+    await fireEvent.changeText(getByTestId('task-title-input-1'), ' networking ')
+    await fireEvent.press(getByTestId('category-option-business-1'))
 
     // Assert
     expect(getByTestId('task-title-error-0')).toBeTruthy()
@@ -131,25 +140,25 @@ describe('PresetTaskEditor form safety', () => {
     expect(onSave).not.toHaveBeenCalled()
   })
 
-  it('focuses the newly added task title input so users can type immediately', () => {
+  it('focuses the newly added task title input so users can type immediately', async () => {
     // Arrange
-    const { getByTestId } = renderEditor()
+    const { getByTestId } = await renderEditor()
 
     // Act
-    fireEvent.press(getByTestId('add-task-button'))
+    await fireEvent.press(getByTestId('add-task-button'))
 
     // Assert
     expect(getByTestId('task-title-input-2').props.autoFocus).toBe(true)
     expect(getByTestId('task-title-input-0').props.autoFocus).toBe(false)
   })
 
-  it('hides the preset Save action while users type a newly added task', () => {
+  it('hides the preset Save action while users type a newly added task', async () => {
     // Arrange
-    const { getByTestId, queryByTestId } = renderEditor()
+    const { getByTestId, queryByTestId } = await renderEditor()
 
     // Act
-    fireEvent.press(getByTestId('add-task-button'))
-    fireEvent(getByTestId('task-title-input-2'), 'focus')
+    await fireEvent.press(getByTestId('add-task-button'))
+    await fireEvent(getByTestId('task-title-input-2'), 'focus')
 
     // Assert
     expect(queryByTestId('preset-editor-save')).toBeNull()
@@ -158,17 +167,17 @@ describe('PresetTaskEditor form safety', () => {
     expect(queryByTestId('preset-editor-keyboard-done-button')).toBeNull()
   })
 
-  it('restores preset Save and Cancel actions after the native keyboard hides', () => {
+  it('restores preset Save and Cancel actions after the native keyboard hides', async () => {
     // Arrange
-    const { getByTestId, queryByTestId } = renderEditor()
+    const { getByTestId, queryByTestId } = await renderEditor()
     const keyboardDidHideHandler = (
       Keyboard.addListener as jest.Mock
     ).mock.calls.find(([eventName]) => eventName === 'keyboardDidHide')?.[1]
 
     // Act
-    fireEvent.press(getByTestId('add-task-button'))
-    fireEvent(getByTestId('task-title-input-2'), 'focus')
-    act(() => {
+    await fireEvent.press(getByTestId('add-task-button'))
+    await fireEvent(getByTestId('task-title-input-2'), 'focus')
+    await act(() => {
       keyboardDidHideHandler()
     })
 
@@ -178,7 +187,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(getByTestId('preset-editor-cancel')).toBeTruthy()
   })
 
-  it('keeps the native Modal mounted while hidden so nested iOS sheets dismiss cleanly', () => {
+  it('hides the editor without calling cancel when visibility changes', async () => {
     // Arrange
     const editorProps = {
       categories: mockCategories,
@@ -187,18 +196,19 @@ describe('PresetTaskEditor form safety', () => {
       onSave: jest.fn(),
       tasks: mockTasks,
     }
-    const { UNSAFE_getByType, rerender } = render(
+    const { queryByTestId, rerender } = await render(
       <PresetTaskEditor isVisible {...editorProps} />
     )
 
     // Act
-    rerender(<PresetTaskEditor isVisible={false} {...editorProps} />)
+    await rerender(<PresetTaskEditor isVisible={false} {...editorProps} />)
 
     // Assert
-    expect(UNSAFE_getByType(Modal).props.visible).toBe(false)
+    expect(queryByTestId('preset-editor-keyboard-avoiding-view')).toBeNull()
+    expect(editorProps.onCancel).not.toHaveBeenCalled()
   })
 
-  it('reopens with persisted values instead of a discarded preset draft', () => {
+  it('reopens with persisted values instead of a discarded preset draft', async () => {
     // Arrange
     const editorProps = {
       categories: mockCategories,
@@ -207,20 +217,20 @@ describe('PresetTaskEditor form safety', () => {
       onSave: jest.fn(),
       tasks: mockTasks,
     }
-    const { getByTestId, rerender } = render(
+    const { getByTestId, rerender } = await render(
       <PresetTaskEditor isVisible {...editorProps} />
     )
-    fireEvent.changeText(getByTestId('task-title-input-0'), 'Discarded draft')
+    await fireEvent.changeText(getByTestId('task-title-input-0'), 'Discarded draft')
 
     // Act
-    rerender(<PresetTaskEditor isVisible={false} {...editorProps} />)
-    rerender(<PresetTaskEditor isVisible {...editorProps} />)
+    await rerender(<PresetTaskEditor isVisible={false} {...editorProps} />)
+    await rerender(<PresetTaskEditor isVisible {...editorProps} />)
 
     // Assert
     expect(getByTestId('task-title-input-0').props.value).toBe('Networking')
   })
 
-  it('preserves the active draft when live preset tasks refresh while visible', () => {
+  it('preserves the active draft when live preset tasks refresh while visible', async () => {
     // Arrange
     const editorProps = {
       categories: mockCategories,
@@ -229,13 +239,13 @@ describe('PresetTaskEditor form safety', () => {
       onCreateCategory: jest.fn(),
       onSave: jest.fn(),
     }
-    const { getByTestId, rerender } = render(
+    const { getByTestId, rerender } = await render(
       <PresetTaskEditor tasks={mockTasks} {...editorProps} />
     )
-    fireEvent.changeText(getByTestId('task-title-input-0'), 'Active draft')
+    await fireEvent.changeText(getByTestId('task-title-input-0'), 'Active draft')
 
     // Act
-    rerender(
+    await rerender(
       <PresetTaskEditor
         tasks={[{ ...mockTasks[0], title: 'Refreshed title' }, mockTasks[1]]}
         {...editorProps}
@@ -246,19 +256,19 @@ describe('PresetTaskEditor form safety', () => {
     expect(getByTestId('task-title-input-0').props.value).toBe('Active draft')
   })
 
-  it('keeps a newly added task in place when category changes during editing', () => {
+  it('keeps a newly added task in place when category changes during editing', async () => {
     // Arrange
-    const { UNSAFE_getAllByType, getByTestId } = renderEditor()
+    const { getAllByTestId, getByTestId } = await renderEditor()
 
     // Act
-    fireEvent.press(getByTestId('add-task-button'))
+    await fireEvent.press(getByTestId('add-task-button'))
     const inputOrderBeforeCategoryChange = getTaskTitleInputTestIds(
-      UNSAFE_getAllByType(TextInput)
+      getAllByTestId(/^task-title-input-/)
     )
-    fireEvent.changeText(getByTestId('task-title-input-2'), 'Read product notes')
-    fireEvent.press(getByTestId('latest-new-task-category-option-life'))
+    await fireEvent.changeText(getByTestId('task-title-input-2'), 'Read product notes')
+    await fireEvent.press(getByTestId('latest-new-task-category-option-life'))
     const inputOrderAfterCategoryChange = getTaskTitleInputTestIds(
-      UNSAFE_getAllByType(TextInput)
+      getAllByTestId(/^task-title-input-/)
     )
 
     // Assert
@@ -279,9 +289,9 @@ describe('PresetTaskEditor form safety', () => {
     })
   })
 
-  it('keeps the Add Category label inside its button when the section heading needs more width', () => {
+  it('keeps the Add Category label inside its button when the section heading needs more width', async () => {
     // Arrange
-    const { getByTestId, getByText } = renderEditor()
+    const { getByTestId, getByText } = await renderEditor()
 
     // Act
     const categoryManagementHeading = getByText(
@@ -296,9 +306,9 @@ describe('PresetTaskEditor form safety', () => {
     expect(getByText('presetEditor.addCategory')).toBeTruthy()
   })
 
-  it('centers the Add Category label vertically within its minimum touch target', () => {
+  it('centers the Add Category label vertically within its minimum touch target', async () => {
     // Arrange
-    const { getByTestId } = renderEditor()
+    const { getByTestId } = await renderEditor()
 
     // Act
     const addCategoryButton = getByTestId('add-category-button')
@@ -307,12 +317,12 @@ describe('PresetTaskEditor form safety', () => {
     expect(addCategoryButton.props.className).toContain('justify-center')
   })
 
-  it('keeps preset text inputs above the keyboard without custom Done controls', () => {
+  it('keeps preset text inputs above the keyboard without custom Done controls', async () => {
     // Arrange
-    const { getByTestId, queryByTestId } = renderEditor()
+    const { getByTestId, queryByTestId } = await renderEditor()
 
     // Act
-    fireEvent.press(getByTestId('add-category-button'))
+    await fireEvent.press(getByTestId('add-category-button'))
 
     // Assert
     const taskTitleInput = getByTestId('task-title-input-0')
@@ -329,18 +339,18 @@ describe('PresetTaskEditor form safety', () => {
     expect(taskTitleInput.props.submitBehavior).toBe('blurAndSubmit')
     expect(taskMinutesInput.props.returnKeyType).toBe('done')
     expect(newCategoryInput.props.returnKeyType).toBe('done')
-    fireEvent(newCategoryInput, 'focus')
+    await fireEvent(newCategoryInput, 'focus')
     expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
     expect(queryByTestId('preset-editor-keyboard-done-button')).toBeNull()
   })
 
-  it('dismisses the preset keyboard from the return key without custom controls', () => {
+  it('dismisses the preset keyboard from the return key without custom controls', async () => {
     // Arrange
-    const { getByTestId, queryByTestId } = renderEditor()
+    const { getByTestId, queryByTestId } = await renderEditor()
 
     // Act
-    fireEvent(getByTestId('task-title-input-0'), 'focus')
-    fireEvent(getByTestId('task-title-input-0'), 'submitEditing')
+    await fireEvent(getByTestId('task-title-input-0'), 'focus')
+    await fireEvent(getByTestId('task-title-input-0'), 'submitEditing')
 
     // Assert
     expect(queryByTestId('preset-editor-inline-keyboard-done-button')).toBeNull()
@@ -348,17 +358,17 @@ describe('PresetTaskEditor form safety', () => {
     expect(Keyboard.dismiss).toHaveBeenCalledTimes(1)
   })
 
-  it('keeps preset actions hidden while focus moves from title to minutes', () => {
+  it('keeps preset actions hidden while focus moves from title to minutes', async () => {
     // Arrange
-    const { getByTestId, queryByTestId } = renderEditor()
+    const { getByTestId, queryByTestId } = await renderEditor()
     const taskTitleInput = getByTestId('task-title-input-0')
     const taskMinutesInput = getByTestId('task-minutes-input-0')
 
     // Act
-    fireEvent(taskTitleInput, 'focus')
-    fireEvent(taskTitleInput, 'blur')
-    fireEvent(taskMinutesInput, 'focus')
-    act(() => {
+    await fireEvent(taskTitleInput, 'focus')
+    await fireEvent(taskTitleInput, 'blur')
+    await fireEvent(taskMinutesInput, 'focus')
+    await act(() => {
       // Run any uncancelled frame callbacks to prove the footer cannot return after handoff.
       pendingAnimationFrameCallbacks.forEach((callback) => callback(0))
     })
@@ -369,9 +379,9 @@ describe('PresetTaskEditor form safety', () => {
     expect(cancelAnimationFrame).toHaveBeenCalledTimes(1)
   })
 
-  it('exposes selected state on category chips for screen readers', () => {
+  it('exposes selected state on category chips for screen readers', async () => {
     // Arrange
-    const { getByTestId } = renderEditor()
+    const { getByTestId } = await renderEditor()
 
     // Act
     const selectedBusinessChip = getByTestId('category-option-business-0')
@@ -387,12 +397,12 @@ describe('PresetTaskEditor form safety', () => {
     })
   })
 
-  it('keeps destructive task removal behind a confirmation dialog', () => {
+  it('keeps destructive task removal behind a confirmation dialog', async () => {
     // Arrange
-    const { getByTestId } = renderEditor()
+    const { getByTestId } = await renderEditor()
 
     // Act
-    fireEvent.press(getByTestId('delete-task-0'))
+    await fireEvent.press(getByTestId('delete-task-0'))
 
     // Assert
     expect(Alert.alert).toHaveBeenCalledWith(
@@ -411,10 +421,10 @@ describe('PresetTaskEditor form safety', () => {
           resolveSave = resolve
         })
     )
-    const { getByTestId } = renderEditor({ onSave })
+    const { getByTestId } = await renderEditor({ onSave })
 
     // Act
-    fireEvent.press(getByTestId('preset-editor-save'))
+    const saveAction = fireEvent.press(getByTestId('preset-editor-save'))
 
     // Assert
     await waitFor(() => {
@@ -426,5 +436,6 @@ describe('PresetTaskEditor form safety', () => {
       })
     })
     resolveSave()
+    await saveAction
   })
 })

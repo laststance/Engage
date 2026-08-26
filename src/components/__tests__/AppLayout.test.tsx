@@ -9,9 +9,9 @@ import { AppSection } from '../AppSection'
 jest.mock('@react-native-vector-icons/ionicons', () => 'Ionicons')
 
 describe('App layout primitives', () => {
-  it('renders the shared screen title and description without custom headers', () => {
+  it('renders the shared screen title and description without custom headers', async () => {
     // Arrange
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <AppScreen
         description="Shared description"
         descriptionTestID="screen-description"
@@ -30,9 +30,9 @@ describe('App layout primitives', () => {
     expect(getByText('Screen body')).toBeTruthy()
   })
 
-  it('groups content in a titled section with a card surface', () => {
+  it('groups content in a titled section with a card surface', async () => {
     // Arrange
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <AppSection title="Daily summary" titleTestID="section-title">
         <AppCard testID="summary-card">
           <Text>Three completed habits</Text>
@@ -46,10 +46,10 @@ describe('App layout primitives', () => {
     expect(getByText('Three completed habits')).toBeTruthy()
   })
 
-  it('keeps list rows pressable and exposes selected accessibility state', () => {
+  it('keeps list rows pressable and exposes selected accessibility state', async () => {
     // Arrange
     const handlePress = jest.fn()
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <AppListRow
         onPress={handlePress}
         selected
@@ -60,7 +60,7 @@ describe('App layout primitives', () => {
     )
 
     // Act
-    fireEvent.press(getByTestId('settings-row'))
+    await fireEvent.press(getByTestId('settings-row'))
 
     // Assert
     expect(getByText('Notifications')).toBeTruthy()

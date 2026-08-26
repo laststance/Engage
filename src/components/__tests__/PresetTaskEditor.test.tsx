@@ -50,8 +50,8 @@ describe('PresetTaskEditor', () => {
     onCreateCategory: mockOnCreateCategory,
   }
 
-  it('renders correctly when visible', () => {
-    const { getByText, getByTestId } = render(
+  it('renders correctly when visible', async () => {
+    const { getByText, getByTestId } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
 
@@ -61,63 +61,63 @@ describe('PresetTaskEditor', () => {
     expect(getByText('運動 (20分以上)')).toBeTruthy()
   })
 
-  it('does not render when not visible', () => {
-    const { queryByText } = render(
+  it('does not render when not visible', async () => {
+    const { queryByText } = await render(
       <PresetTaskEditor {...defaultProps} isVisible={false} />
     )
 
     expect(queryByText('プリセットタスク編集')).toBeNull()
   })
 
-  it('allows adding a new task', () => {
-    const { getByTestId, getAllByDisplayValue } = render(
+  it('allows adding a new task', async () => {
+    const { getByTestId, getAllByDisplayValue } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
 
     const addButton = getByTestId('add-task-button')
-    fireEvent.press(addButton)
+    await fireEvent.press(addButton)
 
     // Should have 3 task title inputs now (2 existing + 1 new)
     const titleInputs = getAllByDisplayValue('')
     expect(titleInputs.length).toBeGreaterThan(0)
   })
 
-  it('allows editing task title', () => {
-    const { getByDisplayValue } = render(<PresetTaskEditor {...defaultProps} />)
+  it('allows editing task title', async () => {
+    const { getByDisplayValue } = await render(<PresetTaskEditor {...defaultProps} />)
 
     const titleInput = getByDisplayValue('ネットワーキング')
-    fireEvent.changeText(titleInput, '新しいネットワーキング')
+    await fireEvent.changeText(titleInput, '新しいネットワーキング')
 
     expect(titleInput.props.value).toBe('新しいネットワーキング')
   })
 
-  it('allows editing task duration', () => {
-    const { getByDisplayValue } = render(<PresetTaskEditor {...defaultProps} />)
+  it('allows editing task duration', async () => {
+    const { getByDisplayValue } = await render(<PresetTaskEditor {...defaultProps} />)
 
     const minutesInput = getByDisplayValue('20')
-    fireEvent.changeText(minutesInput, '30')
+    await fireEvent.changeText(minutesInput, '30')
 
     expect(minutesInput.props.value).toBe('30')
   })
 
-  it('allows changing task category', () => {
-    const { getByTestId } = render(
+  it('allows changing task category', async () => {
+    const { getByTestId } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
 
     // Find category option for the first task (index 0)
     const categoryOption = getByTestId('category-option-life-0')
-    fireEvent.press(categoryOption)
+    await fireEvent.press(categoryOption)
 
     // The category should be selected (this would be reflected in the UI state)
     expect(categoryOption).toBeTruthy()
   })
 
-  it('shows delete confirmation when deleting a task', () => {
-    const { getByTestId } = render(<PresetTaskEditor {...defaultProps} />)
+  it('shows delete confirmation when deleting a task', async () => {
+    const { getByTestId } = await render(<PresetTaskEditor {...defaultProps} />)
 
     const deleteButton = getByTestId('delete-task-0')
-    fireEvent.press(deleteButton)
+    await fireEvent.press(deleteButton)
 
     expect(Alert.alert).toHaveBeenCalledWith(
       'タスクを削除',
@@ -127,21 +127,21 @@ describe('PresetTaskEditor', () => {
   })
 
   it('allows creating a new category', async () => {
-    const { getByTestId, getByPlaceholderText } = render(
+    const { getByTestId, getByPlaceholderText } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
 
     // Open new category input
     const addCategoryButton = getByTestId('add-category-button')
-    fireEvent.press(addCategoryButton)
+    await fireEvent.press(addCategoryButton)
 
     // Enter category name
     const categoryInput = getByPlaceholderText('新しいカテゴリー名')
-    fireEvent.changeText(categoryInput, '勉強')
+    await fireEvent.changeText(categoryInput, '勉強')
 
     // Create category
     const createButton = getByTestId('create-category-button')
-    fireEvent.press(createButton)
+    await fireEvent.press(createButton)
 
     await waitFor(() => {
       expect(mockOnCreateCategory).toHaveBeenCalledWith('勉強')
@@ -149,7 +149,7 @@ describe('PresetTaskEditor', () => {
   })
 
   it('validates tasks before saving', async () => {
-    const { getByTestId, getByDisplayValue, getByText } = render(
+    const { getByTestId, getByDisplayValue, getByText } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
 
@@ -157,12 +157,12 @@ describe('PresetTaskEditor', () => {
     const titleInput1 = getByDisplayValue('ネットワーキング')
     const titleInput2 = getByDisplayValue('運動 (20分以上)')
 
-    fireEvent.changeText(titleInput1, '')
-    fireEvent.changeText(titleInput2, '')
+    await fireEvent.changeText(titleInput1, '')
+    await fireEvent.changeText(titleInput2, '')
 
     // Try to save
     const saveButton = getByTestId('preset-editor-save')
-    fireEvent.press(saveButton)
+    await fireEvent.press(saveButton)
 
     await waitFor(() => {
       expect(getByTestId('preset-editor-feedback')).toBeTruthy()
@@ -173,21 +173,21 @@ describe('PresetTaskEditor', () => {
   })
 
   it('detects duplicate task names in same category', async () => {
-    const { getByTestId, getByDisplayValue, getByText } = render(
+    const { getByTestId, getByDisplayValue, getByText } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
 
     // Change second task to have same title as first task
     const titleInput2 = getByDisplayValue('運動 (20分以上)')
-    fireEvent.changeText(titleInput2, 'ネットワーキング')
+    await fireEvent.changeText(titleInput2, 'ネットワーキング')
 
     // Change second task to same category as first task
     const categoryOption = getByTestId('category-option-business-1')
-    fireEvent.press(categoryOption)
+    await fireEvent.press(categoryOption)
 
     // Try to save
     const saveButton = getByTestId('preset-editor-save')
-    fireEvent.press(saveButton)
+    await fireEvent.press(saveButton)
 
     await waitFor(() => {
       expect(getByTestId('preset-editor-feedback')).toBeTruthy()
@@ -200,12 +200,12 @@ describe('PresetTaskEditor', () => {
   it('saves valid tasks successfully', async () => {
     mockOnSave.mockResolvedValue(undefined)
 
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
 
     const saveButton = getByTestId('preset-editor-save')
-    fireEvent.press(saveButton)
+    await fireEvent.press(saveButton)
 
     await waitFor(() => {
       expect(mockOnSave).toHaveBeenCalledWith(
@@ -224,11 +224,11 @@ describe('PresetTaskEditor', () => {
     })
   })
 
-  it('shows confirmation when canceling with changes', () => {
-    const { getByTestId } = render(<PresetTaskEditor {...defaultProps} />)
+  it('shows confirmation when canceling with changes', async () => {
+    const { getByTestId } = await render(<PresetTaskEditor {...defaultProps} />)
 
     const cancelButton = getByTestId('preset-editor-cancel')
-    fireEvent.press(cancelButton)
+    await fireEvent.press(cancelButton)
 
     expect(Alert.alert).toHaveBeenCalledWith(
       '変更を破棄',
@@ -240,19 +240,19 @@ describe('PresetTaskEditor', () => {
   it('handles save errors gracefully', async () => {
     mockOnSave.mockRejectedValue(new Error('Save failed'))
 
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
 
     const saveButton = getByTestId('preset-editor-save')
-    fireEvent.press(saveButton)
+    await fireEvent.press(saveButton)
 
     await waitFor(() => {
       expect(getByTestId('preset-editor-feedback')).toBeTruthy()
     })
     expect(getByText('presetEditor.saveFailed')).toBeTruthy()
 
-    fireEvent.press(getByTestId('preset-editor-feedback-action'))
+    await fireEvent.press(getByTestId('preset-editor-feedback-action'))
 
     await waitFor(() => {
       expect(mockOnSave).toHaveBeenCalledTimes(2)
@@ -264,23 +264,23 @@ describe('PresetTaskEditor', () => {
       new Error('Category creation failed')
     )
 
-    const { getByTestId, getByPlaceholderText, getByText } = render(
+    const { getByTestId, getByPlaceholderText, getByText } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
 
     // Open new category input
     const addCategoryButton = getByTestId('add-category-button')
-    fireEvent.press(addCategoryButton)
+    await fireEvent.press(addCategoryButton)
 
     // Enter category name
     const categoryInput = getByPlaceholderText(
       'presetEditor.newCategoryPlaceholder'
     )
-    fireEvent.changeText(categoryInput, '勉強')
+    await fireEvent.changeText(categoryInput, '勉強')
 
     // Try to create category
     const createButton = getByTestId('create-category-button')
-    fireEvent.press(createButton)
+    await fireEvent.press(createButton)
 
     await waitFor(() => {
       expect(getByTestId('preset-editor-feedback')).toBeTruthy()
