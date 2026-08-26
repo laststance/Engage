@@ -94,9 +94,9 @@ describe('NotificationSettings', () => {
     mockUseNotifications.mockReturnValue(createHookState())
   })
 
-  it('shows not-requested permission state with a renamed check action', () => {
+  it('shows not-requested permission state with a renamed check action', async () => {
     // Arrange & Act
-    const { getByText, queryByText } = render(<NotificationSettings />)
+    const { getByText, queryByText } = await render(<NotificationSettings />)
 
     // Assert
     expect(getByText('Permission not requested')).toBeTruthy()
@@ -104,7 +104,7 @@ describe('NotificationSettings', () => {
     expect(queryByText('Refresh Settings')).toBeNull()
   })
 
-  it('shows Open Settings as the primary recovery when permission is denied', () => {
+  it('shows Open Settings as the primary recovery when permission is denied', async () => {
     // Arrange
     mockUseNotifications.mockReturnValue(
       createHookState({
@@ -117,10 +117,10 @@ describe('NotificationSettings', () => {
         },
       })
     )
-    const { getByTestId, getByText } = render(<NotificationSettings />)
+    const { getByTestId, getByText } = await render(<NotificationSettings />)
 
     // Act
-    fireEvent.press(getByTestId('notification-open-settings'))
+    await fireEvent.press(getByTestId('notification-open-settings'))
 
     // Assert
     expect(getByText('Notifications blocked')).toBeTruthy()
@@ -134,7 +134,7 @@ describe('NotificationSettings', () => {
     expect(mockOpenNotificationSettings).toHaveBeenCalledTimes(1)
   })
 
-  it('shows enabled permission state before a reminder is scheduled', () => {
+  it('shows enabled permission state before a reminder is scheduled', async () => {
     // Arrange
     mockUseNotifications.mockReturnValue(
       createHookState({
@@ -149,7 +149,7 @@ describe('NotificationSettings', () => {
     )
 
     // Act
-    const { getByTestId, getByText } = render(<NotificationSettings />)
+    const { getByTestId, getByText } = await render(<NotificationSettings />)
 
     // Assert
     expect(getByText('Notifications allowed')).toBeTruthy()
@@ -157,7 +157,7 @@ describe('NotificationSettings', () => {
     expect(getByTestId('notification-state-enabled')).toBeTruthy()
   })
 
-  it('shows scheduled reminder state with the current time', () => {
+  it('shows scheduled reminder state with the current time', async () => {
     // Arrange
     mockUseNotifications.mockReturnValue(
       createHookState({
@@ -172,7 +172,7 @@ describe('NotificationSettings', () => {
     )
 
     // Act
-    const { getByTestId, getByText } = render(<NotificationSettings />)
+    const { getByTestId, getByText } = await render(<NotificationSettings />)
 
     // Assert
     expect(getByText('Reminder scheduled')).toBeTruthy()
@@ -189,10 +189,10 @@ describe('NotificationSettings', () => {
         resolveRefresh = resolve
       })
     )
-    const { getByTestId } = render(<NotificationSettings />)
+    const { getByTestId } = await render(<NotificationSettings />)
 
     // Act
-    fireEvent.press(getByTestId('notification-check-permission'))
+    await fireEvent.press(getByTestId('notification-check-permission'))
 
     // Assert
     await waitFor(() => {

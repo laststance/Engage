@@ -85,22 +85,22 @@ describe('DaySheet', () => {
     mockOnTaskToggle.mockResolvedValue(completionSuccess)
   })
 
-  it('shows a primary habit selection action when the day has no assigned tasks', () => {
+  it('shows a primary habit selection action when the day has no assigned tasks', async () => {
     // Arrange & Act
-    const { getByText, getByTestId } = render(
+    const { getByText, getByTestId } = await render(
       <DaySheet {...defaultProps} tasks={[]} />
     )
 
     // Assert
     expect(getByText('daySheet.noTasksTitle')).toBeTruthy()
     expect(getByText('daySheet.noTasksMessage')).toBeTruthy()
-    fireEvent.press(getByTestId('empty-task-selection-button'))
+    await fireEvent.press(getByTestId('empty-task-selection-button'))
     expect(mockOnTaskSelectionPress).toHaveBeenCalledTimes(1)
   })
 
-  it('exposes checked accessibility state for completed task rows', () => {
+  it('exposes checked accessibility state for completed task rows', async () => {
     // Arrange & Act
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <DaySheet {...defaultProps} completions={completedCompletions} />
     )
 
@@ -112,12 +112,12 @@ describe('DaySheet', () => {
 
   it('shows completion acknowledgement after a task is completed', async () => {
     // Arrange
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <DaySheet {...defaultProps} tasks={[...mockTasks, secondTask]} />
     )
 
     // Act
-    fireEvent.press(getByTestId('task-item-task1'))
+    await fireEvent.press(getByTestId('task-item-task1'))
 
     // Assert
     await waitFor(() => {
@@ -133,7 +133,7 @@ describe('DaySheet', () => {
       taskId: 'task2',
       change: 'completed',
     })
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <DaySheet
         {...defaultProps}
         tasks={[...mockTasks, secondTask]}
@@ -142,7 +142,7 @@ describe('DaySheet', () => {
     )
 
     // Act
-    fireEvent.press(getByTestId('task-item-task2'))
+    await fireEvent.press(getByTestId('task-item-task2'))
 
     // Assert
     await waitFor(() => {
@@ -158,12 +158,12 @@ describe('DaySheet', () => {
       taskId: 'task1',
       change: 'undone',
     })
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <DaySheet {...defaultProps} completions={completedCompletions} />
     )
 
     // Act
-    fireEvent.press(getByTestId('task-item-task1'))
+    await fireEvent.press(getByTestId('task-item-task1'))
 
     // Assert
     await waitFor(() => {
@@ -180,10 +180,10 @@ describe('DaySheet', () => {
       change: 'completed',
       message: 'Save failed',
     })
-    const { getByTestId, getByText } = render(<DaySheet {...defaultProps} />)
+    const { getByTestId, getByText } = await render(<DaySheet {...defaultProps} />)
 
     // Act
-    fireEvent.press(getByTestId('task-item-task1'))
+    await fireEvent.press(getByTestId('task-item-task1'))
 
     // Assert
     await waitFor(() => {

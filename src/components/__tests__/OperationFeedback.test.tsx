@@ -3,11 +3,11 @@ import { fireEvent, render } from '@testing-library/react-native'
 import { OperationFeedback } from '@/src/components/OperationFeedback'
 
 describe('OperationFeedback', () => {
-  it('shows the feedback message and retry action for recoverable failures', () => {
+  it('shows the feedback message and retry action for recoverable failures', async () => {
     // Arrange
     const onRetry = jest.fn()
 
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <OperationFeedback
         kind="error"
         message="Save failed"
@@ -18,7 +18,7 @@ describe('OperationFeedback', () => {
     )
 
     // Act
-    fireEvent.press(getByTestId('save-feedback-action'))
+    await fireEvent.press(getByTestId('save-feedback-action'))
 
     // Assert
     expect(getByText('Save failed')).toBeTruthy()

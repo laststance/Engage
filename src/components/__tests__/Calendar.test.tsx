@@ -24,15 +24,15 @@ describe('Calendar', () => {
     jest.clearAllMocks()
   })
 
-  it('renders correctly', () => {
-    const { getByText } = render(<Calendar {...defaultProps} />)
+  it('renders correctly', async () => {
+    const { getByText } = await render(<Calendar {...defaultProps} />)
 
     // Should show current month/year
     expect(getByText(/January 2024/)).toBeTruthy()
   })
 
-  it('displays achievement indicators for dates with data', () => {
-    const { getByTestId } = render(<Calendar {...defaultProps} />)
+  it('displays achievement indicators for dates with data', async () => {
+    const { getByTestId } = await render(<Calendar {...defaultProps} />)
 
     // Should have achievement indicators for dates with completion data
     expect(getByTestId('achievement-indicator-2024-01-10')).toBeTruthy()
@@ -40,17 +40,17 @@ describe('Calendar', () => {
     expect(getByTestId('achievement-indicator-2024-01-20')).toBeTruthy()
   })
 
-  it('calls onDateSelect when a date is tapped', () => {
-    const { getByTestId } = render(<Calendar {...defaultProps} />)
+  it('calls onDateSelect when a date is tapped', async () => {
+    const { getByTestId } = await render(<Calendar {...defaultProps} />)
 
     const dateButton = getByTestId('calendar-date-2024-01-10')
-    fireEvent.press(dateButton)
+    await fireEvent.press(dateButton)
 
     expect(mockOnDateSelect).toHaveBeenCalledWith('2024-01-10')
   })
 
-  it('highlights the selected date', () => {
-    const { getByTestId } = render(<Calendar {...defaultProps} />)
+  it('highlights the selected date', async () => {
+    const { getByTestId } = await render(<Calendar {...defaultProps} />)
 
     const selectedDate = getByTestId('calendar-date-2024-01-15')
     expect(selectedDate.props.style).toMatchObject(
@@ -60,9 +60,9 @@ describe('Calendar', () => {
     )
   })
 
-  it('marks the selected date cell for assistive technologies', () => {
+  it('marks the selected date cell for assistive technologies', async () => {
     // Arrange
-    const { getByTestId } = render(<Calendar {...defaultProps} />)
+    const { getByTestId } = await render(<Calendar {...defaultProps} />)
 
     // Act
     const selectedDate = getByTestId('calendar-date-2024-01-15')
@@ -77,26 +77,26 @@ describe('Calendar', () => {
     })
   })
 
-  it('navigates to previous month', () => {
-    const { getByTestId, getByText } = render(<Calendar {...defaultProps} />)
+  it('navigates to previous month', async () => {
+    const { getByTestId, getByText } = await render(<Calendar {...defaultProps} />)
 
     const prevButton = getByTestId('calendar-prev-month')
-    fireEvent.press(prevButton)
+    await fireEvent.press(prevButton)
 
     expect(getByText(/December 2023/)).toBeTruthy()
   })
 
-  it('navigates to next month', () => {
-    const { getByTestId, getByText } = render(<Calendar {...defaultProps} />)
+  it('navigates to next month', async () => {
+    const { getByTestId, getByText } = await render(<Calendar {...defaultProps} />)
 
     const nextButton = getByTestId('calendar-next-month')
-    fireEvent.press(nextButton)
+    await fireEvent.press(nextButton)
 
     expect(getByText(/February 2024/)).toBeTruthy()
   })
 
-  it('shows different achievement levels with different colors', () => {
-    const { getByTestId } = render(<Calendar {...defaultProps} />)
+  it('shows different achievement levels with different colors', async () => {
+    const { getByTestId } = await render(<Calendar {...defaultProps} />)
 
     // Different achievement levels should have different visual indicators
     const lowAchievement = getByTestId('achievement-indicator-2024-01-15') // 1 task
@@ -105,8 +105,8 @@ describe('Calendar', () => {
     expect(lowAchievement.props.style).not.toEqual(highAchievement.props.style)
   })
 
-  it('handles empty achievement data gracefully', () => {
-    const { queryByTestId } = render(
+  it('handles empty achievement data gracefully', async () => {
+    const { queryByTestId } = await render(
       <Calendar {...defaultProps} achievementData={{}} />
     )
 
@@ -114,9 +114,9 @@ describe('Calendar', () => {
     expect(queryByTestId('achievement-indicator-2024-01-10')).toBeNull()
   })
 
-  it('shows today indicator for current date', () => {
+  it('shows today indicator for current date', async () => {
     const today = new Date().toISOString().split('T')[0]
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <Calendar {...defaultProps} selectedDate={today} />
     )
 

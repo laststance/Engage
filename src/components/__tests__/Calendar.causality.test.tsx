@@ -7,9 +7,9 @@ describe('Calendar completion causality', () => {
     jest.useRealTimers()
   })
 
-  it('guides users to complete a Today habit when the month has no completions', () => {
+  it('guides users to complete a Today habit when the month has no completions', async () => {
     // Arrange
-    const { getByTestId, getByText, queryByTestId } = render(
+    const { getByTestId, getByText, queryByTestId } = await render(
       <Calendar
         achievementData={{}}
         onDateSelect={jest.fn()}
@@ -23,9 +23,9 @@ describe('Calendar completion causality', () => {
     expect(queryByTestId('calendar-selected-day-recap')).toBeNull()
   })
 
-  it('recaps completions for the selected date when the heatmap updates', () => {
+  it('recaps completions for the selected date when the heatmap updates', async () => {
     // Arrange
-    const { getByTestId, getByText } = render(
+    const { getByTestId, getByText } = await render(
       <Calendar
         achievementData={{ '2026-05-15': 2 }}
         onDateSelect={jest.fn()}
@@ -38,9 +38,9 @@ describe('Calendar completion causality', () => {
     expect(getByText('calendar.selectedDateCompleted')).toBeTruthy()
   })
 
-  it('keeps high-completion day numbers readable when the heatmap turns dark green', () => {
+  it('keeps high-completion day numbers readable when the heatmap turns dark green', async () => {
     // Arrange
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <Calendar
         achievementData={{
           '2026-05-10': 2,
@@ -63,9 +63,9 @@ describe('Calendar completion causality', () => {
     expect(highestCompletionDay.props.className).toContain('text-white')
   })
 
-  it('hides the selected-day recap when month navigation leaves that date behind', () => {
+  it('hides the selected-day recap when month navigation leaves that date behind', async () => {
     // Arrange
-    const { getByTestId, queryByTestId } = render(
+    const { getByTestId, queryByTestId } = await render(
       <Calendar
         achievementData={{ '2026-05-15': 2 }}
         onDateSelect={jest.fn()}
@@ -74,17 +74,17 @@ describe('Calendar completion causality', () => {
     )
 
     // Act
-    fireEvent.press(getByTestId('calendar-next-month'))
+    await fireEvent.press(getByTestId('calendar-next-month'))
 
     // Assert
     expect(queryByTestId('calendar-selected-day-recap')).toBeNull()
   })
 
-  it('exposes selected, current, and disabled states on calendar cells', () => {
+  it('exposes selected, current, and disabled states on calendar cells', async () => {
     // Arrange
     jest.useFakeTimers().setSystemTime(new Date(2026, 4, 15, 12))
     const onDateSelect = jest.fn()
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <Calendar
         achievementData={{}}
         onDateSelect={onDateSelect}
@@ -93,7 +93,7 @@ describe('Calendar completion causality', () => {
     )
 
     // Act
-    fireEvent.press(getByTestId('calendar-date-2026-04-26'))
+    await fireEvent.press(getByTestId('calendar-date-2026-04-26'))
 
     // Assert
     expect(

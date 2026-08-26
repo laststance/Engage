@@ -48,13 +48,13 @@ describe('BackupManager', () => {
     )
   })
 
-  it('shows generic metadata loading without announcing backup operations', () => {
+  it('shows generic metadata loading without announcing backup operations', async () => {
     // Arrange
     store.listBackups.mockReturnValue(new Promise(() => undefined))
     store.getBackupStats.mockReturnValue(new Promise(() => undefined))
 
     // Act
-    const { getByTestId, getByText } = render(<BackupManager />)
+    const { getByTestId, getByText } = await render(<BackupManager />)
 
     // Assert
     expect(getByTestId('backup-metadata-loading-feedback')).toBeTruthy()
@@ -84,13 +84,13 @@ describe('BackupManager', () => {
       size: 2048,
       errors: [],
     })
-    const { getByTestId } = render(<BackupManager />)
+    const { getByTestId } = await render(<BackupManager />)
     await waitFor(() => {
       expect(getByTestId('backup-create-button').props.disabled).toBe(false)
     })
 
     // Act
-    fireEvent.press(getByTestId('backup-create-button'))
+    await fireEvent.press(getByTestId('backup-create-button'))
 
     // Assert
     await waitFor(() => {
@@ -113,13 +113,15 @@ describe('BackupManager', () => {
         resolveBackup = resolve
       })
     )
-    const { getByTestId, getByText } = render(<BackupManager />)
+    const { getByTestId, getByText } = await render(<BackupManager />)
     await waitFor(() => {
       expect(getByTestId('backup-create-button').props.disabled).toBe(false)
     })
 
     // Act
-    fireEvent.press(getByTestId('backup-create-button'))
+    const createBackupAction = fireEvent.press(
+      getByTestId('backup-create-button')
+    )
 
     // Assert
     await waitFor(() => {
@@ -150,6 +152,7 @@ describe('BackupManager', () => {
         errors: [],
       })
     })
+    await createBackupAction
   })
 
   it('marks only the selected backup as busy while it is being deleted', async () => {
@@ -178,7 +181,7 @@ describe('BackupManager', () => {
         resolveDelete = resolve
       })
     )
-    const { getByTestId } = render(<BackupManager />)
+    const { getByTestId } = await render(<BackupManager />)
     const firstDeleteButton = await waitFor(() =>
       getByTestId(`backup-delete-button-${firstFileName}`)
     )
@@ -187,11 +190,11 @@ describe('BackupManager', () => {
     )
 
     // Act
-    fireEvent.press(firstDeleteButton)
+    await fireEvent.press(firstDeleteButton)
     const destructiveAction = jest
       .mocked(Alert.alert)
       .mock.calls[0]?.[2]?.find((button) => button.style === 'destructive')
-    act(() => {
+    await act(() => {
       destructiveAction?.onPress?.()
     })
 

@@ -50,16 +50,16 @@ describe('Statistics', () => {
     categories: mockCategories,
   }
 
-  it('renders correctly', () => {
-    const { getByTestId, getByText } = render(<Statistics {...defaultProps} />)
+  it('renders correctly', async () => {
+    const { getByTestId, getByText } = await render(<Statistics {...defaultProps} />)
 
     expect(getByTestId('statistics-screen')).toBeTruthy()
     expect(getByText('今週')).toBeTruthy()
     expect(getByText('今月')).toBeTruthy()
   })
 
-  it('displays weekly stats by default', () => {
-    const { getByText } = render(<Statistics {...defaultProps} />)
+  it('displays weekly stats by default', async () => {
+    const { getByText } = await render(<Statistics {...defaultProps} />)
 
     // Should show weekly streak
     expect(getByText('5日連続')).toBeTruthy()
@@ -71,11 +71,11 @@ describe('Statistics', () => {
     expect(getByText('6日')).toBeTruthy()
   })
 
-  it('switches to monthly stats when monthly toggle is pressed', () => {
-    const { getByTestId, getByText } = render(<Statistics {...defaultProps} />)
+  it('switches to monthly stats when monthly toggle is pressed', async () => {
+    const { getByTestId, getByText } = await render(<Statistics {...defaultProps} />)
 
     const monthlyToggle = getByTestId('stats-month-toggle')
-    fireEvent.press(monthlyToggle)
+    await fireEvent.press(monthlyToggle)
 
     // Should show monthly streak
     expect(getByText('12日連続')).toBeTruthy()
@@ -87,9 +87,9 @@ describe('Statistics', () => {
     expect(getByText('25日')).toBeTruthy()
   })
 
-  it('marks the active stats period for assistive technologies', () => {
+  it('marks the active stats period for assistive technologies', async () => {
     // Arrange
-    const { getByTestId } = render(<Statistics {...defaultProps} />)
+    const { getByTestId } = await render(<Statistics {...defaultProps} />)
 
     // Act
     const weeklyToggle = getByTestId('stats-week-toggle')
@@ -104,12 +104,12 @@ describe('Statistics', () => {
     })
   })
 
-  it('moves the selected accessibility state when the monthly stats period is opened', () => {
+  it('moves the selected accessibility state when the monthly stats period is opened', async () => {
     // Arrange
-    const { getByTestId } = render(<Statistics {...defaultProps} />)
+    const { getByTestId } = await render(<Statistics {...defaultProps} />)
 
     // Act
-    fireEvent.press(getByTestId('stats-month-toggle'))
+    await fireEvent.press(getByTestId('stats-month-toggle'))
 
     // Assert
     expect(getByTestId('stats-week-toggle').props.accessibilityState).toMatchObject({
@@ -120,24 +120,24 @@ describe('Statistics', () => {
     })
   })
 
-  it('switches back to weekly stats when weekly toggle is pressed', () => {
-    const { getByTestId, getByText } = render(<Statistics {...defaultProps} />)
+  it('switches back to weekly stats when weekly toggle is pressed', async () => {
+    const { getByTestId, getByText } = await render(<Statistics {...defaultProps} />)
 
     // Switch to monthly first
     const monthlyToggle = getByTestId('stats-month-toggle')
-    fireEvent.press(monthlyToggle)
+    await fireEvent.press(monthlyToggle)
 
     // Then switch back to weekly
     const weeklyToggle = getByTestId('stats-week-toggle')
-    fireEvent.press(weeklyToggle)
+    await fireEvent.press(weeklyToggle)
 
     // Should show weekly stats again
     expect(getByText('5日連続')).toBeTruthy()
     expect(getByText('75%')).toBeTruthy()
   })
 
-  it('displays category breakdown correctly', () => {
-    const { getByText } = render(<Statistics {...defaultProps} />)
+  it('displays category breakdown correctly', async () => {
+    const { getByText } = await render(<Statistics {...defaultProps} />)
 
     // Should show category names
     expect(getByText('事業')).toBeTruthy()
@@ -150,12 +150,12 @@ describe('Statistics', () => {
     expect(getByText('1/2')).toBeTruthy() // study
   })
 
-  it('updates category breakdown when switching periods', () => {
-    const { getByTestId, getByText } = render(<Statistics {...defaultProps} />)
+  it('updates category breakdown when switching periods', async () => {
+    const { getByTestId, getByText } = await render(<Statistics {...defaultProps} />)
 
     // Switch to monthly
     const monthlyToggle = getByTestId('stats-month-toggle')
-    fireEvent.press(monthlyToggle)
+    await fireEvent.press(monthlyToggle)
 
     // Should show monthly category counts
     expect(getByText('30/45')).toBeTruthy() // business monthly
@@ -163,21 +163,21 @@ describe('Statistics', () => {
     expect(getByText('6/10')).toBeTruthy() // study monthly
   })
 
-  it('displays daily average correctly', () => {
-    const { getByText } = render(<Statistics {...defaultProps} />)
+  it('displays daily average correctly', async () => {
+    const { getByText } = await render(<Statistics {...defaultProps} />)
 
     // Should show weekly daily average
     expect(getByText('2.8')).toBeTruthy()
   })
 
-  it('displays journal days correctly', () => {
-    const { getByText } = render(<Statistics {...defaultProps} />)
+  it('displays journal days correctly', async () => {
+    const { getByText } = await render(<Statistics {...defaultProps} />)
 
     // Should show weekly journal days
     expect(getByText('4日')).toBeTruthy()
   })
 
-  it('handles zero stats gracefully', () => {
+  it('handles zero stats gracefully', async () => {
     const zeroStats: StatsData = {
       streakDays: 0,
       completionRate: 0,
@@ -188,7 +188,7 @@ describe('Statistics', () => {
       categoryBreakdown: {},
     }
 
-    const { getByText } = render(
+    const { getByText } = await render(
       <Statistics
         {...defaultProps}
         weeklyStats={zeroStats}
@@ -201,13 +201,13 @@ describe('Statistics', () => {
     expect(getByText('0日')).toBeTruthy()
   })
 
-  it('handles empty category breakdown', () => {
+  it('handles empty category breakdown', async () => {
     const statsWithEmptyCategories: StatsData = {
       ...mockWeeklyStats,
       categoryBreakdown: {},
     }
 
-    const { queryByText } = render(
+    const { queryByText } = await render(
       <Statistics {...defaultProps} weeklyStats={statsWithEmptyCategories} />
     )
 
@@ -215,15 +215,15 @@ describe('Statistics', () => {
     expect(queryByText('8/10')).toBeNull()
   })
 
-  it('calculates completion percentages correctly', () => {
-    const { getByText } = render(<Statistics {...defaultProps} />)
+  it('calculates completion percentages correctly', async () => {
+    const { getByText } = await render(<Statistics {...defaultProps} />)
 
     // 75% completion rate should be displayed
     expect(getByText('75%')).toBeTruthy()
   })
 
-  it('shows proper visual indicators for different achievement levels', () => {
-    const { getByTestId } = render(<Statistics {...defaultProps} />)
+  it('shows proper visual indicators for different achievement levels', async () => {
+    const { getByTestId } = await render(<Statistics {...defaultProps} />)
 
     // Different categories should have different visual treatments
     const businessCategory = getByTestId('category-business')
@@ -233,20 +233,20 @@ describe('Statistics', () => {
     expect(lifeCategory).toBeTruthy()
   })
 
-  it('displays total tasks count', () => {
-    const { getByText } = render(<Statistics {...defaultProps} />)
+  it('displays total tasks count', async () => {
+    const { getByText } = await render(<Statistics {...defaultProps} />)
 
     // Should show total tasks for the period
     expect(getByText('20')).toBeTruthy() // weekly total
   })
 
-  it('handles categories with no tasks', () => {
+  it('handles categories with no tasks', async () => {
     const categoriesWithEmpty = [
       ...mockCategories,
       { id: 'empty', name: '空のカテゴリー' },
     ]
 
-    const { getByText } = render(
+    const { getByText } = await render(
       <Statistics {...defaultProps} categories={categoriesWithEmpty} />
     )
 

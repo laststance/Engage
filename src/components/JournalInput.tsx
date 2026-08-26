@@ -205,7 +205,8 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   }
 
   const handleKeyboardDone = useCallback(() => {
-    textInputRef.current?.blur()
+    // Partial native hosts may omit imperative ref methods during non-device rendering.
+    textInputRef.current?.blur?.()
     Keyboard.dismiss()
   }, [])
 

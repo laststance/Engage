@@ -21,7 +21,7 @@ describe('TodayScreenErrorBoundary', () => {
     jest.restoreAllMocks()
   })
 
-  it('announces a localized fallback without raw diagnostics and restores Today after retry', () => {
+  it('announces a localized fallback without raw diagnostics and restores Today after retry', async () => {
     // Arrange
     let shouldThrow = true
 
@@ -39,7 +39,7 @@ describe('TodayScreenErrorBoundary', () => {
       return <Text>Recovered Today content</Text>
     }
 
-    const { getByTestId, getByText, queryByText } = render(
+    const { getByTestId, getByText, queryByText } = await render(
       <TodayScreenErrorBoundary
         errorMessage="Unable to load Today"
         retryLabel="Retry"
@@ -57,7 +57,7 @@ describe('TodayScreenErrorBoundary', () => {
 
     // Act
     shouldThrow = false
-    fireEvent.press(getByTestId('today-screen-error-retry'))
+    await fireEvent.press(getByTestId('today-screen-error-retry'))
 
     // Assert
     expect(getByText('Recovered Today content')).toBeTruthy()
