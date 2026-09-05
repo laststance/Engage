@@ -103,6 +103,11 @@ const en = {
     deleteCategory: 'Delete Category',
     estimatedMinutes: 'Estimated Time (min)',
     estimatedMinutesPlaceholder: 'e.g. 30',
+    dailyAutoAdd: 'Add automatically every day',
+    dailyAutoAddDescription:
+      'Starting tomorrow, add this task every day as incomplete.',
+    dailyAutoAddActiveDescription:
+      'Add this task every day as incomplete.',
     noTasks: 'No tasks',
     noTasksHint: 'Tap "Add New Task" to create a task',
     discardChangesTitle: 'Discard Changes',
@@ -364,6 +369,7 @@ const en = {
     title: 'Today',
     description: "Manage today's tasks and reflections",
     errorLoading: 'Error loading Today screen',
+    dailyTasksError: 'Could not add your daily tasks. Please try again.',
   },
 
   dayModal: {

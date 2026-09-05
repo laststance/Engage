@@ -93,6 +93,30 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   const textInputRef = useRef<TextInput>(null)
   const lastPersistedTextRef = useRef(entry?.note || '')
   const textRef = useRef(entry?.note || '')
+  const pendingSaveRef = useRef<{
+    text: string
+    onUpdate: JournalInputProps['onUpdate']
+  } | null>(null)
+  const ongoingSaveRef = useRef<Promise<void> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      const pendingSave = pendingSaveRef.current
+      pendingSaveRef.current = null
+
+      // A date-keyed DaySheet can unmount before the draft's debounce finishes.
+      if (pendingSave) {
+        // Finish an earlier write first, then flush through the original day's callback.
+        void (ongoingSaveRef.current ?? Promise.resolve())
+          .catch(() => undefined)
+          .then(() => pendingSave.onUpdate(pendingSave.text))
+          .catch((error) => {
+            console.error('Failed to save journal draft before closing:', error)
+            triggerFeedback('error')
+          })
+      }
+    }
+  }, [triggerFeedback])
 
   // Update local state when entry prop changes (e.g., date change)
   useEffect(() => {
@@ -105,6 +129,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
     lastPersistedTextRef.current = nextPersistedText
 
     if (didPersistVisibleText) {
+      pendingSaveRef.current = null
       if (hasLocalDraft) {
         // The parent entry caught up to the draft, so this is the successful save echo.
         setLastSaved(new Date())
@@ -131,14 +156,31 @@ export const JournalInput: React.FC<JournalInputProps> = ({
     setLastFailedText(null)
   }, [entry?.note])
 
+  /**
+   * Queues a reflection write when debounce, blur, or retry dispatches the current day's draft.
+   * @param nextText - The draft captured by the action requesting persistence.
+   * @returns A promise that settles after persistence and visible save feedback are updated.
+   * @example
+   * await saveJournalText('Today went well')
+   */
   const saveJournalText = useCallback(
     async (nextText: string) => {
       const requestId = ++saveRequestIdRef.current
       setSaveStatus('saving')
       setLastFailedText(null)
 
+      // Once dispatched, this draft must not be sent again during unmount.
+      if (pendingSaveRef.current?.text === nextText) {
+        pendingSaveRef.current = null
+      }
+      // Preserve write order when a new edit arrives before an earlier autosave completes.
+      const saveOperation = (ongoingSaveRef.current ?? Promise.resolve())
+        .catch(() => undefined)
+        .then(() => onUpdate(nextText))
+      ongoingSaveRef.current = saveOperation
+
       try {
-        await onUpdate(nextText)
+        await saveOperation
         if (requestId !== saveRequestIdRef.current) return
         lastPersistedTextRef.current = nextText
         setLastSaved(new Date())
@@ -149,6 +191,10 @@ export const JournalInput: React.FC<JournalInputProps> = ({
         triggerFeedback('error')
         setLastFailedText(nextText)
         setSaveStatus('error')
+      } finally {
+        if (ongoingSaveRef.current === saveOperation) {
+          ongoingSaveRef.current = null
+        }
       }
     },
     [onUpdate, triggerFeedback]
@@ -174,11 +220,22 @@ export const JournalInput: React.FC<JournalInputProps> = ({
     }
   }, [text, saveJournalText])
 
+  /**
+   * Keeps the field and pending original-day save in sync when the native input changes.
+   * @param newText - The latest input text, accepted only within the configured length limit.
+   * @returns Nothing; updates the visible draft and its pending persistence callback.
+   * @example
+   * handleTextChange('A final thought before midnight')
+   */
   const handleTextChange = (newText: string) => {
     // Enforce character limit
     if (newText.length <= maxLength) {
       saveRequestIdRef.current += 1
       textRef.current = newText
+      pendingSaveRef.current =
+        newText === lastPersistedTextRef.current
+          ? null
+          : { text: newText, onUpdate }
       setText(newText)
       setCharacterCount(newText.length)
       setLastFailedText(null)

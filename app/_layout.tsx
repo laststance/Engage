@@ -12,6 +12,7 @@ import { LogBox } from 'react-native'
 import '@/src/i18n/config'
 
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { useCurrentDay } from '@/src/hooks/useCurrentDay'
 import { useAppStore } from '@/src/stores/app-store'
 import { databaseService } from '@/src/services/database'
 import { initializeOfflineService } from '@/src/services/offlineService'
@@ -51,6 +52,16 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme()
   const initializeApp = useAppStore((state) => state.initializeApp)
+  const isInitialized = useAppStore((state) => state.isInitialized)
+  const refreshDailyTasks = useAppStore((state) => state.refreshDailyTasks)
+  const currentDay = useCurrentDay()
+
+  useEffect(() => {
+    // Wait for SQLite and presets before reacting to foregrounding or local midnight.
+    if (isInitialized && currentDay.appState === 'active') {
+      void refreshDailyTasks()
+    }
+  }, [currentDay.date, currentDay.appState, isInitialized, refreshDailyTasks])
 
   useEffect(() => {
     // Disable React Native DevTools for E2E testing

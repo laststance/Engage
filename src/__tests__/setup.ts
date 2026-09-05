@@ -69,6 +69,10 @@ jest.mock('react-native', () => {
       addListener: jest.fn(() => ({ remove: jest.fn() })),
       dismiss: jest.fn(),
     },
+    AppState: {
+      currentState: 'active',
+      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+    },
     Dimensions: {
       get: jest.fn(() => ({ width: 375, height: 812 })),
     },

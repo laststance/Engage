@@ -1,0 +1,90 @@
+appId: com.laststance.engage
+tags:
+  - ios
+---
+# QA-13: A routine switch persists only after saving the preset editor.
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+- tapOn: "today-tab"
+- tapOn:
+    id: "task-selection-button"
+- tapOn:
+    id: "edit-presets-button"
+- extendedWaitUntil:
+    visible:
+      id: "task-daily-auto-add-switch-0"
+    timeout: 10000
+- assertVisible:
+    id: "task-daily-auto-add-switch-0"
+    checked: false
+- tapOn:
+    id: "task-daily-auto-add-switch-0"
+- assertVisible:
+    id: "task-daily-auto-add-switch-0"
+    checked: true
+- tapOn:
+    id: "preset-editor-save"
+- extendedWaitUntil:
+    notVisible:
+      id: "preset-editor-close"
+    timeout: 10000
+
+# A cold launch retains the saved routine setting.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+- tapOn: "today-tab"
+- tapOn:
+    id: "task-selection-button"
+- tapOn:
+    id: "edit-presets-button"
+- assertVisible:
+    id: "task-daily-auto-add-switch-0"
+    checked: true
+
+# Discarding an OFF draft must leave the saved routine enabled.
+- tapOn:
+    id: "task-daily-auto-add-switch-0"
+- tapOn:
+    id: "preset-editor-close"
+- tapOn: "Discard"
+- extendedWaitUntil:
+    notVisible:
+      id: "preset-editor-close"
+    timeout: 10000
+- tapOn:
+    id: "task-selection-button"
+- tapOn:
+    id: "edit-presets-button"
+- assertVisible:
+    id: "task-daily-auto-add-switch-0"
+    checked: true
+
+# Saving OFF survives another cold launch.
+- tapOn:
+    id: "task-daily-auto-add-switch-0"
+- tapOn:
+    id: "preset-editor-save"
+- extendedWaitUntil:
+    notVisible:
+      id: "preset-editor-close"
+    timeout: 10000
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+- tapOn: "today-tab"
+- tapOn:
+    id: "task-selection-button"
+- tapOn:
+    id: "edit-presets-button"
+- assertVisible:
+    id: "task-daily-auto-add-switch-0"
+    checked: false

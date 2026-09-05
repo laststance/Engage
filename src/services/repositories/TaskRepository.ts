@@ -1,10 +1,20 @@
-import { Task } from '../../types'
+import { Task, Completion } from '../../types'
 import { databaseService, DatabaseError } from '../database'
 
 export class TaskRepository {
   // Basic CRUD operations
   async findAll(): Promise<Task[]> {
     return await databaseService.getAllTasks()
+  }
+
+  /**
+   * Persists today's routine assignments when the app store refreshes after startup or date changes.
+   * @param date - Today's local date in YYYY-MM-DD format.
+   * @returns All assignments for that date, including manual and completed tasks.
+   * @example await taskRepository.applyDailyTasks('2026-09-06') // => today's Completion[]
+   */
+  async applyDailyTasks(date: string): Promise<Completion[]> {
+    return databaseService.applyDailyTasks(date)
   }
 
   async create(
@@ -176,6 +186,7 @@ export class TaskRepository {
       title: row.title,
       categoryId: row.category_id,
       defaultMinutes: row.default_minutes,
+      dailyAutoAddFrom: row.daily_auto_add_from ?? undefined,
       archived: Boolean(row.archived),
       createdAt: row.created_at,
       updatedAt: row.updated_at,

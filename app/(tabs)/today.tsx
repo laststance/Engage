@@ -1,14 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppScreen } from '@/src/components/AppScreen'
 import { DaySheet } from '@/src/components/DaySheet'
 import { TaskPicker } from '@/src/components/TaskPicker'
 import { PresetTaskEditor } from '@/src/components/PresetTaskEditor'
 import { TodayScreenErrorBoundary } from '@/src/components/TodayScreenErrorBoundary'
+import { OperationFeedback } from '@/src/components/OperationFeedback'
 import { useAppStore } from '@/src/stores/app-store'
 import type { Task } from '@/src/types'
 import { useDayView } from '@/src/hooks/useDayView'
-import { formatDate } from '@/src/utils/dateUtils'
+import { useCurrentDay } from '@/src/hooks/useCurrentDay'
 
 /**
  * Renders today's assigned habits whenever the Today tab is active.
@@ -45,8 +46,30 @@ function TodayScreenContent() {
     (state) => state.setPresetEditorVisible,
   )
 
-  const today = formatDate(new Date())
+  const { date: today } = useCurrentDay()
   const day = useDayView(today)
+  const [taskPickerDate, setTaskPickerDate] = useState<string | null>(null)
+  const refreshDailyTasks = useAppStore((state) => state.refreshDailyTasks)
+  const hasDailyTaskError = useAppStore((state) => state.hasDailyTaskError)
+
+  /**
+   * Opens a draft for today's date when DaySheet's task-selection button is pressed.
+   * @returns A promise that opens a date-bound picker after routine assignment succeeds.
+   * @example
+   * handleTaskSelectionPress() // => opens today's picker until it closes or the date changes
+   */
+  const handleTaskSelectionPress = async () => {
+    // Do not initialize a draft from empty state while foreground synchronization is pending.
+    if (await refreshDailyTasks()) setTaskPickerDate(today)
+  }
+
+  /**
+   * Drops today's picker draft when its close, save, or edit-presets action finishes.
+   * @returns Nothing; only the Today picker session is closed.
+   * @example
+   * handleTaskPickerClose() // => the next opening starts from saved assignments
+   */
+  const handleTaskPickerClose = () => setTaskPickerDate(null)
 
   /**
    * Replaces the task picker with the preset editor when the user selects Edit Presets.
@@ -56,7 +79,7 @@ function TodayScreenContent() {
    */
   const handleEditPresets = () => {
     // Close the picker first so iOS never receives a third nested modal.
-    day.handleTaskPickerClose()
+    handleTaskPickerClose()
     setPresetEditorVisible(true)
   }
 
@@ -90,6 +113,15 @@ function TodayScreenContent() {
       title={t('today.title')}
       titleTestID="today-title"
     >
+      {hasDailyTaskError && (
+        <OperationFeedback
+          kind="error"
+          message={t('today.dailyTasksError')}
+          actionLabel={t('common.retry')}
+          onAction={() => { void refreshDailyTasks() }}
+          testID="daily-tasks-error"
+        />
+      )}
       <DaySheet
         date={today}
         tasks={day.assignedTasks}
@@ -98,17 +130,18 @@ function TodayScreenContent() {
         categories={day.categories}
         onTaskToggle={day.handleTaskToggle}
         onJournalUpdate={day.handleJournalUpdate}
-        onTaskSelectionPress={day.handleTaskSelectionPress}
+        onTaskSelectionPress={handleTaskSelectionPress}
       />
 
       <TaskPicker
-        isVisible={day.isTaskPickerVisible}
+        // A draft opened yesterday must never be submitted through today's handlers.
+        isVisible={taskPickerDate === today}
         presetTasks={day.allTasks}
         categories={day.categories}
         selectedTasks={day.selectedTaskIds}
         onTaskSelect={day.handleTaskSelect}
         onTaskDeleteAction={day.handleDeletePresetTask}
-        onClose={day.handleTaskPickerClose}
+        onClose={handleTaskPickerClose}
         onEditPresets={handleEditPresets}
       />
 

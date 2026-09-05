@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useAppStore } from '@/src/stores/app-store'
 import { Task } from '@/src/types'
+import { getCurrentDate } from '@/src/utils/dateUtils'
 
 /**
  * Shared hook for day-view screens (TodayScreen and DayModal).
@@ -23,6 +24,7 @@ export function useDayView(date: string) {
   const updateJournalEntry = useAppStore((state) => state.updateJournalEntry)
   const setTaskPickerVisible = useAppStore((state) => state.setTaskPickerVisible)
   const addTasksToDate = useAppStore((state) => state.addTasksToDate)
+  const refreshDailyTasks = useAppStore((state) => state.refreshDailyTasks)
   const updatePresetTasks = useAppStore((state) => state.updatePresetTasks)
   const createCategory = useAppStore((state) => state.createCategory)
 
@@ -60,8 +62,12 @@ export function useDayView(date: string) {
   )
 
   const handleTaskSelectionPress = useCallback(
-    () => setTaskPickerVisible(true),
-    [setTaskPickerVisible],
+    async () => {
+      // Calendar's current-day picker also needs completed routine synchronization before taking its draft.
+      if (date === getCurrentDate() && !await refreshDailyTasks()) return
+      setTaskPickerVisible(true)
+    },
+    [date, refreshDailyTasks, setTaskPickerVisible],
   )
 
   const handleTaskPickerClose = useCallback(
