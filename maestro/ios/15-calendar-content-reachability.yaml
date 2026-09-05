@@ -1,0 +1,35 @@
+appId: com.laststance.engage
+tags:
+  - ios
+---
+# QA-15: Run on a compact iPhone or with accessibility text sizes to protect the lower calendar content.
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "calendar-monthly-summary-hint"
+    direction: DOWN
+    visibilityPercentage: 100
+    timeout: 10000
+- assertVisible:
+    id: "calendar-monthly-summary-hint"
+- scrollUntilVisible:
+    element:
+      id: "calendar-prev-month"
+    direction: UP
+    visibilityPercentage: 100
+    timeout: 10000
+- tapOn:
+    id: "calendar-prev-month"
+- scrollUntilVisible:
+    element:
+      id: "calendar-monthly-summary-hint"
+    direction: DOWN
+    visibilityPercentage: 100
+    timeout: 10000
+- assertVisible:
+    id: "calendar-monthly-summary-hint"
