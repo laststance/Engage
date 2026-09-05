@@ -469,6 +469,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
                           containerStyle={styles.swipeableContainer}
                           testID={`task-picker-swipeable-${task.id}`}
                         >
+                          {/* Match the swipe container radius to preserve the border at every corner. */}
                           <AppPressable
                             onPress={() => toggleTaskSelection(task.id)}
                             disabled={isBusy}
@@ -493,7 +494,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
                               handleTaskAccessibilityAction(task, event)
                             }
                             className={`
-                              p-4 border-2 touch-target-minimum
+                              p-4 border-2 rounded-sm touch-target-minimum
                               ${
                                 isSelected
                                   ? `border-system-blue bg-business-light`
