@@ -61,7 +61,7 @@ const ja = {
     saved: '{{label}} · 記録済み',
     clear: 'クリア',
     clearLabel: 'この日のコンディションを未記録に戻す',
-    saveFailed: '保存できませんでした。もう一度選んでください。',
+    saveFailed: '保存できませんでした。もう一度お試しください。',
     calendarLabel: 'コンディション：{{label}}',
     calendarLegend: '顔：その日の調子 · 緑：タスク達成数',
   },

@@ -61,7 +61,7 @@ const en = {
     saved: '{{label}} · Saved',
     clear: 'Clear',
     clearLabel: 'Clear the condition for this day',
-    saveFailed: 'Could not save. Tap a choice to try again.',
+    saveFailed: 'Could not save. Please try again.',
     calendarLabel: 'Condition: {{label}}',
     calendarLegend: 'Face: daily condition · Green: completed tasks',
   },
