@@ -5,11 +5,14 @@ tags:
 # QA-13: A routine switch persists only after saving the preset editor.
 - launchApp:
     clearState: true
+- waitForAnimationToEnd:
+    timeout: 5000
 - extendedWaitUntil:
     visible:
       id: "calendar-screen"
     timeout: 10000
-- tapOn: "today-tab"
+- tapOn:
+    id: "today-tab"
 - tapOn:
     id: "task-selection-button"
 - tapOn:
@@ -18,14 +21,18 @@ tags:
     visible:
       id: "task-daily-auto-add-switch-0"
     timeout: 10000
-- assertVisible:
-    id: "task-daily-auto-add-switch-0"
-    checked: false
+- extendedWaitUntil:
+    visible:
+      id: "task-daily-auto-add-switch-0"
+      checked: false
+    timeout: 15000
 - tapOn:
     id: "task-daily-auto-add-switch-0"
-- assertVisible:
-    id: "task-daily-auto-add-switch-0"
-    checked: true
+- extendedWaitUntil:
+    visible:
+      id: "task-daily-auto-add-switch-0"
+      checked: true
+    timeout: 15000
 - tapOn:
     id: "preset-editor-save"
 - extendedWaitUntil:
@@ -34,19 +41,25 @@ tags:
     timeout: 10000
 
 # A cold launch retains the saved routine setting.
-- launchApp
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd:
+    timeout: 5000
 - extendedWaitUntil:
     visible:
       id: "calendar-screen"
     timeout: 10000
-- tapOn: "today-tab"
+- tapOn:
+    id: "today-tab"
 - tapOn:
     id: "task-selection-button"
 - tapOn:
     id: "edit-presets-button"
-- assertVisible:
-    id: "task-daily-auto-add-switch-0"
-    checked: true
+- extendedWaitUntil:
+    visible:
+      id: "task-daily-auto-add-switch-0"
+      checked: true
+    timeout: 15000
 
 # Discarding an OFF draft must leave the saved routine enabled.
 - tapOn:
@@ -62,9 +75,11 @@ tags:
     id: "task-selection-button"
 - tapOn:
     id: "edit-presets-button"
-- assertVisible:
-    id: "task-daily-auto-add-switch-0"
-    checked: true
+- extendedWaitUntil:
+    visible:
+      id: "task-daily-auto-add-switch-0"
+      checked: true
+    timeout: 15000
 
 # Saving OFF survives another cold launch.
 - tapOn:
@@ -75,16 +90,22 @@ tags:
     notVisible:
       id: "preset-editor-close"
     timeout: 10000
-- launchApp
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd:
+    timeout: 5000
 - extendedWaitUntil:
     visible:
       id: "calendar-screen"
     timeout: 10000
-- tapOn: "today-tab"
+- tapOn:
+    id: "today-tab"
 - tapOn:
     id: "task-selection-button"
 - tapOn:
     id: "edit-presets-button"
-- assertVisible:
-    id: "task-daily-auto-add-switch-0"
-    checked: false
+- extendedWaitUntil:
+    visible:
+      id: "task-daily-auto-add-switch-0"
+      checked: false
+    timeout: 15000

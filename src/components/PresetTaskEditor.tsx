@@ -792,23 +792,35 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
                           )}
                         </Text>
                       </VStack>
-                      <Switch
-                        accessible
-                        value={Boolean(task.dailyAutoAddFrom)}
-                        onValueChange={(isEnabled) =>
-                          updateDailyAutoAdd(task.index, isEnabled)
-                        }
+                      {/* The native switch owns its touches; only its surrounding padding uses this press handler. */}
+                      <Pressable
+                        accessible={false}
+                        importantForAccessibility="no"
+                        className="touch-target-minimum items-center justify-center"
                         disabled={isLoading}
-                        accessibilityRole="switch"
-                        accessibilityLabel={`${t('presetEditor.dailyAutoAdd')}: ${task.title || t('presetEditor.taskNamePlaceholder')}`}
-                        accessibilityState={{
-                          checked: Boolean(task.dailyAutoAddFrom),
-                          disabled: isLoading,
-                        }}
-                        testID={`task-daily-auto-add-switch-${task.index}`}
-                        trackColor={{ false: '#E5E7EB', true: '#007AFF' }}
-                        thumbColor="#FFFFFF"
-                      />
+                        onPress={() =>
+                          updateDailyAutoAdd(task.index, !task.dailyAutoAddFrom)
+                        }
+                        testID={`task-daily-auto-add-touch-target-${task.index}`}
+                      >
+                        <Switch
+                          accessible
+                          value={Boolean(task.dailyAutoAddFrom)}
+                          onValueChange={(isEnabled) =>
+                            updateDailyAutoAdd(task.index, isEnabled)
+                          }
+                          disabled={isLoading}
+                          accessibilityRole="switch"
+                          accessibilityLabel={`${t('presetEditor.dailyAutoAdd')}: ${task.title || t('presetEditor.taskNamePlaceholder')}`}
+                          accessibilityState={{
+                            checked: Boolean(task.dailyAutoAddFrom),
+                            disabled: isLoading,
+                          }}
+                          testID={`task-daily-auto-add-switch-${task.index}`}
+                          trackColor={{ false: '#E5E7EB', true: '#007AFF' }}
+                          thumbColor="#FFFFFF"
+                        />
+                      </Pressable>
                     </HStack>
 
                     {/* Actions */}

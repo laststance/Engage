@@ -32,6 +32,7 @@ interface DaySheetProps {
   onTaskToggle: (taskId: string) => Promise<TaskCompletionOperationResult>
   onJournalUpdate: (content: string) => Promise<void>
   onTaskSelectionPress: () => void
+  isTaskSelectionDisabled?: boolean
 }
 
 type DaySheetTaskFeedback = {
@@ -81,21 +82,30 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
   onTaskToggle,
   onJournalUpdate,
   onTaskSelectionPress,
+  isTaskSelectionDisabled = false,
 }) => {
   const { t } = useTranslation()
   const formattedDate = formatDaySheetDate(date, i18n.language, t)
   const triggerFeedback = useInteractionFeedback()
   const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingTaskIdRef = useRef<string | null>(null)
-  const [pendingTaskId, setPendingTaskId] = useState<string | null>(null)
+  const [pendingTask, setPendingTask] = useState<
+    Pick<Completion, 'taskId' | 'completed'> | null
+  >(null)
   const [taskFeedback, setTaskFeedback] =
     useState<DaySheetTaskFeedback | null>(null)
 
   const completedTaskIds = useMemo(
-    () => new Set(
-      completions.filter((c) => c.completed).map((c) => c.taskId)
-    ),
-    [completions]
+    () => {
+      const completedIds = new Set(
+        completions.filter((completion) => completion.completed).map((completion) => completion.taskId)
+      )
+      // Show the user's target immediately while persistence waits behind other writes.
+      if (pendingTask?.completed) completedIds.add(pendingTask.taskId)
+      else if (pendingTask) completedIds.delete(pendingTask.taskId)
+      return completedIds
+    },
+    [completions, pendingTask]
   )
 
   const tasksByCategory = useMemo(
@@ -141,7 +151,10 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
       }
 
       pendingTaskIdRef.current = task.id
-      setPendingTaskId(task.id)
+      setPendingTask({
+        taskId: task.id,
+        completed: !completedTaskIds.has(task.id),
+      })
 
       try {
         const result = await onTaskToggle(task.id)
@@ -196,7 +209,7 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
         )
       } finally {
         pendingTaskIdRef.current = null
-        setPendingTaskId(null)
+        setPendingTask(null)
       }
     },
     [completedTaskIds, onTaskToggle, showTaskFeedback, tasks, triggerFeedback]
@@ -264,8 +277,9 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
 
               <AppPressable
                 onPress={onTaskSelectionPress}
+                disabled={isTaskSelectionDisabled}
                 feedback="select"
-                className="bg-blue-50 border border-blue-200 rounded-2xl p-4"
+                className={`bg-blue-50 border border-blue-200 rounded-2xl p-4 ${isTaskSelectionDisabled ? 'opacity-50' : ''}`}
                 pressedClassName="bg-blue-100"
                 testID="task-selection-button"
                 accessibilityLabel={t('daySheet.chooseTodaysHabits')}
@@ -374,8 +388,8 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
                               }}
                               feedback={isCompleted ? 'undo' : 'complete'}
                               checked={isCompleted}
-                              busy={pendingTaskId === task.id}
-                              disabled={Boolean(pendingTaskId)}
+                              busy={pendingTask?.taskId === task.id}
+                              disabled={Boolean(pendingTask)}
                               className="flex-row items-center rounded-2xl border border-gray-200 bg-white px-3 py-3 min-h-[52px] shadow-sm"
                               pressedClassName="bg-gray-100"
                               testID={`task-item-${task.id}`}
@@ -436,8 +450,9 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
                 </Text>
                 <AppPressable
                   onPress={onTaskSelectionPress}
+                  disabled={isTaskSelectionDisabled}
                   feedback="select"
-                  className="bg-blue-600 rounded-lg px-5 py-3"
+                  className={`bg-blue-600 rounded-lg px-5 py-3 ${isTaskSelectionDisabled ? 'opacity-50' : ''}`}
                   pressedClassName="bg-blue-700"
                   testID="empty-task-selection-button"
                   accessibilityRole="button"

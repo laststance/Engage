@@ -51,6 +51,7 @@ function TodayScreenContent() {
   const [taskPickerDate, setTaskPickerDate] = useState<string | null>(null)
   const refreshDailyTasks = useAppStore((state) => state.refreshDailyTasks)
   const hasDailyTaskError = useAppStore((state) => state.hasDailyTaskError)
+  const isInitialized = useAppStore((state) => state.isInitialized)
 
   /**
    * Opens a draft for today's date when DaySheet's task-selection button is pressed.
@@ -131,6 +132,7 @@ function TodayScreenContent() {
         onTaskToggle={day.handleTaskToggle}
         onJournalUpdate={day.handleJournalUpdate}
         onTaskSelectionPress={handleTaskSelectionPress}
+        isTaskSelectionDisabled={!isInitialized}
       />
 
       <TaskPicker

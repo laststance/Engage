@@ -1,6 +1,7 @@
 import React, { type ComponentProps } from 'react'
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native'
 import TodayScreen from '@/app/(tabs)/today'
+import { DayModal } from '@/src/components/DayModal'
 import type { DaySheet } from '@/src/components/DaySheet'
 import type { TaskPicker } from '@/src/components/TaskPicker'
 import { useCurrentDay } from '@/src/hooks/useCurrentDay'
@@ -27,14 +28,20 @@ jest.mock('@/src/components/DaySheet', () => {
     DaySheet: ({
       date,
       onTaskSelectionPress,
-    }: Pick<ComponentProps<typeof DaySheet>, 'date' | 'onTaskSelectionPress'>) =>
+      isTaskSelectionDisabled,
+    }: Pick<ComponentProps<typeof DaySheet>, 'date' | 'onTaskSelectionPress' | 'isTaskSelectionDisabled'>) =>
       ReactModule.createElement(
         View,
         {},
         ReactModule.createElement(Text, { testID: 'day-date' }, date),
         ReactModule.createElement(
           Pressable,
-          { testID: 'open-task-picker', onPress: onTaskSelectionPress },
+          {
+            testID: 'open-task-picker',
+            onPress: isTaskSelectionDisabled ? undefined : onTaskSelectionPress,
+            disabled: isTaskSelectionDisabled,
+            accessibilityState: { disabled: isTaskSelectionDisabled },
+          },
           ReactModule.createElement(Text, {}, 'Select tasks'),
         ),
       ),
@@ -104,6 +111,7 @@ describe('Today routine selection', () => {
     mockRefreshDailyTasks.mockResolvedValue(true)
     useAppStore.setState({
       ...initialStoreState,
+      isInitialized: true,
       tasks,
       categories: [{ id: 'life', name: 'Life' }],
       refreshDailyTasks: mockRefreshDailyTasks,
@@ -112,6 +120,53 @@ describe('Today routine selection', () => {
 
   afterEach(() => {
     useAppStore.setState(initialStoreState, true)
+  })
+
+  it('keeps Today selection disabled until initialization finishes', async () => {
+    // Arrange
+    useAppStore.setState({ isInitialized: false })
+    const { getByTestId, queryByTestId } = await render(<TodayScreen />)
+
+    // Act
+    await fireEvent.press(getByTestId('open-task-picker'))
+
+    // Assert
+    expect(getByTestId('open-task-picker')).toBeDisabled()
+    expect(mockRefreshDailyTasks).not.toHaveBeenCalled()
+    expect(queryByTestId('routine-task-picker')).toBeNull()
+
+    // Act
+    await act(() => useAppStore.setState({ isInitialized: true }))
+    await fireEvent.press(getByTestId('open-task-picker'))
+
+    // Assert
+    expect(getByTestId('open-task-picker')).toBeEnabled()
+    expect(getByTestId('routine-task-picker')).toBeVisible()
+  })
+
+  it('enables historical calendar-day selection after initialization without changing the selected date', async () => {
+    // Arrange
+    useAppStore.setState({ isInitialized: false, selectedDate: '2026-09-03' })
+    const { getByTestId, queryByTestId } = await render(
+      <DayModal isVisible onClose={jest.fn()} />
+    )
+
+    // Act
+    await fireEvent.press(getByTestId('open-task-picker'))
+
+    // Assert
+    expect(getByTestId('open-task-picker')).toBeDisabled()
+    expect(queryByTestId('routine-task-picker')).toBeNull()
+
+    // Act
+    await act(() => useAppStore.setState({ isInitialized: true }))
+    await fireEvent.press(getByTestId('open-task-picker'))
+
+    // Assert
+    expect(getByTestId('open-task-picker')).toBeEnabled()
+    expect(getByTestId('routine-task-picker')).toBeVisible()
+    expect(getByTestId('day-date')).toHaveTextContent('2026-09-03')
+    expect(useAppStore.getState().selectedDate).toBe('2026-09-03')
   })
 
   it('closes yesterday\'s picker draft when Today advances to the next local date', async () => {

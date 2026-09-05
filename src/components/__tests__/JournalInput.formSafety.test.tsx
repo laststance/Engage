@@ -265,6 +265,141 @@ describe('JournalInput form safety', () => {
     expect(onUpdate).not.toHaveBeenCalled()
   })
 
+  it('persists a reversal after an earlier autosave acknowledges different text', async () => {
+    // Arrange
+    let finishFirstSave: () => void = () => undefined
+    const onUpdate = jest.fn()
+      .mockImplementationOnce(() => new Promise<void>((resolve) => {
+        finishFirstSave = resolve
+      }))
+      .mockResolvedValue(undefined)
+    const { getByTestId, rerender, unmount } = await renderJournalInput({ onUpdate })
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Temporary reflection')
+    await act(async () => {
+      jest.advanceTimersByTime(JOURNAL_AUTOSAVE_DELAY_MS)
+    })
+
+    // Act
+    await fireEvent.changeText(getByTestId('journal-text-input'), '')
+    await rerender(
+      <JournalInput
+        date="2026-05-27"
+        entry={{ ...defaultEntry, note: 'Temporary reflection' }}
+        onUpdate={onUpdate}
+      />
+    )
+    expect(getByTestId('journal-text-input').props.value).toBe('')
+    await act(async () => {
+      finishFirstSave()
+      jest.advanceTimersByTime(JOURNAL_AUTOSAVE_DELAY_MS)
+    })
+    await unmount()
+
+    // Assert
+    expect(onUpdate).toHaveBeenCalledTimes(2)
+    expect(onUpdate).toHaveBeenNthCalledWith(1, 'Temporary reflection')
+    expect(onUpdate).toHaveBeenNthCalledWith(2, '')
+  })
+
+  it('flushes a reversal to its original day when midnight interrupts an earlier autosave', async () => {
+    // Arrange
+    let finishFirstSave: () => void = () => undefined
+    const savePreviousDay = jest.fn()
+      .mockImplementationOnce(() => new Promise<void>((resolve) => {
+        finishFirstSave = resolve
+      }))
+      .mockResolvedValue(undefined)
+    const saveNextDay = jest.fn().mockResolvedValue(undefined)
+    const { getByTestId, rerender } = await render(
+      <JournalInput key="2026-05-27" date="2026-05-27" entry={defaultEntry} onUpdate={savePreviousDay} />
+    )
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Temporary reflection')
+    await act(async () => {
+      jest.advanceTimersByTime(JOURNAL_AUTOSAVE_DELAY_MS)
+    })
+
+    // Act
+    await fireEvent.changeText(getByTestId('journal-text-input'), '')
+    await rerender(
+      <JournalInput key="2026-05-28" date="2026-05-28" entry={null} onUpdate={saveNextDay} />
+    )
+    expect(savePreviousDay).toHaveBeenCalledTimes(1)
+    await act(async () => {
+      finishFirstSave()
+    })
+
+    // Assert
+    expect(savePreviousDay).toHaveBeenCalledTimes(2)
+    expect(savePreviousDay).toHaveBeenLastCalledWith('')
+    expect(saveNextDay).not.toHaveBeenCalled()
+  })
+
+  it('keeps the final draft when an acknowledgment matches it before a different queued save', async () => {
+    // Arrange
+    let finishFirstSave: () => void = () => undefined
+    const onUpdate = jest.fn()
+      .mockImplementationOnce(() => new Promise<void>((resolve) => {
+        finishFirstSave = resolve
+      }))
+      .mockResolvedValue(undefined)
+    const { getByTestId, rerender, unmount } = await renderJournalInput({ onUpdate })
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Final reflection')
+    await act(async () => {
+      jest.advanceTimersByTime(JOURNAL_AUTOSAVE_DELAY_MS)
+    })
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Intermediate reflection')
+    await act(async () => {
+      jest.advanceTimersByTime(JOURNAL_AUTOSAVE_DELAY_MS)
+    })
+
+    // Act
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Final reflection')
+    await rerender(
+      <JournalInput
+        date="2026-05-27"
+        entry={{ ...defaultEntry, note: 'Final reflection' }}
+        onUpdate={onUpdate}
+      />
+    )
+    await unmount()
+    await act(async () => {
+      finishFirstSave()
+    })
+
+    // Assert
+    expect(onUpdate).toHaveBeenCalledTimes(3)
+    expect(onUpdate).toHaveBeenNthCalledWith(1, 'Final reflection')
+    expect(onUpdate).toHaveBeenNthCalledWith(2, 'Intermediate reflection')
+    expect(onUpdate).toHaveBeenNthCalledWith(3, 'Final reflection')
+  })
+
+  it('does not repeat a save when the latest draft returns to text already being saved', async () => {
+    // Arrange
+    let finishSave: () => void = () => undefined
+    const onUpdate = jest.fn(() => new Promise<void>((resolve) => {
+      finishSave = resolve
+    }))
+    const { getAllByText, getByTestId, unmount } = await renderJournalInput({ onUpdate })
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Final reflection')
+    await act(async () => {
+      jest.advanceTimersByTime(JOURNAL_AUTOSAVE_DELAY_MS)
+    })
+
+    // Act
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Temporary reflection')
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Final reflection')
+    await fireEvent(getByTestId('journal-text-input'), 'blur')
+    await act(async () => {
+      finishSave()
+      jest.advanceTimersByTime(JOURNAL_AUTOSAVE_DELAY_MS)
+    })
+
+    // Assert
+    expect(getAllByText('journal.saved').length).toBeGreaterThan(0)
+    await unmount()
+    expect(onUpdate).toHaveBeenCalledTimes(1)
+  })
+
   it('does not duplicate an autosave already in progress when its day closes', async () => {
     // Arrange
     let finishSave: () => void = () => undefined

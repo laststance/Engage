@@ -28,6 +28,7 @@ interface DayModalProps {
 export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
   const { t } = useTranslation()
   const selectedDate = useAppStore((state) => state.selectedDate)
+  const isInitialized = useAppStore((state) => state.isInitialized)
   const day = useDayView(selectedDate)
   const [isPresetEditorVisible, setIsPresetEditorVisible] = useState(false)
 
@@ -84,6 +85,7 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
           onTaskToggle={day.handleTaskToggle}
           onJournalUpdate={day.handleJournalUpdate}
           onTaskSelectionPress={day.handleTaskSelectionPress}
+          isTaskSelectionDisabled={!isInitialized}
         />
 
         {/* Task Picker Modal (2nd modal level) */}

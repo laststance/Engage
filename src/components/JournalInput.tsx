@@ -89,7 +89,6 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   )}`
   const shouldShowKeyboardDoneButton = Platform.OS === 'ios'
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const saveRequestIdRef = useRef(0)
   const textInputRef = useRef<TextInput>(null)
   const lastPersistedTextRef = useRef(entry?.note || '')
   const textRef = useRef(entry?.note || '')
@@ -97,7 +96,10 @@ export const JournalInput: React.FC<JournalInputProps> = ({
     text: string
     onUpdate: JournalInputProps['onUpdate']
   } | null>(null)
-  const ongoingSaveRef = useRef<Promise<void> | null>(null)
+  const ongoingSaveRef = useRef<{
+    text: string
+    promise: Promise<void>
+  } | null>(null)
 
   useEffect(() => {
     return () => {
@@ -107,7 +109,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       // A date-keyed DaySheet can unmount before the draft's debounce finishes.
       if (pendingSave) {
         // Finish an earlier write first, then flush through the original day's callback.
-        void (ongoingSaveRef.current ?? Promise.resolve())
+        void (ongoingSaveRef.current?.promise ?? Promise.resolve())
           .catch(() => undefined)
           .then(() => pendingSave.onUpdate(pendingSave.text))
           .catch((error) => {
@@ -123,12 +125,20 @@ export const JournalInput: React.FC<JournalInputProps> = ({
     const nextPersistedText = entry?.note || ''
     const previousPersistedText = lastPersistedTextRef.current
     const currentText = textRef.current
-    const hasLocalDraft = currentText !== previousPersistedText
+    // An in-flight write can still overwrite a draft that reverted to the persisted value.
+    const hasLocalDraft =
+      currentText !== previousPersistedText ||
+      pendingSaveRef.current !== null ||
+      ongoingSaveRef.current !== null
     const didPersistVisibleText = currentText === nextPersistedText
 
     lastPersistedTextRef.current = nextPersistedText
 
     if (didPersistVisibleText) {
+      // A matching acknowledgment does not cancel a correction after a different queued write.
+      if (ongoingSaveRef.current && ongoingSaveRef.current.text !== currentText) {
+        return
+      }
       pendingSaveRef.current = null
       if (hasLocalDraft) {
         // The parent entry caught up to the draft, so this is the successful save echo.
@@ -140,14 +150,14 @@ export const JournalInput: React.FC<JournalInputProps> = ({
     }
 
     if (hasLocalDraft) {
-      saveRequestIdRef.current += 1
       setSaveStatus((currentStatus) =>
-        currentStatus === 'saving' ? 'draft' : currentStatus
+        pendingSaveRef.current && currentStatus === 'saving'
+          ? 'draft'
+          : currentStatus
       )
       return
     }
 
-    saveRequestIdRef.current += 1
     textRef.current = nextPersistedText
     setText(nextPersistedText)
     setCharacterCount(nextPersistedText.length)
@@ -165,7 +175,8 @@ export const JournalInput: React.FC<JournalInputProps> = ({
    */
   const saveJournalText = useCallback(
     async (nextText: string) => {
-      const requestId = ++saveRequestIdRef.current
+      // Debounce and blur may request the same value while its write is already queued.
+      if (ongoingSaveRef.current?.text === nextText) return
       setSaveStatus('saving')
       setLastFailedText(null)
 
@@ -174,25 +185,32 @@ export const JournalInput: React.FC<JournalInputProps> = ({
         pendingSaveRef.current = null
       }
       // Preserve write order when a new edit arrives before an earlier autosave completes.
-      const saveOperation = (ongoingSaveRef.current ?? Promise.resolve())
+      const saveOperation = (ongoingSaveRef.current?.promise ?? Promise.resolve())
         .catch(() => undefined)
         .then(() => onUpdate(nextText))
-      ongoingSaveRef.current = saveOperation
+      ongoingSaveRef.current = { text: nextText, promise: saveOperation }
 
       try {
         await saveOperation
-        if (requestId !== saveRequestIdRef.current) return
         lastPersistedTextRef.current = nextText
+        // Only the final queued write for the visible text can finish its save feedback.
+        if (
+          ongoingSaveRef.current?.promise !== saveOperation ||
+          textRef.current !== nextText
+        ) return
         setLastSaved(new Date())
         setSaveStatus('saved')
       } catch (error) {
-        if (requestId !== saveRequestIdRef.current) return
+        if (
+          ongoingSaveRef.current?.promise !== saveOperation ||
+          textRef.current !== nextText
+        ) return
         console.error('Auto-save failed:', error)
         triggerFeedback('error')
         setLastFailedText(nextText)
         setSaveStatus('error')
       } finally {
-        if (ongoingSaveRef.current === saveOperation) {
+        if (ongoingSaveRef.current?.promise === saveOperation) {
           ongoingSaveRef.current = null
         }
       }
@@ -206,10 +224,11 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       clearTimeout(autoSaveTimeoutRef.current)
     }
 
-    // Only auto-save while the local draft differs from the last persisted text.
-    if (text !== lastPersistedTextRef.current) {
+    // Reverting to persisted text still needs a write when an earlier save would replace it.
+    if (pendingSaveRef.current) {
       autoSaveTimeoutRef.current = setTimeout(async () => {
-        await saveJournalText(text)
+        // An acknowledgment or blur may have already consumed this pending draft.
+        if (pendingSaveRef.current?.text === text) await saveJournalText(text)
       }, JOURNAL_AUTOSAVE_DELAY_MS)
     }
 
@@ -230,17 +249,22 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   const handleTextChange = (newText: string) => {
     // Enforce character limit
     if (newText.length <= maxLength) {
-      saveRequestIdRef.current += 1
       textRef.current = newText
+      const scheduledText =
+        ongoingSaveRef.current?.text ?? lastPersistedTextRef.current
       pendingSaveRef.current =
-        newText === lastPersistedTextRef.current
+        newText === scheduledText
           ? null
           : { text: newText, onUpdate }
       setText(newText)
       setCharacterCount(newText.length)
       setLastFailedText(null)
       setSaveStatus(
-        newText === lastPersistedTextRef.current ? 'idle' : 'draft'
+        pendingSaveRef.current
+          ? 'draft'
+          : ongoingSaveRef.current
+            ? 'saving'
+            : 'idle'
       )
     }
   }
@@ -252,7 +276,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   const handleBlur = () => {
     setIsFocused(false)
     // Force save on blur if there are unsaved changes
-    if (text !== lastPersistedTextRef.current) {
+    if (pendingSaveRef.current || text !== lastPersistedTextRef.current) {
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current)
         autoSaveTimeoutRef.current = null

@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { act, render, fireEvent, waitFor } from '@testing-library/react-native'
 import { DaySheet } from '../DaySheet'
 import {
   Category,
@@ -110,6 +110,80 @@ describe('DaySheet', () => {
     })
   })
 
+  it('disables both task-selection controls until the day is ready, then makes them usable', async () => {
+    // Arrange
+    const { getByTestId, rerender } = await render(
+      <DaySheet {...defaultProps} tasks={[]} isTaskSelectionDisabled />
+    )
+
+    // Act
+    await fireEvent.press(getByTestId('task-selection-button'))
+    await fireEvent.press(getByTestId('empty-task-selection-button'))
+
+    // Assert
+    expect(getByTestId('task-selection-button')).toBeDisabled()
+    expect(getByTestId('empty-task-selection-button')).toBeDisabled()
+    expect(getByTestId('task-selection-button').props.className).toContain('opacity-50')
+    expect(getByTestId('empty-task-selection-button').props.className).toContain('opacity-50')
+    expect(mockOnTaskSelectionPress).not.toHaveBeenCalled()
+
+    // Act
+    await rerender(
+      <DaySheet {...defaultProps} tasks={[]} isTaskSelectionDisabled={false} />
+    )
+    await fireEvent.press(getByTestId('task-selection-button'))
+    await fireEvent.press(getByTestId('empty-task-selection-button'))
+
+    // Assert
+    expect(getByTestId('task-selection-button')).toBeEnabled()
+    expect(getByTestId('empty-task-selection-button')).toBeEnabled()
+    expect(mockOnTaskSelectionPress).toHaveBeenCalledTimes(2)
+  })
+
+  it('shows completion immediately while persistence is queued and rolls back when it fails', async () => {
+    // Arrange
+    let finishToggle: (result: TaskCompletionOperationResult) => void = () => undefined
+    mockOnTaskToggle.mockImplementationOnce(
+      () => new Promise<TaskCompletionOperationResult>((resolve) => {
+        finishToggle = resolve
+      })
+    )
+    const { getByTestId, getByText } = await render(<DaySheet {...defaultProps} />)
+
+    // Act
+    await fireEvent.press(getByTestId('task-item-task1'))
+    await fireEvent.press(getByTestId('task-item-task1'))
+
+    // Assert
+    expect(getByTestId('task-item-task1').props.accessibilityState).toMatchObject({
+      checked: true,
+      busy: true,
+      disabled: true,
+    })
+    expect(getByText('ネットワーキング').props.className).toContain('line-through')
+    expect(mockOnTaskToggle).toHaveBeenCalledTimes(1)
+
+    // Act
+    await act(async () => {
+      finishToggle({
+        success: false,
+        date: '2025-01-15',
+        taskId: 'task1',
+        change: 'completed',
+        message: 'Save failed',
+      })
+    })
+
+    // Assert
+    expect(getByTestId('task-item-task1').props.accessibilityState).toMatchObject({
+      checked: false,
+      busy: false,
+      disabled: false,
+    })
+    expect(getByText('ネットワーキング').props.className).not.toContain('line-through')
+    expect(getByText('daySheet.taskCompletionFailed')).toBeVisible()
+  })
+
   it('shows completion acknowledgement after a task is completed', async () => {
     // Arrange
     const { getByTestId, getByText } = await render(
@@ -123,6 +197,56 @@ describe('DaySheet', () => {
     await waitFor(() => {
       expect(getByText('daySheet.taskCompleted')).toBeTruthy()
     })
+  })
+
+  it('keeps pending completion checked through a stale refresh and after successful persistence', async () => {
+    // Arrange
+    let finishToggle: (result: TaskCompletionOperationResult) => void = () => undefined
+    mockOnTaskToggle.mockImplementationOnce(
+      () => new Promise<TaskCompletionOperationResult>((resolve) => {
+        finishToggle = resolve
+      })
+    )
+    const { getByTestId, getByText, rerender } = await render(
+      <DaySheet {...defaultProps} />
+    )
+    await fireEvent.press(getByTestId('task-item-task1'))
+
+    // Act
+    await rerender(
+      <DaySheet
+        {...defaultProps}
+        completions={[{
+          id: 'refreshed-assignment',
+          date: '2025-01-15',
+          taskId: 'task1',
+          completed: false,
+          createdAt: 1700000000000,
+        }]}
+      />
+    )
+
+    // Assert
+    expect(getByTestId('task-item-task1').props.accessibilityState).toMatchObject({
+      checked: true,
+      busy: true,
+    })
+    expect(getByText('ネットワーキング').props.className).toContain('line-through')
+
+    // Act
+    await rerender(
+      <DaySheet {...defaultProps} completions={completedCompletions} />
+    )
+    await act(async () => finishToggle(completionSuccess))
+
+    // Assert
+    expect(getByTestId('task-item-task1').props.accessibilityState).toMatchObject({
+      checked: true,
+      busy: false,
+      disabled: false,
+    })
+    expect(getByText('ネットワーキング').props.className).toContain('line-through')
+    expect(mockOnTaskToggle).toHaveBeenCalledTimes(1)
   })
 
   it('shows closure feedback when the final assigned task is completed', async () => {

@@ -493,6 +493,33 @@ describe('PresetTaskEditor form safety', () => {
       ])
     })
 
+    it('toggles from the enlarged touch target while exposing one native switch per task', async () => {
+      // Arrange
+      const { getByTestId, getAllByRole } = await renderEditor()
+      const touchTarget = getByTestId('task-daily-auto-add-touch-target-0')
+
+      // Act
+      await fireEvent.press(touchTarget)
+
+      // Assert
+      expect(touchTarget.props.className).toContain('touch-target-minimum')
+      expect(touchTarget.props.accessible).toBe(false)
+      expect(touchTarget.props.importantForAccessibility).toBe('no')
+      expect(getAllByRole('switch')).toHaveLength(2)
+      expect(getByTestId('task-daily-auto-add-switch-0')).toBeChecked()
+
+      // Act
+      await fireEvent(
+        getByTestId('task-daily-auto-add-switch-0'),
+        'valueChange',
+        false
+      )
+
+      // Assert
+      expect(getByTestId('task-daily-auto-add-switch-0')).not.toBeChecked()
+      expect(getAllByRole('switch')).toHaveLength(2)
+    })
+
     it('saves a newly enabled routine from tomorrow across a month boundary', async () => {
       // Arrange
       jest.mocked(dateUtils.getCurrentDate).mockReturnValue('2026-09-30')
