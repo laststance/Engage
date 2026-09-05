@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -262,7 +263,11 @@ export const Calendar: React.FC<CalendarProps> = ({
   }
 
   return (
-    <Box className="flex-1 bg-gray-50" testID="calendar-component">
+    <ScrollView
+      className="flex-1 bg-gray-50"
+      contentContainerClassName="pb-4"
+      testID="calendar-component"
+    >
       {/* Header with month navigation - matching Figma design */}
       <HStack className="items-center justify-between px-6 py-4 mb-4">
         <AppPressable
@@ -369,7 +374,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                         : undefined
                     }
                     className={`
-                      h-12 items-center justify-center rounded-xl
+                      flex-1 min-h-[48px] items-center justify-center rounded-xl py-1
                       ${dayData.isCurrentMonth ? heatmapColor : 'bg-gray-50'}
                       ${
                         isSelectedDate
@@ -421,8 +426,8 @@ export const Calendar: React.FC<CalendarProps> = ({
 
       <AppCard className="mx-4 mt-6" tone="info">
         <VStack space="sm">
-          <HStack className="items-center justify-between">
-            <VStack space="xs">
+          <HStack className="items-center justify-between flex-wrap gap-2">
+            <VStack space="xs" className="shrink">
               <Text className="text-xs font-semibold uppercase text-blue-500">
                 {t('calendar.monthlySummary')}
               </Text>
@@ -465,6 +470,6 @@ export const Calendar: React.FC<CalendarProps> = ({
           )}
         </VStack>
       </AppCard>
-    </Box>
+    </ScrollView>
   )
 }
