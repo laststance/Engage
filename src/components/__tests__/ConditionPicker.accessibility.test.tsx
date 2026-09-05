@@ -1,6 +1,6 @@
 import { AccessibilityInfo, Platform } from 'react-native'
 import { act, fireEvent, render } from '@testing-library/react-native'
-import { ConditionPicker } from '../ConditionPicker'
+import { ConditionPicker } from '@/src/components/ConditionPicker'
 
 describe('daily condition save announcements', () => {
   beforeEach(() => {

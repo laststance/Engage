@@ -4,7 +4,9 @@ tags:
 ---
 # QA-15: Run on a compact iPhone or with accessibility text sizes to protect the lower calendar content.
 - launchApp:
-    stopApp: true
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 5000
 - extendedWaitUntil:
     visible:
       id: "calendar-screen"
@@ -25,6 +27,8 @@ tags:
     timeout: 10000
 - tapOn:
     id: "calendar-prev-month"
+- waitForAnimationToEnd:
+    timeout: 5000
 - scrollUntilVisible:
     element:
       id: "calendar-monthly-summary-hint"

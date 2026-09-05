@@ -6,6 +6,8 @@ tags:
 # iOS exposes React Native radio state in its accessibility value, not Maestro's checked flag.
 - launchApp:
     clearState: true
+- waitForAnimationToEnd:
+    timeout: 5000
 - extendedWaitUntil:
     visible:
       id: "calendar-screen"
@@ -43,6 +45,8 @@ tags:
 # A cold start retains Good on the original calendar day.
 - launchApp:
     stopApp: true
+- waitForAnimationToEnd:
+    timeout: 5000
 - extendedWaitUntil:
     visible:
       id: "calendar-screen"
@@ -53,6 +57,8 @@ tags:
 # A previous month's day has its own unrecorded state and uses the same picker in DayModal.
 - tapOn:
     id: "calendar-prev-month"
+- waitForAnimationToEnd:
+    timeout: 5000
 - tapOn:
     id: "calendar-date-.*-15"
 - extendedWaitUntil:
@@ -75,6 +81,8 @@ tags:
     id: "calendar-condition-.*-15"
 - tapOn:
     id: "calendar-next-month"
+- waitForAnimationToEnd:
+    timeout: 5000
 - tapOn:
     id: "today-tab"
 - assertVisible:
@@ -109,6 +117,8 @@ tags:
 # Clearing is persistent and never turns an unrecorded day into Okay.
 - launchApp:
     stopApp: true
+- waitForAnimationToEnd:
+    timeout: 5000
 - extendedWaitUntil:
     visible:
       id: "calendar-screen"
