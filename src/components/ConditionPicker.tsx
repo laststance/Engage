@@ -1,4 +1,5 @@
 import { useOptimistic, useState, useTransition } from 'react'
+import { AccessibilityInfo, Platform } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { HStack } from '@/components/ui/hstack'
@@ -31,7 +32,7 @@ export function ConditionPicker({ value, onChangeAction, disabled = false }: Con
     : t('condition.saved', { label: t(CONDITION_APPEARANCE[value].label) })
 
   /**
-   * Starts a field-only save when a face or Clear is pressed, letting React revert failed optimistic changes.
+   * Saves a pressed face or Clear, reverting failures and announcing the persistence result on iOS.
    * @param level - The chosen condition, or null for an explicit clear.
    * @returns Nothing; the transition tracks persistence and keeps the current date's feedback local.
    * @example handleChange(2) // => immediately selects Low, then persists it
@@ -42,10 +43,22 @@ export function ConditionPicker({ value, onChangeAction, disabled = false }: Con
     setHasSaveError(false)
     startTransition(async () => {
       setOptimisticLevel(level)
+      let didSave = false
       try {
-        setHasSaveError(!await onChangeAction(level))
+        didSave = await onChangeAction(level)
       } catch {
-        setHasSaveError(true)
+        // Thrown writes use the same recoverable feedback as rejected saves.
+      }
+      setHasSaveError(!didSave)
+
+      // iOS does not announce the Android live region, so confirm the completed write explicitly.
+      if (Platform.OS === 'ios') {
+        const announcement = !didSave
+          ? t('condition.saveFailed')
+          : level == null
+            ? t('condition.unrecorded')
+            : t('condition.saved', { label: t(CONDITION_APPEARANCE[level].label) })
+        AccessibilityInfo.announceForAccessibility(announcement)
       }
     })
   }
