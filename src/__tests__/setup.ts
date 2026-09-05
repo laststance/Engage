@@ -95,6 +95,14 @@ jest.mock('react-native', () => {
   }
 })
 
+// SVG paths are decorative native leaves; the surrounding controls retain their real accessibility props.
+jest.mock('react-native-svg', () => ({
+  __esModule: true,
+  default: 'Svg',
+  Circle: 'Circle',
+  Path: 'Path',
+}))
+
 // Mock expo-sqlite module
 jest.mock('expo-sqlite', () => ({
   openDatabaseAsync: jest.fn(),

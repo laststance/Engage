@@ -1,4 +1,4 @@
-import { Entry } from '../../types'
+import { ConditionLevel, Entry } from '../../types'
 import { databaseService, DatabaseError } from '../database'
 import {
   formatDate,
@@ -8,6 +8,27 @@ import {
 } from '../../utils/dateUtils'
 
 class EntryRepository {
+  /**
+   * Loads daily records at startup so older calendar months retain their saved conditions and notes.
+   * @returns Every daily entry, ordered newest first.
+   * @example await entryRepository.findAll() // => entries including dates older than 30 records
+   */
+  async findAll(): Promise<Entry[]> {
+    const rows = await databaseService.executeQuery<any>('SELECT * FROM entries ORDER BY date DESC')
+    return rows.map(this.mapRowToEntry)
+  }
+
+  /**
+   * Persists a picker change through the database when the store processes a daily condition write.
+   * @param date - The day's local YYYY-MM-DD date.
+   * @param conditionLevel - The chosen level or null to clear it.
+   * @returns The saved entry with its journal preserved.
+   * @example await entryRepository.setCondition('2026-09-05', null) // => an unrecorded condition
+   */
+  async setCondition(date: string, conditionLevel: ConditionLevel | null): Promise<Entry> {
+    return databaseService.setEntryCondition(date, conditionLevel)
+  }
+
   // Basic CRUD operations
   async findByDate(date: string): Promise<Entry | null> {
     return await databaseService.getEntry(date)
@@ -252,6 +273,7 @@ class EntryRepository {
       id: row.id,
       date: row.date,
       note: row.note,
+      conditionLevel: row.condition_level ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }

@@ -1,0 +1,129 @@
+appId: com.laststance.engage
+tags:
+  - ios
+---
+# QA-14: One-tap conditions persist and remain independent from journal text.
+# iOS exposes React Native radio state in its accessibility value, not Maestro's checked flag.
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 15000
+- tapOn:
+    id: "today-tab"
+- assertVisible:
+    id: "condition-option-1"
+- assertVisible:
+    id: "condition-option-5"
+- assertVisible:
+    id: "condition-option-3"
+    text: "radio button, unchecked"
+- tapOn:
+    id: "condition-option-4"
+- extendedWaitUntil:
+    visible:
+      id: "condition-option-4"
+      text: "radio button, checked"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: "journal-text-input"
+    direction: DOWN
+- tapOn:
+    id: "journal-text-input"
+- inputText: "A walk helped."
+- tapOn:
+    id: "journal-keyboard-done-button"
+- extendedWaitUntil:
+    visible:
+      id: "journal-save-feedback"
+    timeout: 10000
+
+# A cold start retains Good on the original calendar day.
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 15000
+- assertVisible:
+    id: "calendar-condition-.*"
+
+# A previous month's day has its own unrecorded state and uses the same picker in DayModal.
+- tapOn:
+    id: "calendar-prev-month"
+- tapOn:
+    id: "calendar-date-.*-15"
+- extendedWaitUntil:
+    visible:
+      id: "day-modal-close"
+    timeout: 10000
+- assertVisible:
+    id: "condition-option-3"
+    text: "radio button, unchecked"
+- tapOn:
+    id: "condition-option-2"
+- extendedWaitUntil:
+    visible:
+      id: "condition-option-2"
+      text: "radio button, checked"
+    timeout: 10000
+- tapOn:
+    id: "day-modal-close"
+- assertVisible:
+    id: "calendar-condition-.*-15"
+- tapOn:
+    id: "calendar-next-month"
+- tapOn:
+    id: "today-tab"
+- assertVisible:
+    id: "condition-option-4"
+    text: "radio button, checked"
+- scrollUntilVisible:
+    element:
+      id: "journal-text-input"
+    direction: DOWN
+- assertVisible:
+    id: "journal-text-input"
+    text: "A walk helped."
+- scrollUntilVisible:
+    element:
+      id: "condition-option-2"
+    direction: UP
+- tapOn:
+    id: "condition-option-2"
+- extendedWaitUntil:
+    visible:
+      id: "condition-option-2"
+      text: "radio button, checked"
+    timeout: 10000
+- tapOn:
+    id: "condition-clear"
+- extendedWaitUntil:
+    visible:
+      id: "condition-option-2"
+      text: "radio button, unchecked"
+    timeout: 10000
+
+# Clearing is persistent and never turns an unrecorded day into Okay.
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 15000
+- assertNotVisible:
+    id: "calendar-condition-.*"
+- tapOn:
+    id: "today-tab"
+- assertVisible:
+    id: "condition-option-3"
+    text: "radio button, unchecked"
+- scrollUntilVisible:
+    element:
+      id: "journal-text-input"
+    direction: DOWN
+- assertVisible:
+    id: "journal-text-input"
+    text: "A walk helped."

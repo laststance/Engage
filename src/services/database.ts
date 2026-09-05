@@ -1,9 +1,10 @@
 import * as SQLite from 'expo-sqlite'
-import { Task, Entry, Completion, Category, DailyTaskApplication } from '@/src/types'
+import { Task, Entry, Completion, Category, DailyTaskApplication, ConditionLevel } from '@/src/types'
 import { isValidDateString } from '@/src/utils/isValidDateString'
+import { isConditionLevel } from '@/src/utils/isConditionLevel'
 
 // Database version for migration management
-const DATABASE_VERSION = 5
+const DATABASE_VERSION = 6
 
 // Migration interface
 interface Migration {
@@ -165,6 +166,14 @@ class DatabaseService {
       up: [
         // Task deletion must locate its routine history without scanning every saved day.
         `CREATE INDEX idx_daily_task_applications_task_id ON daily_task_applications(task_id)`,
+      ],
+    },
+    {
+      version: 6,
+      up: [
+        // Existing daily records remain unrecorded until the user chooses a condition.
+        `ALTER TABLE entries ADD COLUMN condition_level INTEGER
+         CHECK (condition_level IN (1, 2, 3, 4, 5))`,
       ],
     },
   ]
@@ -660,6 +669,34 @@ class DatabaseService {
     }
   }
 
+  /**
+   * Saves or clears a day's condition when EntryRepository receives a picker change, preserving its journal.
+   * @param date - The local calendar date in YYYY-MM-DD format.
+   * @param conditionLevel - One of five levels, or null to clear the record.
+   * @returns The persisted daily entry, including its unchanged note.
+   * @example await databaseService.setEntryCondition('2026-09-05', 4) // => entry with conditionLevel: 4
+   */
+  async setEntryCondition(date: string, conditionLevel: ConditionLevel | null): Promise<Entry> {
+    this.validateDate(date)
+    if (conditionLevel !== null && !isConditionLevel(conditionLevel)) {
+      throw new DatabaseError('Condition level must be an integer from 1 to 5')
+    }
+
+    const now = Date.now()
+    const id = `entry_${now}_${Math.random().toString(36).slice(2, 11)}`
+    // Update only the condition column so a queued journal autosave cannot be overwritten.
+    await this.executeUpdate(
+      `INSERT INTO entries (id, date, note, created_at, updated_at, condition_level)
+       VALUES (?, ?, '', ?, ?, ?)
+       ON CONFLICT(date) DO UPDATE SET condition_level = excluded.condition_level,
+         updated_at = excluded.updated_at`,
+      [id, date, now, now, conditionLevel]
+    )
+    const entry = await this.getEntry(date)
+    if (!entry) throw new DatabaseError('Failed to read the saved condition')
+    return entry
+  }
+
   async deleteEntry(date: string): Promise<void> {
     try {
       this.validateDate(date)
@@ -916,6 +953,7 @@ class DatabaseService {
       id: row.id,
       date: row.date,
       note: row.note,
+      conditionLevel: row.condition_level ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }
@@ -1040,14 +1078,19 @@ class DatabaseService {
           if (data.entries) {
             for (const entry of data.entries) {
               this.validateDate(entry.date)
+              // Old backups omit the field; reject malformed levels before the transaction commits.
+              if (entry.conditionLevel != null && !isConditionLevel(entry.conditionLevel)) {
+                throw new DatabaseError('Invalid condition level in backup')
+              }
               await this.executeUpdate(
-                'INSERT INTO entries (id, date, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+                'INSERT INTO entries (id, date, note, created_at, updated_at, condition_level) VALUES (?, ?, ?, ?, ?, ?)',
                 [
                   entry.id,
                   entry.date,
                   entry.note,
                   entry.createdAt,
                   entry.updatedAt,
+                  entry.conditionLevel ?? null,
                 ]
               )
             }

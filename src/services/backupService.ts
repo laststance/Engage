@@ -5,6 +5,7 @@ import * as DocumentPicker from 'expo-document-picker'
 import { DatabaseService } from './database'
 import { Task, Entry, Completion, Category, DailyTaskApplication } from '@/src/types'
 import { isValidDateString } from '@/src/utils/isValidDateString'
+import { isConditionLevel } from '@/src/utils/isConditionLevel'
 
 interface BackupData {
   version: string
@@ -474,6 +475,10 @@ class BackupService {
             result.errors.push(
               `Invalid entry structure: ${JSON.stringify(entry)}`
             )
+          }
+          // Missing and null levels remain compatible with backups made before condition tracking.
+          if (entry.conditionLevel != null && !isConditionLevel(entry.conditionLevel)) {
+            result.errors.push(`Invalid condition level for entry: ${entry.date}`)
           }
         }
       }

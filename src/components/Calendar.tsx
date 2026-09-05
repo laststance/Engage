@@ -8,6 +8,9 @@ import { IconSymbol } from '@/components/ui/icon-symbol'
 import { AppCard } from '@/src/components/AppCard'
 import { AppPressable } from '@/src/components/AppPressable'
 import { formatDate } from '@/src/utils/dateUtils'
+import { ConditionIcon } from '@/src/components/ConditionIcon'
+import { CONDITION_APPEARANCE, CONDITION_CALENDAR_ICON_SIZE_PX } from '@/src/constants/condition'
+import type { Entry } from '@/src/types'
 
 const DARK_HEATMAP_MIN_COMPLETION_COUNT = 3
 
@@ -15,12 +18,14 @@ interface CalendarProps {
   selectedDate: string
   onDateSelect: (date: string) => void
   achievementData: Record<string, number> // date -> completion count
+  entries?: Record<string, Entry>
 }
 
 export const Calendar: React.FC<CalendarProps> = ({
   selectedDate,
   onDateSelect,
   achievementData,
+  entries = {},
 }) => {
   const { t, i18n: i18nInstance } = useTranslation()
 
@@ -316,6 +321,7 @@ export const Calendar: React.FC<CalendarProps> = ({
         {calendarData.map((week, weekIndex) => (
           <HStack key={weekIndex} space="xs">
             {week.map((dayData, dayIndex) => {
+              const conditionLevel = entries[dayData.dateString]?.conditionLevel
               const completionCount = achievementData[dayData.dateString] || 0
               const heatmapColor = getHeatmapColor(completionCount)
               const isCurrentDate = isToday(dayData.dateString)
@@ -343,7 +349,12 @@ export const Calendar: React.FC<CalendarProps> = ({
                   className="flex-1 min-w-[44px] min-h-[48px]"
                   pressedClassName="opacity-80"
                   selected={isSelectedDate}
-                  accessibilityLabel={getDateA11yLabel(dayData.date, dayData.dateString, completionCount)}
+                  accessibilityLabel={[
+                    getDateA11yLabel(dayData.date, dayData.dateString, completionCount),
+                    conditionLevel != null
+                      ? t('condition.calendarLabel', { label: t(CONDITION_APPEARANCE[conditionLevel].label) })
+                      : '',
+                  ].filter(Boolean).join(', ')}
                   accessibilityValue={
                     dateAccessibilityValue
                       ? { text: dateAccessibilityValue }
@@ -381,6 +392,11 @@ export const Calendar: React.FC<CalendarProps> = ({
                     >
                       {dayData.date}
                     </Text>
+                    {dayData.isCurrentMonth && conditionLevel != null && (
+                      <Box testID={`calendar-condition-${dayData.dateString}`} accessible={false}>
+                        <ConditionIcon level={conditionLevel} size={CONDITION_CALENDAR_ICON_SIZE_PX} />
+                      </Box>
+                    )}
                   </Box>
                 </AppPressable>
               )
@@ -398,6 +414,10 @@ export const Calendar: React.FC<CalendarProps> = ({
         <Box className="w-3 h-3 bg-green-600 rounded-sm mx-1" />
         <Text className="text-xs text-gray-500 ml-3">{t('calendar.legendMore')}</Text>
       </HStack>
+
+      <Text className="text-center text-xs text-gray-500 mt-3 px-4">
+        {t('condition.calendarLegend')}
+      </Text>
 
       <AppCard className="mx-4 mt-6" tone="info">
         <VStack space="sm">

@@ -7,7 +7,7 @@ import {
 } from '../../services/repositories'
 import { journalService } from '../../services/journalService'
 import { databaseService } from '@/src/services/database'
-import type { Completion } from '@/src/types'
+import type { Completion, Entry } from '@/src/types'
 import { backupService } from '@/src/services/backupService'
 
 // Mock the repositories
@@ -21,7 +21,8 @@ jest.mock('../../services/repositories', () => ({
     applyDailyTasks: jest.fn(),
   },
   entryRepository: {
-    findRecentEntries: jest.fn(),
+    findAll: jest.fn(),
+    setCondition: jest.fn(),
     findByDateRange: jest.fn(),
     upsert: jest.fn(),
   },
@@ -144,7 +145,7 @@ describe('useAppStore', () => {
         mockCategories
       )
       ;(taskRepository.findAll as jest.Mock).mockResolvedValue(mockTasks)
-      ;(entryRepository.findRecentEntries as jest.Mock).mockResolvedValue(
+      ;(entryRepository.findAll as jest.Mock).mockResolvedValue(
         mockEntries
       )
       ;(completionRepository.findByDateRange as jest.Mock).mockResolvedValue(
@@ -690,6 +691,77 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().tasks).toBe(mockTasks)
       expect(useAppStore.getState().completions).toBe(loadedCompletions)
       expect(useAppStore.getState().error).toBe('Update failed')
+    })
+  })
+
+  describe('daily condition writes', () => {
+    it('updates only the requested day and leaves task completions unchanged', async () => {
+      // Arrange
+      const savedEntry: Entry = {
+        id: 'entry-condition', date: '2026-09-04', note: 'A saved reflection',
+        conditionLevel: 4, createdAt: 1, updatedAt: 2,
+      }
+      useAppStore.setState({ selectedDate: '2026-09-05', completions: { '2025-01-15': mockCompletions } })
+      jest.mocked(entryRepository.setCondition).mockResolvedValue(savedEntry)
+
+      // Act
+      const saved = await useAppStore.getState().updateCondition('2026-09-04', 4)
+
+      // Assert
+      expect(saved).toBe(true)
+      expect(useAppStore.getState().entries['2026-09-04']).toEqual(savedEntry)
+      expect(useAppStore.getState().entries['2026-09-05']).toBeUndefined()
+      expect(useAppStore.getState().completions['2025-01-15']).toEqual(mockCompletions)
+    })
+
+    it('keeps a backup behind a pending condition save so the snapshot contains the new value', async () => {
+      // Arrange
+      let finishSave: (entry: Entry) => void = () => undefined
+      jest.mocked(entryRepository.setCondition).mockImplementationOnce(
+        () => new Promise<Entry>((resolve) => { finishSave = resolve })
+      )
+      const store = useAppStore.getState()
+
+      // Act
+      const saving = store.updateCondition('2026-09-05', 2)
+      const backingUp = store.createBackup()
+      await Promise.resolve()
+
+      // Assert
+      expect(backupService.createBackup).not.toHaveBeenCalled()
+
+      // Act
+      finishSave({ id: 'day', date: '2026-09-05', note: '', conditionLevel: 2, createdAt: 1, updatedAt: 2 })
+      await Promise.all([saving, backingUp])
+
+      // Assert
+      expect(backupService.createBackup).toHaveBeenCalledTimes(1)
+      expect(useAppStore.getState().entries['2026-09-05'].conditionLevel).toBe(2)
+    })
+
+    it('retains the saved daily record after a write failure and accepts the next choice', async () => {
+      // Arrange
+      const previousEntry: Entry = {
+        id: 'day', date: '2026-09-05', note: 'Keep this note', conditionLevel: 4, createdAt: 1, updatedAt: 2,
+      }
+      useAppStore.setState({ entries: { '2026-09-05': previousEntry } })
+      jest.mocked(entryRepository.setCondition)
+        .mockRejectedValueOnce(new Error('Disk full'))
+        .mockResolvedValueOnce({ ...previousEntry, conditionLevel: 2 })
+
+      // Act
+      const firstSave = await useAppStore.getState().updateCondition('2026-09-05', 1)
+
+      // Assert
+      expect(firstSave).toBe(false)
+      expect(useAppStore.getState().entries['2026-09-05']).toEqual(previousEntry)
+
+      // Act
+      const nextSave = await useAppStore.getState().updateCondition('2026-09-05', 2)
+
+      // Assert
+      expect(nextSave).toBe(true)
+      expect(useAppStore.getState().entries['2026-09-05']).toMatchObject({ note: 'Keep this note', conditionLevel: 2 })
     })
   })
 

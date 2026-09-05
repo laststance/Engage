@@ -3,6 +3,29 @@ import { fireEvent, render } from '@testing-library/react-native'
 import { Calendar } from '../Calendar'
 
 describe('Calendar completion causality', () => {
+  it('shows and clears a condition independently of the task-completion background', async () => {
+    // Arrange
+    const entries = {
+      '2026-09-05': { id: 'day', date: '2026-09-05', note: '', conditionLevel: 2, createdAt: 1, updatedAt: 2 },
+    } satisfies NonNullable<React.ComponentProps<typeof Calendar>['entries']>
+    const props = { selectedDate: '2026-09-05', onDateSelect: jest.fn(), achievementData: {} }
+
+    // Act
+    const screen = await render(<Calendar {...props} entries={entries} />)
+
+    // Assert
+    expect(screen.getByTestId('calendar-condition-2026-09-05')).toBeVisible()
+    expect(screen.queryByTestId('achievement-indicator-2026-09-05')).toBeNull()
+    expect(screen.getByTestId('calendar-date-2026-09-05').props.accessibilityLabel).toContain('condition.calendarLabel')
+
+    // Act
+    await screen.rerender(<Calendar {...props} entries={{ '2026-09-05': { ...entries['2026-09-05'], conditionLevel: null } }} />)
+
+    // Assert
+    expect(screen.queryByTestId('calendar-condition-2026-09-05')).toBeNull()
+    expect(screen.getByTestId('calendar-date-label-2026-09-05')).toBeVisible()
+  })
+
   afterEach(() => {
     jest.useRealTimers()
   })

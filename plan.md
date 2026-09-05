@@ -1,3 +1,20 @@
+# Daily condition tracking
+
+Selected by the user: pattern A, five always-visible faces below the date.
+
+- Record overall physical and mental condition as Very low, Low, Okay, Good, or Great.
+- Save on tap; tapping the selected face is a no-op. Clear explicitly restores the unrecorded state.
+- Share the same picker between Today and the calendar day detail, with date-bound actions.
+- Show a small face below the calendar date while retaining the existing completion heatmap.
+- Store one optional `Entry.conditionLevel` per day through migration 6. Preserve the journal when changing condition and vice versa.
+- Serialize saves with journal writes and backups. Roll back optimistic selection on failure and allow retry.
+- Load all daily entries so historical calendar conditions survive restart. Accept legacy backups without a condition.
+- Validate migration, persistence, failure, backup compatibility, accessibility, and native behavior with SQLite, component, store, and Maestro regressions.
+
+Verification: typecheck and lint passed; all 359 tests across 29 suites passed. The embedded iOS Release build passed Maestro checks for condition recording, historical dates, clearing, journal preservation, cold starts, task selection, task completion, and nested preset saving.
+
+Design references: [Daylio](https://daylio.net/), [Bearable](https://bearable.app/support/howto/configure-and-enter-data-into-bearable/), [Apple Health](https://support.apple.com/guide/iphone/log-your-state-of-mind-iph6a6decb13/ios).
+
 # Daily routine tasks
 
 Selected by the user: pattern 1, a switch in the existing preset editor.

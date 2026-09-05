@@ -84,6 +84,7 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
           categories={day.categories}
           onTaskToggle={day.handleTaskToggle}
           onJournalUpdate={day.handleJournalUpdate}
+          onConditionChangeAction={day.handleConditionChangeAction}
           onTaskSelectionPress={day.handleTaskSelectionPress}
           isTaskSelectionDisabled={!isInitialized}
         />

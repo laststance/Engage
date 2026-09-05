@@ -44,6 +44,7 @@ describe('daily routine persistence with real SQLite', () => {
       DROP TRIGGER delete_task_daily_applications;
       DROP TABLE daily_task_applications;
       ALTER TABLE tasks DROP COLUMN daily_auto_add_from;
+      ALTER TABLE entries DROP COLUMN condition_level;
       DELETE FROM schema_migrations WHERE version > 3;
       INSERT INTO tasks (id, title, category_id, archived, created_at, updated_at)
       VALUES ('existing', 'Read', 'life', 0, 1, 1);
@@ -60,7 +61,7 @@ describe('daily routine persistence with real SQLite', () => {
     })
     expect(assignments).toEqual([])
     expect(sqliteDatabase.prepare('SELECT MAX(version) AS version FROM schema_migrations').get())
-      .toEqual({ version: 5 })
+      .toEqual({ version: 6 })
   })
 
   it('upgrades version 4 with an index that targets only the deleted task’s routine history', async () => {
@@ -71,7 +72,8 @@ describe('daily routine persistence with real SQLite', () => {
     await databaseService.applyDailyTasks('2026-09-06')
     sqliteDatabase.exec(`
       DROP INDEX idx_daily_task_applications_task_id;
-      DELETE FROM schema_migrations WHERE version = 5;
+      ALTER TABLE entries DROP COLUMN condition_level;
+      DELETE FROM schema_migrations WHERE version > 4;
     `)
 
     // Act

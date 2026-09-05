@@ -9,11 +9,13 @@ import { IconSymbol } from '@/components/ui/icon-symbol'
 import { AppCard } from '@/src/components/AppCard'
 import { JournalInput } from './JournalInput'
 import { AppPressable } from './AppPressable'
+import { ConditionPicker } from './ConditionPicker'
 import {
   Task,
   Entry,
   Completion,
   Category,
+  ConditionLevel,
   TaskCompletionOperationResult,
 } from '@/src/types'
 import i18n, { getCategoryDisplayName } from '@/src/i18n/config'
@@ -31,6 +33,7 @@ interface DaySheetProps {
   categories: Category[]
   onTaskToggle: (taskId: string) => Promise<TaskCompletionOperationResult>
   onJournalUpdate: (content: string) => Promise<void>
+  onConditionChangeAction: (level: ConditionLevel | null) => Promise<boolean>
   onTaskSelectionPress: () => void
   isTaskSelectionDisabled?: boolean
 }
@@ -81,6 +84,7 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
   categories,
   onTaskToggle,
   onJournalUpdate,
+  onConditionChangeAction,
   onTaskSelectionPress,
   isTaskSelectionDisabled = false,
 }) => {
@@ -274,6 +278,12 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
               >
                 {formattedDate}
               </Text>
+
+              <ConditionPicker
+                value={journalEntry?.conditionLevel}
+                onChangeAction={onConditionChangeAction}
+                disabled={isTaskSelectionDisabled}
+              />
 
               <AppPressable
                 onPress={onTaskSelectionPress}
