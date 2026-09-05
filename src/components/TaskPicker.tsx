@@ -470,6 +470,7 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
                           testID={`task-picker-swipeable-${task.id}`}
                         >
                           <AppPressable
+                            style={styles.taskRow}
                             onPress={() => toggleTaskSelection(task.id)}
                             disabled={isBusy}
                             feedback="select"
@@ -643,6 +644,10 @@ const TaskPickerSession: React.FC<TaskPickerProps> = ({
 const styles = StyleSheet.create({
   primaryActionLabel: {
     color: DesignSystem.colors.system.systemBackground,
+  },
+  taskRow: {
+    // Match the swipe container so clipping preserves the border at every corner.
+    borderRadius: DesignSystem.borderRadius.button,
   },
   swipeableContainer: {
     borderRadius: DesignSystem.borderRadius.button,
