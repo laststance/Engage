@@ -167,7 +167,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   }, [entry?.note])
 
   /**
-   * Queues a reflection write when debounce, blur, or retry dispatches the current day's draft.
+   * Queues a reflection write for its original day when debounce, blur, or retry dispatches a draft.
    * @param nextText - The draft captured by the action requesting persistence.
    * @returns A promise that settles after persistence and visible save feedback are updated.
    * @example
@@ -180,14 +180,17 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       setSaveStatus('saving')
       setLastFailedText(null)
 
+      // A pending draft keeps its original date callback even when props change before dispatch.
+      const pendingSave = pendingSaveRef.current
+      const updateJournal = pendingSave?.text === nextText ? pendingSave.onUpdate : onUpdate
       // Once dispatched, this draft must not be sent again during unmount.
-      if (pendingSaveRef.current?.text === nextText) {
+      if (pendingSave?.text === nextText) {
         pendingSaveRef.current = null
       }
       // Preserve write order when a new edit arrives before an earlier autosave completes.
       const saveOperation = (ongoingSaveRef.current?.promise ?? Promise.resolve())
         .catch(() => undefined)
-        .then(() => onUpdate(nextText))
+        .then(() => updateJournal(nextText))
       ongoingSaveRef.current = { text: nextText, promise: saveOperation }
 
       try {

@@ -1,6 +1,6 @@
 import { act, cleanup, renderHook } from '@testing-library/react-native'
 import { AppState, type AppStateStatus } from 'react-native'
-import { useCurrentDay } from '../useCurrentDay'
+import { useCurrentDay } from '@/src/hooks/useCurrentDay'
 
 describe('useCurrentDay', () => {
   let notifyAppStateChange: ((state: AppStateStatus) => void) | undefined

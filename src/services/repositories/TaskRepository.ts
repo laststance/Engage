@@ -1,4 +1,4 @@
-import { Task, Completion } from '../../types'
+import { Task, Completion } from '@/src/types'
 import { databaseService, DatabaseError } from '../database'
 
 export class TaskRepository {

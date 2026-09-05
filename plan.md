@@ -19,9 +19,10 @@ The other design alternatives were not selected or implemented.
 
 - `PresetTaskEditor`: native Switch, translated explanation, existing Save/Discard flow.
 - `Task.dailyAutoAddFrom`: optional local start date, persisted by database migration 4.
-- `daily_task_applications`: per-task/day application history with cascading task deletion.
+- `daily_task_applications`: per-task/day application history with cascading task deletion; migration 5 indexes task-history cleanup.
 - `useCurrentDay`: shared AppState subscription and local-midnight timer.
 - Store mutations serialize background routine refreshes with user edits and restore operations.
+- Database and backup validation reject nonexistent Gregorian dates before persistence.
 
 ## Verification
 

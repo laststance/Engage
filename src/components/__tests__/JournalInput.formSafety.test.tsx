@@ -265,6 +265,60 @@ describe('JournalInput form safety', () => {
     expect(onUpdate).not.toHaveBeenCalled()
   })
 
+  it('autosaves a pending reflection through its original callback after the date changes without remounting', async () => {
+    // Arrange
+    const savePreviousDay = jest.fn().mockResolvedValue(undefined)
+    const saveNextDay = jest.fn().mockResolvedValue(undefined)
+    const { getByTestId, rerender, unmount } = await renderJournalInput({
+      onUpdate: savePreviousDay,
+    })
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Previous day draft')
+
+    // Act
+    await rerender(
+      <JournalInput
+        date="2026-05-28"
+        entry={null}
+        onUpdate={saveNextDay}
+      />
+    )
+    await act(async () => {
+      jest.advanceTimersByTime(JOURNAL_AUTOSAVE_DELAY_MS)
+    })
+    await unmount()
+
+    // Assert
+    expect(savePreviousDay).toHaveBeenCalledTimes(1)
+    expect(savePreviousDay).toHaveBeenCalledWith('Previous day draft')
+    expect(saveNextDay).not.toHaveBeenCalled()
+  })
+
+  it('flushes a pending reflection on blur through its original callback after the date changes without remounting', async () => {
+    // Arrange
+    const savePreviousDay = jest.fn().mockResolvedValue(undefined)
+    const saveNextDay = jest.fn().mockResolvedValue(undefined)
+    const { getByTestId, rerender, unmount } = await renderJournalInput({
+      onUpdate: savePreviousDay,
+    })
+    await fireEvent.changeText(getByTestId('journal-text-input'), 'Previous day draft')
+
+    // Act
+    await rerender(
+      <JournalInput
+        date="2026-05-28"
+        entry={null}
+        onUpdate={saveNextDay}
+      />
+    )
+    await fireEvent(getByTestId('journal-text-input'), 'blur')
+    await unmount()
+
+    // Assert
+    expect(savePreviousDay).toHaveBeenCalledTimes(1)
+    expect(savePreviousDay).toHaveBeenCalledWith('Previous day draft')
+    expect(saveNextDay).not.toHaveBeenCalled()
+  })
+
   it('persists a reversal after an earlier autosave acknowledges different text', async () => {
     // Arrange
     let finishFirstSave: () => void = () => undefined

@@ -245,13 +245,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       const dailyCompletions = await taskRepository.applyDailyTasks(today)
       set((current) => ({
         completions: { ...current.completions, [today]: dailyCompletions },
-        error: null,
         hasDailyTaskError: false,
       }))
       return true
     } catch (error) {
       console.error('Failed to apply daily tasks:', error)
-      set({ error: 'Failed to add daily tasks. Please try again.', hasDailyTaskError: true })
+      // Background refresh feedback must not replace an error from the user's own operation.
+      set({ hasDailyTaskError: true })
       return false
     }
   }),

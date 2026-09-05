@@ -3,7 +3,8 @@ import { Paths } from 'expo-file-system'
 import * as Sharing from 'expo-sharing'
 import * as DocumentPicker from 'expo-document-picker'
 import { DatabaseService } from './database'
-import { Task, Entry, Completion, Category, DailyTaskApplication } from '../types'
+import { Task, Entry, Completion, Category, DailyTaskApplication } from '@/src/types'
+import { isValidDateString } from '@/src/utils/isValidDateString'
 
 interface BackupData {
   version: string
@@ -424,8 +425,7 @@ class BackupService {
           // Legacy tasks have no schedule; new schedules must use a sortable local date.
           if (
             task.dailyAutoAddFrom !== undefined &&
-            (typeof task.dailyAutoAddFrom !== 'string' ||
-              !/^\d{4}-\d{2}-\d{2}$/.test(task.dailyAutoAddFrom))
+            !isValidDateString(task.dailyAutoAddFrom)
           ) {
             result.errors.push(`Invalid daily auto-add date for task: ${task.id}`)
           }
@@ -447,8 +447,7 @@ class BackupService {
           for (const application of backupData.dailyTaskApplications) {
             if (
               !application ||
-              typeof application.date !== 'string' ||
-              !/^\d{4}-\d{2}-\d{2}$/.test(application.date) ||
+              !isValidDateString(application.date) ||
               !taskIds.has(application.taskId)
             ) {
               result.errors.push('Invalid daily task application')
@@ -471,7 +470,7 @@ class BackupService {
 
         // Validate entry structure
         for (const entry of backupData.entries) {
-          if (!entry.id || !entry.date) {
+          if (!entry.id || !isValidDateString(entry.date)) {
             result.errors.push(
               `Invalid entry structure: ${JSON.stringify(entry)}`
             )
@@ -486,7 +485,7 @@ class BackupService {
 
         // Validate completion structure
         for (const completion of backupData.completions) {
-          if (!completion.id || !completion.date || !completion.taskId) {
+          if (!completion.id || !isValidDateString(completion.date) || !completion.taskId) {
             result.errors.push(
               `Invalid completion structure: ${JSON.stringify(completion)}`
             )

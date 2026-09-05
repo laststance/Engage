@@ -1,8 +1,9 @@
 import * as SQLite from 'expo-sqlite'
-import { Task, Entry, Completion, Category, DailyTaskApplication } from '../types'
+import { Task, Entry, Completion, Category, DailyTaskApplication } from '@/src/types'
+import { isValidDateString } from '@/src/utils/isValidDateString'
 
 // Database version for migration management
-const DATABASE_VERSION = 4
+const DATABASE_VERSION = 5
 
 // Migration interface
 interface Migration {
@@ -157,6 +158,13 @@ class DatabaseService {
         // Existing connections do not enable foreign keys, so retain cascade cleanup there too.
         `CREATE TRIGGER delete_task_daily_applications AFTER DELETE ON tasks
          BEGIN DELETE FROM daily_task_applications WHERE task_id = OLD.id; END`,
+      ],
+    },
+    {
+      version: 5,
+      up: [
+        // Task deletion must locate its routine history without scanning every saved day.
+        `CREATE INDEX idx_daily_task_applications_task_id ON daily_task_applications(task_id)`,
       ],
     },
   ]
@@ -345,7 +353,7 @@ class DatabaseService {
   }
 
   private validateEntry(entry: Partial<Entry>): void {
-    if (!entry.date || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) {
+    if (!isValidDateString(entry.date)) {
       throw new DatabaseError('Entry date must be in YYYY-MM-DD format')
     }
     if (entry.note === undefined) {
@@ -354,7 +362,7 @@ class DatabaseService {
   }
 
   private validateCompletion(completion: Partial<Completion>): void {
-    if (!completion.date || !/^\d{4}-\d{2}-\d{2}$/.test(completion.date)) {
+    if (!isValidDateString(completion.date)) {
       throw new DatabaseError('Completion date must be in YYYY-MM-DD format')
     }
     if (!completion.taskId || completion.taskId.trim().length === 0) {
@@ -877,7 +885,7 @@ class DatabaseService {
   }
 
   private validateDate(date: string): void {
-    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (!isValidDateString(date)) {
       throw new DatabaseError('Date must be in YYYY-MM-DD format')
     }
   }
@@ -1031,6 +1039,7 @@ class DatabaseService {
           // Import entries
           if (data.entries) {
             for (const entry of data.entries) {
+              this.validateDate(entry.date)
               await this.executeUpdate(
                 'INSERT INTO entries (id, date, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
                 [
@@ -1048,6 +1057,7 @@ class DatabaseService {
           // Import completions
           if (data.completions) {
             for (const completion of data.completions) {
+              this.validateDate(completion.date)
               await this.executeUpdate(
                 'INSERT INTO completions (id, date, task_id, minutes, completed, created_at) VALUES (?, ?, ?, ?, ?, ?)',
                 [

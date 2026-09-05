@@ -3,8 +3,8 @@ import { DatabaseSync, SQLInputValue } from 'node:sqlite'
 import * as SQLite from 'expo-sqlite'
 import * as FileSystem from 'expo-file-system/legacy'
 import * as DocumentPicker from 'expo-document-picker'
-import { DatabaseService } from '../database'
-import { backupService, initializeBackupService } from '../backupService'
+import { DatabaseService } from '@/src/services/database'
+import { backupService, initializeBackupService } from '@/src/services/backupService'
 
 describe('daily routine persistence with real SQLite', () => {
   let sqliteDatabase: DatabaseSync
@@ -38,13 +38,13 @@ describe('daily routine persistence with real SQLite', () => {
     jest.clearAllMocks()
   })
 
-  it('keeps existing tasks opted out when upgrading the database to version 4', async () => {
+  it('keeps existing tasks opted out when upgrading the database from version 3', async () => {
     // Arrange: recreate a version 3 task table containing a saved task.
     sqliteDatabase.exec(`
       DROP TRIGGER delete_task_daily_applications;
       DROP TABLE daily_task_applications;
       ALTER TABLE tasks DROP COLUMN daily_auto_add_from;
-      DELETE FROM schema_migrations WHERE version = 4;
+      DELETE FROM schema_migrations WHERE version > 3;
       INSERT INTO tasks (id, title, category_id, archived, created_at, updated_at)
       VALUES ('existing', 'Read', 'life', 0, 1, 1);
     `)
@@ -60,7 +60,35 @@ describe('daily routine persistence with real SQLite', () => {
     })
     expect(assignments).toEqual([])
     expect(sqliteDatabase.prepare('SELECT MAX(version) AS version FROM schema_migrations').get())
-      .toEqual({ version: 4 })
+      .toEqual({ version: 5 })
+  })
+
+  it('upgrades version 4 with an index that targets only the deleted task’s routine history', async () => {
+    // Arrange
+    const routine = await databaseService.createTask({
+      title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
+    })
+    await databaseService.applyDailyTasks('2026-09-06')
+    sqliteDatabase.exec(`
+      DROP INDEX idx_daily_task_applications_task_id;
+      DELETE FROM schema_migrations WHERE version = 5;
+    `)
+
+    // Act
+    await databaseService.initialize()
+    const deletionPlan = sqliteDatabase.prepare(
+      'EXPLAIN QUERY PLAN DELETE FROM daily_task_applications WHERE task_id = ?'
+    ).all(routine.id)
+
+    // Assert
+    expect(deletionPlan).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        detail: 'SEARCH daily_task_applications USING INDEX idx_daily_task_applications_task_id (task_id=?)',
+      }),
+    ]))
+    expect((await databaseService.exportData()).dailyTaskApplications).toEqual([
+      { date: '2026-09-06', taskId: routine.id },
+    ])
   })
 
   it('adds eligible routines only on the requested date and leaves future, disabled, and archived tasks out', async () => {
@@ -244,6 +272,73 @@ describe('daily routine persistence with real SQLite', () => {
     expect(validation.isValid).toBe(true)
     expect((await databaseService.getTaskById('legacy'))?.dailyAutoAddFrom).toBeUndefined()
     expect(await databaseService.applyDailyTasks('2026-09-06')).toEqual([])
+  })
+
+  it.each(['2026-02-31', '2026-02-29'])('rejects the nonexistent date %s in routine and journal writes', async (date) => {
+    // Arrange
+    const routine = await databaseService.createTask({
+      title: 'Read', categoryId: 'life', archived: false,
+    })
+
+    // Act / Assert
+    await expect(databaseService.createTask({
+      title: 'Walk', categoryId: 'life', archived: false, dailyAutoAddFrom: date,
+    })).rejects.toThrow('Failed to create task')
+    await expect(databaseService.updateTask(routine.id, { dailyAutoAddFrom: date }))
+      .rejects.toThrow('Failed to update task')
+    await expect(databaseService.applyDailyTasks(date)).rejects.toThrow('Date must be in YYYY-MM-DD format')
+    await expect(databaseService.upsertEntry(date, 'Invalid day')).rejects.toThrow()
+    await expect(databaseService.createCompletion({ date, taskId: routine.id, completed: false }))
+      .rejects.toThrow('Failed to create completion')
+    expect((await databaseService.getTaskById(routine.id))?.dailyAutoAddFrom).toBeUndefined()
+  })
+
+  it.each([
+    { tasks: [{ id: 'routine', title: 'Read', categoryId: 'life', archived: false, createdAt: 1, updatedAt: 1, dailyAutoAddFrom: '2026-02-31' }] },
+    { entries: [{ id: 'entry', date: '2026-02-29', note: 'Read', createdAt: 1, updatedAt: 1 }] },
+    { completions: [{ id: 'completion', date: '2026-02-31', taskId: 'routine', completed: false, createdAt: 1 }] },
+    { dailyTaskApplications: [{ date: '2026-02-29', taskId: 'routine' }] },
+  ])('rejects nonexistent backup dates without replacing saved data: %j', async (invalidFields) => {
+    // Arrange
+    const savedTask = await databaseService.createTask({ title: 'Keep me', categoryId: 'life', archived: false })
+    initializeBackupService(databaseService)
+    const backup = {
+      version: '1.0', timestamp: Date.now(), categories: [{ id: 'life', name: '生活' }],
+      tasks: [{ id: 'routine', title: 'Read', categoryId: 'life', archived: false, createdAt: 1, updatedAt: 1 }],
+      entries: [], completions: [], settings: [], ...invalidFields,
+    }
+
+    // Act
+    const validation = await backupService.validateBackupData(backup)
+
+    // Assert
+    expect(validation.isValid).toBe(false)
+    await expect(databaseService.importData(backup)).rejects.toThrow('Failed to import data')
+    expect(await databaseService.getTaskById(savedTask.id)).toMatchObject({ title: 'Keep me' })
+  })
+
+  it('restores valid leap-day schedules, entries, assignments, and application history', async () => {
+    // Arrange
+    initializeBackupService(databaseService)
+    const backup = {
+      version: '1.0', timestamp: Date.now(), categories: [{ id: 'life', name: '生活' }],
+      tasks: [{ id: 'routine', title: 'Read', categoryId: 'life', archived: false, createdAt: 1, updatedAt: 1, dailyAutoAddFrom: '2024-02-29' }],
+      entries: [{ id: 'entry', date: '2024-02-29', note: 'Leap day', createdAt: 1, updatedAt: 1 }],
+      completions: [{ id: 'completion', date: '2024-02-29', taskId: 'routine', completed: false, createdAt: 1 }],
+      dailyTaskApplications: [{ date: '2024-02-29', taskId: 'routine' }], settings: [],
+    }
+
+    // Act
+    const validation = await backupService.validateBackupData(backup)
+    await databaseService.importData(backup)
+    const assignments = await databaseService.applyDailyTasks('2024-02-29')
+
+    // Assert
+    expect(validation.isValid).toBe(true)
+    expect(assignments).toHaveLength(1)
+    expect(assignments[0]).toMatchObject({ id: 'completion', date: '2024-02-29', completed: false })
+    expect(await databaseService.getEntry('2024-02-29')).toMatchObject({ note: 'Leap day' })
+    expect((await databaseService.getTaskById('routine'))?.dailyAutoAddFrom).toBe('2024-02-29')
   })
 
   it.each([

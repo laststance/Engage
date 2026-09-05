@@ -8,7 +8,7 @@ import {
 import { journalService } from '../../services/journalService'
 import { databaseService } from '@/src/services/database'
 import type { Completion } from '@/src/types'
-import { backupService } from '../../services/backupService'
+import { backupService } from '@/src/services/backupService'
 
 // Mock the repositories
 jest.mock('../../services/repositories', () => ({
@@ -54,7 +54,7 @@ jest.mock('@/src/services/database', () => ({
   },
 }))
 
-jest.mock('../../services/backupService', () => ({
+jest.mock('@/src/services/backupService', () => ({
   backupService: {
     createBackup: jest.fn(),
     exportAndShare: jest.fn(),
@@ -298,14 +298,42 @@ describe('useAppStore', () => {
 
       // Assert
       expect(useAppStore.getState().completions).toEqual({ '2025-01-15': mockCompletions })
-      expect(useAppStore.getState().error).toBe('Failed to add daily tasks. Please try again.')
+      expect(useAppStore.getState().hasDailyTaskError).toBe(true)
+      expect(useAppStore.getState().error).toBeNull()
 
       // Act
       await useAppStore.getState().refreshDailyTasks()
 
       // Assert
       expect(useAppStore.getState().error).toBeNull()
+      expect(useAppStore.getState().hasDailyTaskError).toBe(false)
       expect(useAppStore.getState().completions['2026-09-06']).toEqual([])
+    })
+
+    it('keeps a journal error visible when background routines refresh successfully', async () => {
+      // Arrange
+      useAppStore.setState({ error: 'Journal could not be saved.', hasDailyTaskError: true })
+      jest.mocked(taskRepository.applyDailyTasks).mockResolvedValue([])
+
+      // Act
+      await useAppStore.getState().refreshDailyTasks()
+
+      // Assert
+      expect(useAppStore.getState().error).toBe('Journal could not be saved.')
+      expect(useAppStore.getState().hasDailyTaskError).toBe(false)
+    })
+
+    it('keeps a task error visible when background routines fail to refresh', async () => {
+      // Arrange
+      useAppStore.setState({ error: 'Task could not be saved.' })
+      jest.mocked(taskRepository.applyDailyTasks).mockRejectedValue(new Error('SQLite unavailable'))
+
+      // Act
+      await useAppStore.getState().refreshDailyTasks()
+
+      // Assert
+      expect(useAppStore.getState().error).toBe('Task could not be saved.')
+      expect(useAppStore.getState().hasDailyTaskError).toBe(true)
     })
   })
 
