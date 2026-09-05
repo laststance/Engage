@@ -35,6 +35,7 @@ import {
 } from '../utils/businessLogic'
 import {
   formatDate,
+  getCurrentDate,
   getWeekStartDate,
   getWeekEndDate,
   getMonthStartDate,
@@ -64,6 +65,8 @@ interface AppState {
   isCategoryEditorVisible: boolean
   currentTab: 'calendar' | 'today' | 'stats'
   isLoading: boolean
+  isInitialized: boolean
+  hasDailyTaskError: boolean
   error: string | null
   isFirstLaunch: boolean
   suggestedTasks: Task[]
@@ -75,6 +78,7 @@ interface AppState {
 
   // Actions
   loadData: () => Promise<void>
+  refreshDailyTasks: () => Promise<boolean>
   selectDate: (date: string) => void
   toggleTaskCompletion: (
     date: string,
@@ -144,6 +148,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   isCategoryEditorVisible: false,
   currentTab: 'calendar',
   isLoading: false,
+  isInitialized: false,
+  hasDailyTaskError: false,
   error: null,
   isFirstLaunch: false,
   suggestedTasks: [],
@@ -224,7 +230,33 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ selectedDate: date })
   },
 
-  toggleTaskCompletion: async (date: string, taskId: string) => {
+  /**
+   * Applies today's routines when initialization, foregrounding, or local midnight requests a refresh.
+   * @returns True after refreshing today's assignments, or false with a recoverable error.
+   * @example
+   * await useAppStore.getState().refreshDailyTasks() // => today's routines are selected, still incomplete
+   */
+  refreshDailyTasks: () => enqueueDataMutation(async () => {
+    // A picker can be tapped while SQLite migrations are still running at cold start.
+    if (!get().isInitialized) return false
+    // Resolve the date inside the queue so a delayed refresh never backfills yesterday.
+    const today = getCurrentDate()
+    try {
+      const dailyCompletions = await taskRepository.applyDailyTasks(today)
+      set((current) => ({
+        completions: { ...current.completions, [today]: dailyCompletions },
+        hasDailyTaskError: false,
+      }))
+      return true
+    } catch (error) {
+      console.error('Failed to apply daily tasks:', error)
+      // Background refresh feedback must not replace an error from the user's own operation.
+      set({ hasDailyTaskError: true })
+      return false
+    }
+  }),
+
+  toggleTaskCompletion: (date: string, taskId: string) => enqueueDataMutation(async () => {
     const state = get()
     const previousTaskCompletion = (state.completions[date] || []).find(
       (completion) => completion.taskId === taskId
@@ -312,9 +344,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         message: 'Failed to toggle task completion. Please try again.',
       }
     }
-  },
+  }),
 
-  updateJournalEntry: async (date: string, content: string) => {
+  updateJournalEntry: (date: string, content: string) => enqueueDataMutation(async () => {
     try {
       set({ error: null })
 
@@ -343,9 +375,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       console.error('Failed to update journal entry:', error)
       set({ error: 'Failed to update journal entry. Please try again.' })
     }
-  },
+  }),
 
-  addTasksToDate: async (date: string, taskIds: string[]) => {
+  addTasksToDate: (date: string, taskIds: string[]) => enqueueDataMutation(async () => {
     try {
       set({ error: null })
 
@@ -441,7 +473,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         message,
       }
     }
-  },
+  }),
 
   /**
    * Reconciles the complete preset list when PresetTaskEditor or TaskPicker submits a mutation.
@@ -450,7 +482,7 @@ export const useAppStore = create<AppState>((set, get) => ({
    * @example
    * await useAppStore.getState().updatePresetTasks(remainingTasks)
    */
-  updatePresetTasks: async (tasks: Task[]) => {
+  updatePresetTasks: (tasks: Task[]) => enqueueDataMutation(async () => {
     try {
       set({ error: null })
 
@@ -540,9 +572,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       })
       throw error
     }
-  },
+  }),
 
-  createCategory: async (category: Omit<Category, 'id'>) => {
+  createCategory: (category: Omit<Category, 'id'>) => enqueueDataMutation(async () => {
     try {
       set({ error: null })
 
@@ -561,9 +593,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           error instanceof Error ? error.message : 'Failed to create category',
       })
     }
-  },
+  }),
 
-  updateCategory: async (id: string, updates: Partial<Category>) => {
+  updateCategory: (id: string, updates: Partial<Category>) => enqueueDataMutation(async () => {
     try {
       set({ error: null })
 
@@ -584,9 +616,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           error instanceof Error ? error.message : 'Failed to update category',
       })
     }
-  },
+  }),
 
-  deleteCategory: async (id: string) => {
+  deleteCategory: (id: string) => enqueueDataMutation(async () => {
     try {
       set({ error: null })
 
@@ -605,7 +637,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           error instanceof Error ? error.message : 'Failed to delete category',
       })
     }
-  },
+  }),
 
   setTaskPickerVisible: (visible: boolean) => {
     set({ isTaskPickerVisible: visible })
@@ -630,7 +662,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Business Logic Actions
   initializeApp: async () => {
     try {
-      set({ isLoading: true, error: null })
+      set({ isLoading: true, isInitialized: false, error: null })
 
       // Initialize app (offline services removed for simplicity)
       set({
@@ -646,13 +678,16 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       // Load all data
       await get().loadData()
-
-      // Data loaded successfully
+      const loadError = get().error
+      if (loadError) throw new Error(loadError)
+      set({ isInitialized: true })
+      await get().refreshDailyTasks()
 
       set({
         isFirstLaunch,
         suggestedTasks: initResult.suggestedTasks,
         isLoading: false,
+        isInitialized: true,
       })
 
       console.log('App initialized successfully', {
@@ -742,7 +777,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     return getTaskCompletionStatus(taskIds, date, completions)
   },
 
-  validateAndUpdateJournal: async (date: string, content: string) => {
+  validateAndUpdateJournal: (date: string, content: string) => enqueueDataMutation(async () => {
     try {
       const result = await journalService.saveEntry(date, content)
 
@@ -768,7 +803,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         ],
       }
     }
-  },
+  }),
 
   getJournalPlaceholder: (date: string) => {
     const state = get()
@@ -905,18 +940,24 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   // Backup methods (delegating to backupService)
   createBackup: async () => {
-    return backupService.createBackup()
+    // Keep assignments and their application markers in one consistent backup snapshot.
+    return enqueueDataMutation(() => backupService.createBackup())
   },
 
   exportData: async () => {
-    return backupService.exportAndShare()
+    return enqueueDataMutation(() => backupService.exportAndShare())
   },
 
   importBackup: async () => {
-    const result = await backupService.importBackup()
+    // File-picker foreground events must not start a routine transaction during restoration.
+    const result = await enqueueDataMutation(async () => {
+      const restored = await backupService.importBackup()
+      if (restored.success) await get().loadData()
+      return restored
+    })
     if (result.success) {
-      // Reload app data after successful import
-      await get().loadData()
+      // Queue the refresh after restoration settles, avoiding a nested queue wait.
+      await get().refreshDailyTasks()
     }
     return result
   },
@@ -933,3 +974,25 @@ export const useAppStore = create<AppState>((set, get) => ({
     return backupService.getBackupStats()
   },
 }))
+
+let dataMutationQueue: Promise<unknown> | undefined
+
+/**
+ * Serializes routine refreshes and user writes so a background transaction cannot roll back another edit.
+ * @param operation - The store mutation and its database writes, invoked after earlier mutations settle.
+ * @returns The operation's result or rejection; later mutations can still proceed after a failure.
+ * @example
+ * await enqueueDataMutation(async () => taskRepository.applyDailyTasks('2026-09-06'))
+ */
+function enqueueDataMutation<Result>(operation: () => Promise<Result>): Promise<Result> {
+  // Start immediately when idle to retain the existing optimistic response to taps.
+  const result = dataMutationQueue
+    ? dataMutationQueue.then(operation, operation)
+    : operation()
+  const queuedResult = result.finally(() => {
+    // Only the last queued mutation can release the queue, including after failure.
+    if (dataMutationQueue === queuedResult) dataMutationQueue = undefined
+  })
+  dataMutationQueue = queuedResult
+  return queuedResult
+}

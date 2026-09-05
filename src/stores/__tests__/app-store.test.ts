@@ -7,6 +7,8 @@ import {
 } from '../../services/repositories'
 import { journalService } from '../../services/journalService'
 import { databaseService } from '@/src/services/database'
+import type { Completion } from '@/src/types'
+import { backupService } from '@/src/services/backupService'
 
 // Mock the repositories
 jest.mock('../../services/repositories', () => ({
@@ -16,6 +18,7 @@ jest.mock('../../services/repositories', () => ({
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
+    applyDailyTasks: jest.fn(),
   },
   entryRepository: {
     findRecentEntries: jest.fn(),
@@ -48,6 +51,13 @@ jest.mock('../../services/journalService', () => ({
 jest.mock('@/src/services/database', () => ({
   databaseService: {
     executeTransaction: jest.fn(),
+  },
+}))
+
+jest.mock('@/src/services/backupService', () => ({
+  backupService: {
+    createBackup: jest.fn(),
+    exportAndShare: jest.fn(),
   },
 }))
 
@@ -110,6 +120,8 @@ describe('useAppStore', () => {
       isCategoryEditorVisible: false,
       currentTab: 'calendar',
       isLoading: false,
+      isInitialized: false,
+      hasDailyTaskError: false,
       error: null,
     })
 
@@ -161,6 +173,167 @@ describe('useAppStore', () => {
       const state = useAppStore.getState()
       expect(state.error).toBe('Failed to load data. Please try again.')
       expect(state.isLoading).toBe(false)
+    })
+  })
+
+  describe('daily routine assignments', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.setSystemTime(new Date(2026, 8, 6, 9))
+      useAppStore.setState({ isInitialized: true })
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('does not access routine tables while startup migrations are still running', async () => {
+      // Arrange
+      useAppStore.setState({ isInitialized: false })
+
+      // Act
+      const refreshed = await useAppStore.getState().refreshDailyTasks()
+
+      // Assert
+      expect(refreshed).toBe(false)
+      expect(taskRepository.applyDailyTasks).not.toHaveBeenCalled()
+    })
+
+    it.each(['createBackup', 'exportData'] as const)('takes a consistent %s snapshot after a pending routine refresh', async (action) => {
+      // Arrange
+      let finishRefresh: (completions: Completion[]) => void = () => undefined
+      jest.mocked(taskRepository.applyDailyTasks).mockImplementationOnce(() => new Promise((resolve) => {
+        finishRefresh = resolve
+      }))
+      const backupOperation = action === 'createBackup'
+        ? jest.mocked(backupService.createBackup)
+        : jest.mocked(backupService.exportAndShare)
+      backupOperation.mockResolvedValue({ success: true, errors: [] })
+
+      // Act
+      const refreshing = useAppStore.getState().refreshDailyTasks()
+      const backingUp = useAppStore.getState()[action]()
+      expect(backupOperation).not.toHaveBeenCalled()
+      finishRefresh([])
+      await Promise.all([refreshing, backingUp])
+
+      // Assert
+      expect(backupOperation).toHaveBeenCalledTimes(1)
+    })
+
+    it('shows today’s incomplete routines while preserving completed tasks and the calendar date', async () => {
+      // Arrange
+      const dailyCompletions: Completion[] = [
+        { id: 'daily-walk', date: '2026-09-06', taskId: 'walk', completed: false, createdAt: 1 },
+        { id: 'manual-read', date: '2026-09-06', taskId: 'read', completed: true, createdAt: 2 },
+      ]
+      useAppStore.setState({ completions: { '2025-01-15': mockCompletions } })
+      jest.mocked(taskRepository.applyDailyTasks).mockResolvedValue(dailyCompletions)
+
+      // Act
+      await useAppStore.getState().refreshDailyTasks()
+
+      // Assert
+      expect(taskRepository.applyDailyTasks).toHaveBeenCalledWith('2026-09-06')
+      expect(useAppStore.getState().completions['2026-09-06']).toEqual([
+        { id: 'daily-walk', date: '2026-09-06', taskId: 'walk', completed: false, createdAt: 1 },
+        { id: 'manual-read', date: '2026-09-06', taskId: 'read', completed: true, createdAt: 2 },
+      ])
+      expect(useAppStore.getState().completions['2025-01-15']).toBe(mockCompletions)
+      expect(useAppStore.getState().selectedDate).toBe('2025-01-15')
+    })
+
+    it('keeps a task deselected when the picker saves during a routine refresh', async () => {
+      // Arrange
+      const dailyCompletions: Completion[] = [
+        { id: 'daily-walk', date: '2026-09-06', taskId: 'walk', completed: false, createdAt: 1 },
+      ]
+      let finishRefresh: (completions: Completion[]) => void = () => undefined
+      jest.mocked(taskRepository.applyDailyTasks).mockImplementationOnce(() => new Promise((resolve) => {
+        finishRefresh = resolve
+      }))
+      jest.mocked(completionRepository.updateTaskAssignmentsForDate).mockResolvedValue([])
+
+      // Act
+      const refreshing = useAppStore.getState().refreshDailyTasks()
+      const saving = useAppStore.getState().addTasksToDate('2026-09-06', [])
+      expect(completionRepository.updateTaskAssignmentsForDate).not.toHaveBeenCalled()
+      finishRefresh(dailyCompletions)
+      await Promise.all([refreshing, saving])
+
+      // Assert
+      expect(completionRepository.updateTaskAssignmentsForDate).toHaveBeenCalledWith('2026-09-06', [], ['walk'])
+      expect(useAppStore.getState().completions['2026-09-06']).toBeUndefined()
+    })
+
+    it('refreshes the new local day when a pending edit crosses midnight', async () => {
+      // Arrange
+      let finishEdit: (completed: boolean) => void = () => undefined
+      jest.mocked(completionRepository.toggle).mockImplementationOnce(() => new Promise((resolve) => {
+        finishEdit = resolve
+      }))
+      jest.mocked(taskRepository.applyDailyTasks).mockResolvedValue([])
+
+      // Act
+      const editing = useAppStore.getState().toggleTaskCompletion('2026-09-06', 'walk')
+      const refreshing = useAppStore.getState().refreshDailyTasks()
+      jest.setSystemTime(new Date(2026, 8, 7, 0))
+      finishEdit(true)
+      await Promise.all([editing, refreshing])
+
+      // Assert
+      expect(taskRepository.applyDailyTasks).toHaveBeenCalledTimes(1)
+      expect(taskRepository.applyDailyTasks).toHaveBeenCalledWith('2026-09-07')
+    })
+
+    it('retains visible tasks after a failed daily refresh and recovers on retry', async () => {
+      // Arrange
+      useAppStore.setState({ completions: { '2025-01-15': mockCompletions } })
+      jest.mocked(taskRepository.applyDailyTasks)
+        .mockRejectedValueOnce(new Error('SQLite unavailable'))
+        .mockResolvedValueOnce([])
+
+      // Act
+      await useAppStore.getState().refreshDailyTasks()
+
+      // Assert
+      expect(useAppStore.getState().completions).toEqual({ '2025-01-15': mockCompletions })
+      expect(useAppStore.getState().hasDailyTaskError).toBe(true)
+      expect(useAppStore.getState().error).toBeNull()
+
+      // Act
+      await useAppStore.getState().refreshDailyTasks()
+
+      // Assert
+      expect(useAppStore.getState().error).toBeNull()
+      expect(useAppStore.getState().hasDailyTaskError).toBe(false)
+      expect(useAppStore.getState().completions['2026-09-06']).toEqual([])
+    })
+
+    it('keeps a journal error visible when background routines refresh successfully', async () => {
+      // Arrange
+      useAppStore.setState({ error: 'Journal could not be saved.', hasDailyTaskError: true })
+      jest.mocked(taskRepository.applyDailyTasks).mockResolvedValue([])
+
+      // Act
+      await useAppStore.getState().refreshDailyTasks()
+
+      // Assert
+      expect(useAppStore.getState().error).toBe('Journal could not be saved.')
+      expect(useAppStore.getState().hasDailyTaskError).toBe(false)
+    })
+
+    it('keeps a task error visible when background routines fail to refresh', async () => {
+      // Arrange
+      useAppStore.setState({ error: 'Task could not be saved.' })
+      jest.mocked(taskRepository.applyDailyTasks).mockRejectedValue(new Error('SQLite unavailable'))
+
+      // Act
+      await useAppStore.getState().refreshDailyTasks()
+
+      // Assert
+      expect(useAppStore.getState().error).toBe('Task could not be saved.')
+      expect(useAppStore.getState().hasDailyTaskError).toBe(true)
     })
   })
 

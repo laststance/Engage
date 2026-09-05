@@ -8,6 +8,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Switch,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
@@ -23,6 +24,7 @@ import {
 } from '@/src/components/OperationFeedback'
 import { Task, Category } from '@/src/types'
 import { getCategoryDisplayName } from '@/src/i18n/config'
+import { formatDate, getCurrentDate, parseDate } from '@/src/utils/dateUtils'
 import {
   PRESET_EDITOR_KEYBOARD_EXTRA_SCROLL_PADDING_PX,
   PRESET_TASK_FOCUS_SCROLL_OFFSET_PX,
@@ -44,6 +46,7 @@ interface EditingTask {
   title: string
   categoryId: string
   defaultMinutes?: number
+  dailyAutoAddFrom?: Task['dailyAutoAddFrom']
   archived: boolean
   isNew?: boolean
 }
@@ -88,6 +91,7 @@ const createEditingTasks = (tasks: Task[]): EditingTask[] =>
     title: task.title,
     categoryId: task.categoryId,
     defaultMinutes: task.defaultMinutes,
+    dailyAutoAddFrom: task.dailyAutoAddFrom,
     archived: task.archived,
     isNew: false,
   }))
@@ -433,6 +437,31 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
     )
   }
 
+  /**
+   * Updates a routine draft when its switch changes, starting new routines tomorrow after Save.
+   * @param index - The editing-task index associated with the switch.
+   * @param isEnabled - Whether the task should be automatically added every day.
+   * @returns Nothing; changes the draft without persisting or affecting today's selection.
+   * @example
+   * updateDailyAutoAdd(0, true) // enables row 0 from tomorrow, or restores its existing start date
+   */
+  const updateDailyAutoAdd = (index: number, isEnabled: boolean): void => {
+    if (!isEnabled) {
+      updateTask(index, { dailyAutoAddFrom: undefined })
+      return
+    }
+
+    const tomorrow = parseDate(getCurrentDate())
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    // Reversing a draft toggle must not postpone an already active routine.
+    const originalStartDate = tasks.find(
+      (task) => task.id === editingTasks[index].id
+    )?.dailyAutoAddFrom
+    updateTask(index, {
+      dailyAutoAddFrom: originalStartDate ?? formatDate(tomorrow),
+    })
+  }
+
   const deleteTask = (index: number) => {
     const task = editingTasks[index]
 
@@ -492,20 +521,29 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
       message: t('common.saving'),
     })
     try {
+      // Recompute tomorrow at Save when a new routine draft stayed open across midnight.
+      const tomorrow = parseDate(getCurrentDate())
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const newRoutineStartDate = formatDate(tomorrow)
       // Convert editing tasks back to Task objects
-      const tasksToSave: Task[] = editingTasks.map((task) => ({
-        id:
-          task.id ||
-          `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        title: normalizeTaskTitle(task.title),
-        categoryId: task.categoryId,
-        defaultMinutes: task.defaultMinutes,
-        archived: task.archived,
-        createdAt: task.id
-          ? tasks.find((t) => t.id === task.id)?.createdAt || Date.now()
-          : Date.now(),
-        updatedAt: Date.now(),
-      }))
+      const tasksToSave: Task[] = editingTasks.map((task) => {
+        const originalTask = tasks.find((original) => original.id === task.id)
+        return {
+          id:
+            task.id ||
+            `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          title: normalizeTaskTitle(task.title),
+          categoryId: task.categoryId,
+          defaultMinutes: task.defaultMinutes,
+          dailyAutoAddFrom:
+            task.dailyAutoAddFrom && !originalTask?.dailyAutoAddFrom
+              ? newRoutineStartDate
+              : task.dailyAutoAddFrom,
+          archived: task.archived,
+          createdAt: originalTask?.createdAt || Date.now(),
+          updatedAt: Date.now(),
+        }
+      })
 
       await onSave(tasksToSave)
       setOperationFeedback({
@@ -738,6 +776,52 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
                         testID={`task-minutes-input-${task.index}`}
                       />
                     </VStack>
+
+                    {/* Keep the switch outside the wrapping text column on narrow screens. */}
+                    <HStack space="md" className="items-center">
+                      <VStack space="xs" className="flex-1">
+                        <Text className="text-sm font-medium text-gray-700">
+                          {t('presetEditor.dailyAutoAdd')}
+                        </Text>
+                        <Text className="text-xs text-gray-600">
+                          {t(
+                            task.dailyAutoAddFrom &&
+                              task.dailyAutoAddFrom <= getCurrentDate()
+                              ? 'presetEditor.dailyAutoAddActiveDescription'
+                              : 'presetEditor.dailyAutoAddDescription'
+                          )}
+                        </Text>
+                      </VStack>
+                      {/* The native switch owns its touches; only its surrounding padding uses this press handler. */}
+                      <Pressable
+                        accessible={false}
+                        importantForAccessibility="no"
+                        className="touch-target-minimum items-center justify-center"
+                        disabled={isLoading}
+                        onPress={() =>
+                          updateDailyAutoAdd(task.index, !task.dailyAutoAddFrom)
+                        }
+                        testID={`task-daily-auto-add-touch-target-${task.index}`}
+                      >
+                        <Switch
+                          accessible
+                          value={Boolean(task.dailyAutoAddFrom)}
+                          onValueChange={(isEnabled) =>
+                            updateDailyAutoAdd(task.index, isEnabled)
+                          }
+                          disabled={isLoading}
+                          accessibilityRole="switch"
+                          accessibilityLabel={`${t('presetEditor.dailyAutoAdd')}: ${task.title || t('presetEditor.taskNamePlaceholder')}`}
+                          accessibilityState={{
+                            checked: Boolean(task.dailyAutoAddFrom),
+                            disabled: isLoading,
+                          }}
+                          testID={`task-daily-auto-add-switch-${task.index}`}
+                          trackColor={{ false: '#E5E7EB', true: '#007AFF' }}
+                          thumbColor="#FFFFFF"
+                        />
+                      </Pressable>
+                    </HStack>
 
                     {/* Actions */}
                     <HStack className="justify-end">

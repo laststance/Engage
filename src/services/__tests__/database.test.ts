@@ -134,7 +134,7 @@ describe('DatabaseService', () => {
         expect(result.createdAt).toBeDefined()
         expect(result.updatedAt).toBeDefined()
         expect(mockDb.runAsync).toHaveBeenCalledWith(
-          'INSERT INTO tasks (id, title, category_id, default_minutes, archived, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO tasks (id, title, category_id, default_minutes, archived, created_at, updated_at, daily_auto_add_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
           expect.arrayContaining([
             expect.any(String),
             'New Task',
@@ -203,7 +203,7 @@ describe('DatabaseService', () => {
         expect(result.title).toBe('Updated Task')
         expect(result.defaultMinutes).toBe(60)
         expect(mockDb.runAsync).toHaveBeenCalledWith(
-          'UPDATE tasks SET title = ?, category_id = ?, default_minutes = ?, archived = ?, updated_at = ? WHERE id = ?',
+          'UPDATE tasks SET title = ?, category_id = ?, default_minutes = ?, archived = ?, updated_at = ?, daily_auto_add_from = ? WHERE id = ?',
           expect.arrayContaining([
             'Updated Task',
             'business',
@@ -600,6 +600,7 @@ describe('DatabaseService', () => {
           .mockResolvedValueOnce(mockEntries) // entries query
           .mockResolvedValueOnce(mockCompletions) // completions query
           .mockResolvedValueOnce(mockSettings) // settings query
+          .mockResolvedValueOnce([]) // daily task applications query
 
         const result = await databaseService.exportData()
 

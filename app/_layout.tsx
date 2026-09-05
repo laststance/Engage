@@ -12,6 +12,7 @@ import { LogBox } from 'react-native'
 import '@/src/i18n/config'
 
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { DailyTaskSynchronization } from '@/src/components/DailyTaskSynchronization'
 import { useAppStore } from '@/src/stores/app-store'
 import { databaseService } from '@/src/services/database'
 import { initializeOfflineService } from '@/src/services/offlineService'
@@ -131,6 +132,7 @@ export default function RootLayout() {
           <ThemeProvider
             value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
           >
+            <DailyTaskSynchronization />
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen

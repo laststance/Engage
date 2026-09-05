@@ -103,6 +103,11 @@ const ja = {
     deleteCategory: 'カテゴリーを削除',
     estimatedMinutes: '目安時間（分）',
     estimatedMinutesPlaceholder: '例: 30',
+    dailyAutoAdd: '毎日自動で追加',
+    dailyAutoAddDescription:
+      '明日から毎日、未完了のタスクとして追加します。',
+    dailyAutoAddActiveDescription:
+      '毎日、未完了のタスクとして追加します。',
     noTasks: 'タスクがありません',
     noTasksHint: '「新しいタスクを追加」ボタンでタスクを作成してください',
     discardChangesTitle: '変更を破棄',
@@ -366,6 +371,7 @@ const ja = {
     title: '今日',
     description: '今日のタスクと振り返りを管理しましょう',
     errorLoading: '画面の読み込みに失敗しました',
+    dailyTasksError: 'ルーティンを追加できませんでした。再試行してください。',
   },
 
   dayModal: {

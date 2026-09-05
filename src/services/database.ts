@@ -1,8 +1,9 @@
 import * as SQLite from 'expo-sqlite'
-import { Task, Entry, Completion, Category } from '../types'
+import { Task, Entry, Completion, Category, DailyTaskApplication } from '@/src/types'
+import { isValidDateString } from '@/src/utils/isValidDateString'
 
 // Database version for migration management
-const DATABASE_VERSION = 3
+const DATABASE_VERSION = 5
 
 // Migration interface
 interface Migration {
@@ -140,6 +141,30 @@ class DatabaseService {
 
         // Index for filtering by completed status
         `CREATE INDEX idx_completions_completed ON completions(completed)`,
+      ],
+    },
+    {
+      version: 4,
+      up: [
+        // A nullable start date keeps existing tasks opted out of daily assignment.
+        `ALTER TABLE tasks ADD COLUMN daily_auto_add_from TEXT`,
+        // Mark consideration separately so removing today's assignment survives restarts.
+        `CREATE TABLE daily_task_applications (
+          date TEXT NOT NULL,
+          task_id TEXT NOT NULL,
+          PRIMARY KEY (date, task_id),
+          FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+        )`,
+        // Existing connections do not enable foreign keys, so retain cascade cleanup there too.
+        `CREATE TRIGGER delete_task_daily_applications AFTER DELETE ON tasks
+         BEGIN DELETE FROM daily_task_applications WHERE task_id = OLD.id; END`,
+      ],
+    },
+    {
+      version: 5,
+      up: [
+        // Task deletion must locate its routine history without scanning every saved day.
+        `CREATE INDEX idx_daily_task_applications_task_id ON daily_task_applications(task_id)`,
       ],
     },
   ]
@@ -313,6 +338,9 @@ class DatabaseService {
     if (task.defaultMinutes !== undefined && task.defaultMinutes < 0) {
       throw new DatabaseError('Default minutes must be non-negative')
     }
+    if (task.dailyAutoAddFrom !== undefined) {
+      this.validateDate(task.dailyAutoAddFrom)
+    }
   }
 
   private validateCategory(category: Partial<Category>): void {
@@ -325,7 +353,7 @@ class DatabaseService {
   }
 
   private validateEntry(entry: Partial<Entry>): void {
-    if (!entry.date || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) {
+    if (!isValidDateString(entry.date)) {
       throw new DatabaseError('Entry date must be in YYYY-MM-DD format')
     }
     if (entry.note === undefined) {
@@ -334,7 +362,7 @@ class DatabaseService {
   }
 
   private validateCompletion(completion: Partial<Completion>): void {
-    if (!completion.date || !/^\d{4}-\d{2}-\d{2}$/.test(completion.date)) {
+    if (!isValidDateString(completion.date)) {
       throw new DatabaseError('Completion date must be in YYYY-MM-DD format')
     }
     if (!completion.taskId || completion.taskId.trim().length === 0) {
@@ -497,7 +525,7 @@ class DatabaseService {
       }
 
       await this.executeUpdate(
-        'INSERT INTO tasks (id, title, category_id, default_minutes, archived, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO tasks (id, title, category_id, default_minutes, archived, created_at, updated_at, daily_auto_add_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [
           newTask.id,
           newTask.title,
@@ -506,6 +534,7 @@ class DatabaseService {
           newTask.archived ? 1 : 0,
           newTask.createdAt,
           newTask.updatedAt,
+          newTask.dailyAutoAddFrom ?? null,
         ]
       )
 
@@ -539,13 +568,14 @@ class DatabaseService {
       }
 
       await this.executeUpdate(
-        'UPDATE tasks SET title = ?, category_id = ?, default_minutes = ?, archived = ?, updated_at = ? WHERE id = ?',
+        'UPDATE tasks SET title = ?, category_id = ?, default_minutes = ?, archived = ?, updated_at = ?, daily_auto_add_from = ? WHERE id = ?',
         [
           updatedTask.title,
           updatedTask.categoryId,
           updatedTask.defaultMinutes || null,
           updatedTask.archived ? 1 : 0,
           updatedTask.updatedAt,
+          updatedTask.dailyAutoAddFrom ?? null,
           id,
         ]
       )
@@ -648,6 +678,43 @@ class DatabaseService {
   }
 
   // Completion operations
+  /**
+   * Applies eligible routines once per day when the store refreshes today's assignments.
+   * @param date - Today's local date in YYYY-MM-DD format.
+   * @returns Every saved assignment for the date, preserving manual choices and completion state.
+   * @example await databaseService.applyDailyTasks('2026-09-06') // => today's Completion[]
+   */
+  async applyDailyTasks(date: string): Promise<Completion[]> {
+    this.validateDate(date)
+    let completions: Completion[] = []
+
+    await this.executeTransaction([
+      async () => {
+        // Existing assignments win; a saved application prevents re-adding a removed routine.
+        await this.executeUpdate(
+          `INSERT OR IGNORE INTO completions (id, date, task_id, completed, created_at)
+           SELECT 'routine_' || ? || '_' || tasks.id, ?, tasks.id, 0, ?
+           FROM tasks
+           WHERE archived = 0 AND daily_auto_add_from <= ?
+             AND NOT EXISTS (
+               SELECT 1 FROM daily_task_applications
+               WHERE date = ? AND task_id = tasks.id
+             )`,
+          [date, date, Date.now(), date, date]
+        )
+        // Record already-selected routines too, so later deselection remains a choice for today.
+        await this.executeUpdate(
+          `INSERT OR IGNORE INTO daily_task_applications (date, task_id)
+           SELECT ?, id FROM tasks WHERE archived = 0 AND daily_auto_add_from <= ?`,
+          [date, date]
+        )
+        completions = await this.getCompletions(date)
+      },
+    ])
+
+    return completions
+  }
+
   async getCompletions(date: string): Promise<Completion[]> {
     try {
       this.validateDate(date)
@@ -818,7 +885,7 @@ class DatabaseService {
   }
 
   private validateDate(date: string): void {
-    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (!isValidDateString(date)) {
       throw new DatabaseError('Date must be in YYYY-MM-DD format')
     }
   }
@@ -830,6 +897,7 @@ class DatabaseService {
       title: row.title,
       categoryId: row.category_id,
       defaultMinutes: row.default_minutes,
+      dailyAutoAddFrom: row.daily_auto_add_from ?? undefined,
       archived: Boolean(row.archived),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
@@ -870,10 +938,11 @@ class DatabaseService {
     tasks: Task[]
     entries: Entry[]
     completions: Completion[]
+    dailyTaskApplications: DailyTaskApplication[]
     settings: { key: string; value: string }[]
   }> {
     try {
-      const [categories, tasks, entries, completions, settings] =
+      const [categories, tasks, entries, completions, settings, dailyTaskApplications] =
         await Promise.all([
           this.getAllCategories(),
           this.getAllTasks(),
@@ -884,6 +953,10 @@ class DatabaseService {
           this.executeQuery<{ key: string; value: string }>(
             'SELECT * FROM settings'
           ),
+          this.executeQuery<DailyTaskApplication>(
+            `SELECT date, task_id AS taskId FROM daily_task_applications
+             INNER JOIN tasks ON tasks.id = task_id WHERE tasks.archived = 0 ORDER BY date, task_id`
+          ),
         ])
 
       return {
@@ -891,6 +964,7 @@ class DatabaseService {
         tasks,
         entries: entries.map(this.mapRowToEntry),
         completions: completions.map(this.mapRowToCompletion),
+        dailyTaskApplications,
         settings,
       }
     } catch (error) {
@@ -903,12 +977,14 @@ class DatabaseService {
     tasks?: Task[]
     entries?: Entry[]
     completions?: Completion[]
+    dailyTaskApplications?: DailyTaskApplication[]
     settings?: { key: string; value: string }[]
   }): Promise<void> {
     try {
       await this.executeTransaction([
         async () => {
           // Clear existing data
+          await this.executeUpdate('DELETE FROM daily_task_applications')
           await this.executeUpdate('DELETE FROM completions')
           await this.executeUpdate('DELETE FROM entries')
           await this.executeUpdate('DELETE FROM tasks')
@@ -931,8 +1007,9 @@ class DatabaseService {
           // Import tasks
           if (data.tasks) {
             for (const task of data.tasks) {
+              this.validateTask(task)
               await this.executeUpdate(
-                'INSERT INTO tasks (id, title, category_id, default_minutes, archived, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO tasks (id, title, category_id, default_minutes, archived, created_at, updated_at, daily_auto_add_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                 [
                   task.id,
                   task.title,
@@ -941,15 +1018,28 @@ class DatabaseService {
                   task.archived ? 1 : 0,
                   task.createdAt,
                   task.updatedAt,
+                  task.dailyAutoAddFrom ?? null,
                 ]
               )
             }
           }
         },
         async () => {
+          // Older backups omit application history and retain their previous manual behavior.
+          for (const application of data.dailyTaskApplications ?? []) {
+            this.validateDate(application.date)
+            this.validateTaskId(application.taskId)
+            await this.executeUpdate(
+              'INSERT INTO daily_task_applications (date, task_id) VALUES (?, ?)',
+              [application.date, application.taskId]
+            )
+          }
+        },
+        async () => {
           // Import entries
           if (data.entries) {
             for (const entry of data.entries) {
+              this.validateDate(entry.date)
               await this.executeUpdate(
                 'INSERT INTO entries (id, date, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
                 [
@@ -967,6 +1057,7 @@ class DatabaseService {
           // Import completions
           if (data.completions) {
             for (const completion of data.completions) {
+              this.validateDate(completion.date)
               await this.executeUpdate(
                 'INSERT INTO completions (id, date, task_id, minutes, completed, created_at) VALUES (?, ?, ?, ?, ?, ?)',
                 [
@@ -986,7 +1077,7 @@ class DatabaseService {
           if (data.settings) {
             for (const setting of data.settings) {
               await this.executeUpdate(
-                'INSERT INTO settings (key, value) VALUES (?, ?)',
+                'INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
                 [setting.key, setting.value]
               )
             }

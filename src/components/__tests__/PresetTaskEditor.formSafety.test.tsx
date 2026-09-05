@@ -2,6 +2,7 @@ import React, { type ComponentProps } from 'react'
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native'
 import { Alert, Keyboard } from 'react-native'
 import { Category, Task } from '@/src/types'
+import * as dateUtils from '@/src/utils/dateUtils'
 import { PresetTaskEditor } from '../PresetTaskEditor'
 
 jest.spyOn(Alert, 'alert')
@@ -437,5 +438,218 @@ describe('PresetTaskEditor form safety', () => {
     })
     resolveSave()
     await saveAction
+  })
+
+  describe('daily routine settings', () => {
+    beforeEach(() => {
+      jest.spyOn(dateUtils, 'getCurrentDate').mockReturnValue('2026-09-05')
+    })
+
+    afterEach(() => {
+      jest.mocked(dateUtils.getCurrentDate).mockRestore()
+    })
+
+    it('shows unscheduled presets as off with a task-specific switch name', async () => {
+      // Arrange & Act
+      const { getByRole, getAllByText } = await renderEditor()
+
+      // Assert
+      expect(
+        getByRole('switch', {
+          name: 'presetEditor.dailyAutoAdd: Networking',
+        })
+      ).not.toBeChecked()
+      expect(
+        getByRole('switch', {
+          name: 'presetEditor.dailyAutoAdd: Exercise',
+        })
+      ).not.toBeChecked()
+      expect(
+        getAllByText('presetEditor.dailyAutoAddDescription')
+      ).toHaveLength(2)
+    })
+
+    it('keeps an active daily routine on and preserves its start date when saved', async () => {
+      // Arrange
+      const onSave = jest.fn()
+      const { getByTestId, getByText } = await renderEditor({
+        onSave,
+        tasks: [{ ...mockTasks[0], dailyAutoAddFrom: '2026-09-01' }],
+      })
+
+      // Act
+      await fireEvent.press(getByTestId('preset-editor-save'))
+
+      // Assert
+      expect(getByTestId('task-daily-auto-add-switch-0')).toBeChecked()
+      expect(
+        getByText('presetEditor.dailyAutoAddActiveDescription')
+      ).toBeVisible()
+      expect(onSave).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: 'task-business',
+          dailyAutoAddFrom: '2026-09-01',
+        }),
+      ])
+    })
+
+    it('toggles from the enlarged touch target while exposing one native switch per task', async () => {
+      // Arrange
+      const { getByTestId, getAllByRole } = await renderEditor()
+      const touchTarget = getByTestId('task-daily-auto-add-touch-target-0')
+
+      // Act
+      await fireEvent.press(touchTarget)
+
+      // Assert
+      expect(touchTarget.props.className).toContain('touch-target-minimum')
+      expect(touchTarget.props.accessible).toBe(false)
+      expect(touchTarget.props.importantForAccessibility).toBe('no')
+      expect(getAllByRole('switch')).toHaveLength(2)
+      expect(getByTestId('task-daily-auto-add-switch-0')).toBeChecked()
+
+      // Act
+      await fireEvent(
+        getByTestId('task-daily-auto-add-switch-0'),
+        'valueChange',
+        false
+      )
+
+      // Assert
+      expect(getByTestId('task-daily-auto-add-switch-0')).not.toBeChecked()
+      expect(getAllByRole('switch')).toHaveLength(2)
+    })
+
+    it('saves a newly enabled routine from tomorrow across a month boundary', async () => {
+      // Arrange
+      jest.mocked(dateUtils.getCurrentDate).mockReturnValue('2026-09-30')
+      const onSave = jest.fn()
+      const { getByTestId } = await renderEditor({ onSave })
+
+      // Act
+      await fireEvent(
+        getByTestId('task-daily-auto-add-switch-0'),
+        'valueChange',
+        true
+      )
+      await fireEvent.press(getByTestId('preset-editor-save'))
+
+      // Assert
+      expect(onSave).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: 'task-business',
+          dailyAutoAddFrom: '2026-10-01',
+        }),
+        expect.objectContaining({
+          id: 'task-life',
+          dailyAutoAddFrom: undefined,
+        }),
+      ])
+    })
+
+    it('starts a newly enabled routine tomorrow when the editor is saved after midnight', async () => {
+      // Arrange
+      const onSave = jest.fn()
+      const { getByTestId } = await renderEditor({
+        onSave,
+        tasks: [mockTasks[0]],
+      })
+      await fireEvent(
+        getByTestId('task-daily-auto-add-switch-0'),
+        'valueChange',
+        true
+      )
+
+      // Act
+      jest.mocked(dateUtils.getCurrentDate).mockReturnValue('2026-09-06')
+      await fireEvent.press(getByTestId('preset-editor-save'))
+
+      // Assert
+      expect(onSave).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: 'task-business',
+          dailyAutoAddFrom: '2026-09-07',
+        }),
+      ])
+    })
+
+    it('removes the routine start date when an enabled preset is turned off and saved', async () => {
+      // Arrange
+      const onSave = jest.fn()
+      const { getByTestId } = await renderEditor({
+        onSave,
+        tasks: [{ ...mockTasks[0], dailyAutoAddFrom: '2026-09-01' }],
+      })
+
+      // Act
+      await fireEvent(
+        getByTestId('task-daily-auto-add-switch-0'),
+        'valueChange',
+        false
+      )
+      await fireEvent.press(getByTestId('preset-editor-save'))
+
+      // Assert
+      expect(getByTestId('task-daily-auto-add-switch-0')).not.toBeChecked()
+      expect(onSave).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: 'task-business',
+          dailyAutoAddFrom: undefined,
+        }),
+      ])
+    })
+
+    it('does not postpone an active routine when its draft switch is turned off and back on', async () => {
+      // Arrange
+      const onSave = jest.fn()
+      const { getByTestId } = await renderEditor({
+        onSave,
+        tasks: [{ ...mockTasks[0], dailyAutoAddFrom: '2026-09-01' }],
+      })
+
+      // Act
+      await fireEvent(
+        getByTestId('task-daily-auto-add-switch-0'),
+        'valueChange',
+        false
+      )
+      await fireEvent(
+        getByTestId('task-daily-auto-add-switch-0'),
+        'valueChange',
+        true
+      )
+      await fireEvent.press(getByTestId('preset-editor-save'))
+
+      // Assert
+      expect(onSave).toHaveBeenCalledWith([
+        expect.objectContaining({ dailyAutoAddFrom: '2026-09-01' }),
+      ])
+    })
+
+    it('discards a routine switch change without saving it when the user cancels', async () => {
+      // Arrange
+      const onSave = jest.fn()
+      const onCancel = jest.fn()
+      const editorProps = { onSave, onCancel }
+      const { getByTestId } = await renderEditor(editorProps)
+      await fireEvent(
+        getByTestId('task-daily-auto-add-switch-0'),
+        'valueChange',
+        true
+      )
+
+      // Act
+      await fireEvent.press(getByTestId('preset-editor-cancel'))
+      const discardAction = jest
+        .mocked(Alert.alert)
+        .mock.calls.at(-1)?.[2]
+        ?.find((button) => button.style === 'destructive')
+      await act(() => discardAction?.onPress?.())
+
+      // Assert
+      expect(onCancel).toHaveBeenCalledTimes(1)
+      expect(onSave).not.toHaveBeenCalled()
+      expect(mockTasks[0].dailyAutoAddFrom).toBeUndefined()
+    })
   })
 })

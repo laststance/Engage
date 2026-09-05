@@ -8,6 +8,7 @@ export interface Task {
   title: string
   categoryId: string
   defaultMinutes?: number
+  dailyAutoAddFrom?: string // YYYY-MM-DD; undefined disables daily assignment
   archived: boolean
   createdAt: number
   updatedAt: number
@@ -19,6 +20,11 @@ export interface Entry {
   note: string
   createdAt: number
   updatedAt: number
+}
+
+export interface DailyTaskApplication {
+  date: string // YYYY-MM-DD
+  taskId: Task['id']
 }
 
 export interface Completion {

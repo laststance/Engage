@@ -3,7 +3,8 @@ import { Paths } from 'expo-file-system'
 import * as Sharing from 'expo-sharing'
 import * as DocumentPicker from 'expo-document-picker'
 import { DatabaseService } from './database'
-import { Task, Entry, Completion, Category } from '../types'
+import { Task, Entry, Completion, Category, DailyTaskApplication } from '@/src/types'
+import { isValidDateString } from '@/src/utils/isValidDateString'
 
 interface BackupData {
   version: string
@@ -12,6 +13,7 @@ interface BackupData {
   tasks: Task[]
   entries: Entry[]
   completions: Completion[]
+  dailyTaskApplications?: DailyTaskApplication[]
   settings: { key: string; value: string }[]
   metadata: {
     totalRecords: number
@@ -85,6 +87,7 @@ class BackupService {
         tasks: exportedData.tasks,
         entries: exportedData.entries,
         completions: exportedData.completions,
+        dailyTaskApplications: exportedData.dailyTaskApplications,
         settings: exportedData.settings,
         metadata: {
           totalRecords:
@@ -232,6 +235,7 @@ class BackupService {
         tasks: backupData.tasks,
         entries: backupData.entries,
         completions: backupData.completions,
+        dailyTaskApplications: backupData.dailyTaskApplications,
         settings: backupData.settings,
       })
 
@@ -418,6 +422,44 @@ class BackupService {
               `Invalid task structure: ${JSON.stringify(task)}`
             )
           }
+          // Legacy tasks have no schedule; new schedules must use a sortable local date.
+          if (
+            task.dailyAutoAddFrom !== undefined &&
+            !isValidDateString(task.dailyAutoAddFrom)
+          ) {
+            result.errors.push(`Invalid daily auto-add date for task: ${task.id}`)
+          }
+        }
+      }
+
+      // Application history is optional for old backups but preserves today's exclusions when present.
+      if (backupData.dailyTaskApplications !== undefined) {
+        if (!Array.isArray(backupData.dailyTaskApplications)) {
+          result.errors.push('Invalid daily task applications data')
+        } else {
+          const taskIds = new Set(
+            Array.isArray(backupData.tasks)
+              ? backupData.tasks.map((task: Task) => task.id)
+              : []
+          )
+          const applicationKeys = new Set<string>()
+
+          for (const application of backupData.dailyTaskApplications) {
+            if (
+              !application ||
+              !isValidDateString(application.date) ||
+              !taskIds.has(application.taskId)
+            ) {
+              result.errors.push('Invalid daily task application')
+              continue
+            }
+
+            const applicationKey = `${application.date}:${application.taskId}`
+            if (applicationKeys.has(applicationKey)) {
+              result.errors.push('Duplicate daily task application')
+            }
+            applicationKeys.add(applicationKey)
+          }
         }
       }
 
@@ -428,7 +470,7 @@ class BackupService {
 
         // Validate entry structure
         for (const entry of backupData.entries) {
-          if (!entry.id || !entry.date) {
+          if (!entry.id || !isValidDateString(entry.date)) {
             result.errors.push(
               `Invalid entry structure: ${JSON.stringify(entry)}`
             )
@@ -443,7 +485,7 @@ class BackupService {
 
         // Validate completion structure
         for (const completion of backupData.completions) {
-          if (!completion.id || !completion.date || !completion.taskId) {
+          if (!completion.id || !isValidDateString(completion.date) || !completion.taskId) {
             result.errors.push(
               `Invalid completion structure: ${JSON.stringify(completion)}`
             )
