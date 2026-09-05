@@ -131,6 +131,7 @@ function TodayScreenContent() {
         categories={day.categories}
         onTaskToggle={day.handleTaskToggle}
         onJournalUpdate={day.handleJournalUpdate}
+        onConditionChangeAction={day.handleConditionChangeAction}
         onTaskSelectionPress={handleTaskSelectionPress}
         isTaskSelectionDisabled={!isInitialized}
       />

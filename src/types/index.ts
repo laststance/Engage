@@ -14,10 +14,13 @@ export interface Task {
   updatedAt: number
 }
 
+export type ConditionLevel = 1 | 2 | 3 | 4 | 5
+
 export interface Entry {
   id: string
   date: string // YYYY-MM-DD
   note: string
+  conditionLevel?: ConditionLevel | null // Missing in older backups; null means unrecorded.
   createdAt: number
   updatedAt: number
 }

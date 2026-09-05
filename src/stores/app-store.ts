@@ -6,6 +6,7 @@ import {
   DayData,
   StatsData,
   Category,
+  ConditionLevel,
   TaskAssignmentOperationResult,
   TaskCompletionOperationResult,
 } from '../types'
@@ -85,6 +86,7 @@ interface AppState {
     taskId: string
   ) => Promise<TaskCompletionOperationResult>
   updateJournalEntry: (date: string, content: string) => Promise<void>
+  updateCondition: (date: string, conditionLevel: ConditionLevel | null) => Promise<boolean>
   addTasksToDate: (
     date: string,
     taskIds: string[]
@@ -165,11 +167,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Use offline service to execute data loading with proper error handling
       const loadOperation = async () => {
         // Load all data from repositories
-        const [categories, tasks, recentEntries, recentCompletions] =
+        const [categories, tasks, entries, recentCompletions] =
           await Promise.all([
             categoryRepository.findAll(),
             taskRepository.findAll(),
-            entryRepository.findRecentEntries(30), // Load last 30 days of entries
+            entryRepository.findAll(), // Keep conditions visible when browsing older calendar months.
             completionRepository.findByDateRange(
               // Load last 30 days of completions
               formatDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
@@ -177,7 +179,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             ),
           ])
 
-        return { categories, tasks, recentEntries, recentCompletions }
+        return { categories, tasks, entries, recentCompletions }
       }
 
       // Execute load operation directly
@@ -185,7 +187,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       // Transform entries and completions into maps
       const entriesMap: Record<string, Entry> = {}
-      result.recentEntries.forEach((entry) => {
+      result.entries.forEach((entry) => {
         entriesMap[entry.date] = entry
       })
 
@@ -213,7 +215,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       console.log('Data loaded successfully:', {
         categories: result.categories.length,
         tasks: result.tasks.length,
-        entries: result.recentEntries.length,
+        entries: result.entries.length,
         completions: result.recentCompletions.length,
         isOffline: offlineStatus.isOffline,
       })
@@ -343,6 +345,24 @@ export const useAppStore = create<AppState>((set, get) => ({
         change,
         message: 'Failed to toggle task completion. Please try again.',
       }
+    }
+  }),
+
+  /**
+   * Serializes picker changes with journal saves and restores whenever a day view records its condition.
+   * @param date - The date captured by the day view that initiated the change.
+   * @param conditionLevel - The selected level or null to clear it.
+   * @returns Whether persistence succeeded; failures leave the last saved entry intact.
+   * @example await useAppStore.getState().updateCondition('2026-09-05', 4) // => true
+   */
+  updateCondition: (date, conditionLevel) => enqueueDataMutation(async () => {
+    try {
+      const entry = await entryRepository.setCondition(date, conditionLevel)
+      set((state) => ({ entries: { ...state.entries, [date]: entry } }))
+      return true
+    } catch (error) {
+      console.error('Failed to save condition:', error)
+      return false
     }
   }),
 

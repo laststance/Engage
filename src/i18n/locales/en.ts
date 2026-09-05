@@ -49,6 +49,23 @@ const en = {
     outsideMonthA11yValue: 'Outside this month',
   },
 
+  condition: {
+    title: 'Daily condition',
+    description: 'Your overall physical and mental condition for this day',
+    veryLow: 'Very low',
+    low: 'Low',
+    okay: 'Okay',
+    good: 'Good',
+    great: 'Great',
+    unrecorded: 'Not recorded · You can change this later',
+    saved: '{{label}} · Saved',
+    clear: 'Clear',
+    clearLabel: 'Clear the condition for this day',
+    saveFailed: 'Could not save. Please try again.',
+    calendarLabel: 'Condition: {{label}}',
+    calendarLegend: 'Face: daily condition · Green: completed tasks',
+  },
+
   daySheet: {
     selectTasks: 'Select Tasks',
     noTasksTitle: 'No habits selected yet',

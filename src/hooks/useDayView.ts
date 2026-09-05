@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useAppStore } from '@/src/stores/app-store'
-import { Task } from '@/src/types'
+import { ConditionLevel, Task } from '@/src/types'
 import { getCurrentDate } from '@/src/utils/dateUtils'
 
 /**
@@ -22,6 +22,7 @@ export function useDayView(date: string) {
   const isTaskPickerVisible = useAppStore((state) => state.isTaskPickerVisible)
   const toggleTaskCompletion = useAppStore((state) => state.toggleTaskCompletion)
   const updateJournalEntry = useAppStore((state) => state.updateJournalEntry)
+  const updateCondition = useAppStore((state) => state.updateCondition)
   const setTaskPickerVisible = useAppStore((state) => state.setTaskPickerVisible)
   const addTasksToDate = useAppStore((state) => state.addTasksToDate)
   const refreshDailyTasks = useAppStore((state) => state.refreshDailyTasks)
@@ -59,6 +60,17 @@ export function useDayView(date: string) {
   const handleJournalUpdate = useCallback(
     async (content: string) => updateJournalEntry(date, content),
     [date, updateJournalEntry],
+  )
+
+  /**
+   * Captures the visible date when DaySheet saves or clears its condition.
+   * @param level - The selected level or null to clear it.
+   * @returns Whether that day's condition was persisted.
+   * @example await handleConditionChangeAction(4) // => updates this day even after navigation
+   */
+  const handleConditionChangeAction = useCallback(
+    (level: ConditionLevel | null) => updateCondition(date, level),
+    [date, updateCondition],
   )
 
   const handleTaskSelectionPress = useCallback(
@@ -119,6 +131,7 @@ export function useDayView(date: string) {
     // Handlers
     handleTaskToggle,
     handleJournalUpdate,
+    handleConditionChangeAction,
     handleTaskSelectionPress,
     handleTaskPickerClose,
     handleTaskSelect,

@@ -119,3 +119,9 @@ Start with **P0-A: Shared interaction feedback primitives** and apply it to one 
 4. Calendar date cell
 
 This proves the interaction contract once, then later PRs can spread it without re-litigating the feel of every control.
+
+## Daily Condition Design Review Follow-up — 2026-09-05
+
+- [ ] **Polish / Content quality: complete Japanese date and navigation copy.** The Japanese day view still shows English tab labels and an English month/weekday in the journal hint. This predates the condition feature; keep the shared navigation/date-formatting cleanup in a separate change. Evidence: the Today screenshots from the design audit on `codex/daily-condition`.
+- [ ] **Verification / Accessibility: listen to condition save feedback with VoiceOver on a physical iPhone.** FINDING-004 now announces successful saves, failures, and clears after persistence; five regression tests cover the dispatch timing and Android live-region separation. Confirm spoken order and focus retention on device before treating audible behavior as verified.
+- [ ] **Medium / Typography and responsive layout: refresh native text measurement after a live Dynamic Type change.** FINDING-006 reproduces on the baseline and the reviewed build: open Today, change iOS text size to accessibility-large while Calendar is inactive, then return to Calendar. Text paints at the larger size inside stale measured bounds until a cold restart. The shared Text wrapper and tab configuration need a separate native layout investigation that preserves unsaved drafts and font scaling. Cold-start large-text cell layout and scrolling are already fixed and verified by this review.

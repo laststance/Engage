@@ -49,6 +49,23 @@ const ja = {
     outsideMonthA11yValue: '表示中の月ではありません',
   },
 
+  condition: {
+    title: 'この日のコンディション',
+    description: '体調と気力を合わせた、この日の総合的な調子',
+    veryLow: '絶不調',
+    low: '不調',
+    okay: '普通',
+    good: '好調',
+    great: '絶好調',
+    unrecorded: '未記録 · あとから変更できます',
+    saved: '{{label}} · 記録済み',
+    clear: 'クリア',
+    clearLabel: 'この日のコンディションを未記録に戻す',
+    saveFailed: '保存できませんでした。もう一度お試しください。',
+    calendarLabel: 'コンディション：{{label}}',
+    calendarLegend: '顔：その日の調子 · 緑：タスク達成数',
+  },
+
   daySheet: {
     selectTasks: '表示するタスクを選択',
     noTasksTitle: '今日の習慣が未選択です',

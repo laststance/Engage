@@ -1,13 +1,41 @@
-import { Entry } from '../../types'
-import { databaseService, DatabaseError } from '../database'
+import type { ConditionLevel, Entry } from '@/src/types'
+import { databaseService, DatabaseError } from '@/src/services/database'
 import {
   formatDate,
   getMonthEndDate,
   getMonthStartDate,
   getWeekEndDate,
-} from '../../utils/dateUtils'
+} from '@/src/utils/dateUtils'
+
+/** SQLite columns consumed by EntryRepository's shared daily-entry mapper. */
+type EntryRow = Pick<Entry, 'id' | 'date' | 'note'> & {
+  condition_level: ConditionLevel | null
+  created_at: Entry['createdAt']
+  updated_at: Entry['updatedAt']
+}
 
 class EntryRepository {
+  /**
+   * Loads daily records at startup so older calendar months retain their saved conditions and notes.
+   * @returns Every daily entry, ordered newest first.
+   * @example await entryRepository.findAll() // => entries including dates older than 30 records
+   */
+  async findAll(): Promise<Entry[]> {
+    const rows = await databaseService.executeQuery<EntryRow>('SELECT * FROM entries ORDER BY date DESC')
+    return rows.map(this.mapRowToEntry)
+  }
+
+  /**
+   * Persists a picker change through the database when the store processes a daily condition write.
+   * @param date - The day's local YYYY-MM-DD date.
+   * @param conditionLevel - The chosen level or null to clear it.
+   * @returns The saved entry with its journal preserved.
+   * @example await entryRepository.setCondition('2026-09-05', null) // => an unrecorded condition
+   */
+  async setCondition(date: string, conditionLevel: ConditionLevel | null): Promise<Entry> {
+    return databaseService.setEntryCondition(date, conditionLevel)
+  }
+
   // Basic CRUD operations
   async findByDate(date: string): Promise<Entry | null> {
     return await databaseService.getEntry(date)
@@ -24,7 +52,7 @@ class EntryRepository {
   // Date range queries
   async findByDateRange(startDate: string, endDate: string): Promise<Entry[]> {
     try {
-      const result = await databaseService.executeQuery<any>(
+      const result = await databaseService.executeQuery<EntryRow>(
         'SELECT * FROM entries WHERE date >= ? AND date <= ? ORDER BY date DESC',
         [startDate, endDate]
       )
@@ -36,7 +64,7 @@ class EntryRepository {
 
   async findRecentEntries(limit: number = 10): Promise<Entry[]> {
     try {
-      const result = await databaseService.executeQuery<any>(
+      const result = await databaseService.executeQuery<EntryRow>(
         'SELECT * FROM entries ORDER BY date DESC LIMIT ?',
         [limit]
       )
@@ -72,7 +100,7 @@ class EntryRepository {
   // Search and filtering
   async searchByContent(searchTerm: string): Promise<Entry[]> {
     try {
-      const result = await databaseService.executeQuery<any>(
+      const result = await databaseService.executeQuery<EntryRow>(
         'SELECT * FROM entries WHERE note LIKE ? ORDER BY date DESC',
         [`%${searchTerm}%`]
       )
@@ -84,7 +112,7 @@ class EntryRepository {
 
   async findNonEmptyEntries(): Promise<Entry[]> {
     try {
-      const result = await databaseService.executeQuery<any>(
+      const result = await databaseService.executeQuery<EntryRow>(
         'SELECT * FROM entries WHERE note != "" ORDER BY date DESC'
       )
       return result.map(this.mapRowToEntry)
@@ -209,7 +237,7 @@ class EntryRepository {
   // Data transformation utilities
   async getEntriesGroupedByMonth(): Promise<Record<string, Entry[]>> {
     try {
-      const entries = await databaseService.executeQuery<any>(
+      const entries = await databaseService.executeQuery<EntryRow>(
         'SELECT * FROM entries ORDER BY date DESC'
       )
 
@@ -247,11 +275,18 @@ class EntryRepository {
   }
 
   // Helper methods
-  private mapRowToEntry(row: any): Entry {
+  /**
+   * Converts SQLite column names when repository queries hydrate daily entries for callers.
+   * @param row - A daily-entry row from the migrated database.
+   * @returns The app's entry shape with an explicit unrecorded condition when empty.
+   * @example this.mapRowToEntry(row) // => an Entry preserving its note and conditionLevel
+   */
+  private mapRowToEntry(row: EntryRow): Entry {
     return {
       id: row.id,
       date: row.date,
       note: row.note,
+      conditionLevel: row.condition_level ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }

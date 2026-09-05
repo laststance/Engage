@@ -9,11 +9,13 @@ import { IconSymbol } from '@/components/ui/icon-symbol'
 import { AppCard } from '@/src/components/AppCard'
 import { JournalInput } from './JournalInput'
 import { AppPressable } from './AppPressable'
+import { ConditionPicker } from './ConditionPicker'
 import {
   Task,
   Entry,
   Completion,
   Category,
+  ConditionLevel,
   TaskCompletionOperationResult,
 } from '@/src/types'
 import i18n, { getCategoryDisplayName } from '@/src/i18n/config'
@@ -31,6 +33,7 @@ interface DaySheetProps {
   categories: Category[]
   onTaskToggle: (taskId: string) => Promise<TaskCompletionOperationResult>
   onJournalUpdate: (content: string) => Promise<void>
+  onConditionChangeAction: (level: ConditionLevel | null) => Promise<boolean>
   onTaskSelectionPress: () => void
   isTaskSelectionDisabled?: boolean
 }
@@ -81,6 +84,7 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
   categories,
   onTaskToggle,
   onJournalUpdate,
+  onConditionChangeAction,
   onTaskSelectionPress,
   isTaskSelectionDisabled = false,
 }) => {
@@ -275,6 +279,12 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
                 {formattedDate}
               </Text>
 
+              <ConditionPicker
+                value={journalEntry?.conditionLevel}
+                onChangeAction={onConditionChangeAction}
+                disabled={isTaskSelectionDisabled}
+              />
+
               <AppPressable
                 onPress={onTaskSelectionPress}
                 disabled={isTaskSelectionDisabled}
@@ -441,27 +451,27 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
                 })}
               </VStack>
             ) : (
-              <AppCard className="p-8 items-center">
-                <Text className="text-lg font-semibold text-gray-800 text-center mb-2">
+              <Box className="px-4 py-2 items-center">
+                <Text className="text-lg font-semibold text-gray-800 text-center mb-1">
                   {t('daySheet.noTasksTitle')}
                 </Text>
-                <Text className="text-gray-500 text-center mb-4">
+                <Text className="text-gray-500 text-center mb-1">
                   {t('daySheet.noTasksMessage')}
                 </Text>
                 <AppPressable
                   onPress={onTaskSelectionPress}
                   disabled={isTaskSelectionDisabled}
                   feedback="select"
-                  className={`bg-blue-600 rounded-lg px-5 py-3 ${isTaskSelectionDisabled ? 'opacity-50' : ''}`}
-                  pressedClassName="bg-blue-700"
+                  className={`min-h-[44px] items-center justify-center rounded-lg px-4 py-2 ${isTaskSelectionDisabled ? 'opacity-50' : ''}`}
+                  pressedClassName="bg-blue-50"
                   testID="empty-task-selection-button"
                   accessibilityRole="button"
                 >
-                  <Text className="text-white font-semibold">
+                  <Text className="text-blue-600 font-semibold">
                     {t('daySheet.chooseTodaysHabits')}
                   </Text>
                 </AppPressable>
-              </AppCard>
+              </Box>
             )}
 
             <JournalInput

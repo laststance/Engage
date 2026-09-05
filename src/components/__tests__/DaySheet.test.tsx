@@ -77,6 +77,7 @@ describe('DaySheet', () => {
     categories: mockCategories,
     onTaskToggle: mockOnTaskToggle,
     onJournalUpdate: mockOnJournalUpdate,
+    onConditionChangeAction: jest.fn().mockResolvedValue(true),
     onTaskSelectionPress: mockOnTaskSelectionPress,
   }
 

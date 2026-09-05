@@ -13,6 +13,7 @@ export default function CalendarScreen() {
   const selectedDate = useAppStore((state) => state.selectedDate)
   const selectDate = useAppStore((state) => state.selectDate)
   const completions = useAppStore((state) => state.completions)
+  const entries = useAppStore((state) => state.entries)
   const achievementData = useMemo(
     () => calculateAchievementData(completions),
     [completions]
@@ -39,6 +40,7 @@ export default function CalendarScreen() {
         selectedDate={selectedDate}
         onDateSelect={handleDateSelect}
         achievementData={achievementData}
+        entries={entries}
       />
 
       <DayModal isVisible={isDayModalVisible} onClose={handleModalClose} />
