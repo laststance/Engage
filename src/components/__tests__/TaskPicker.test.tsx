@@ -137,7 +137,7 @@ describe('TaskPicker', () => {
     mockOnTaskDeleteAction.mockResolvedValue()
   })
 
-  it('shows selectable preset tasks grouped by category', async () => {
+  test('shows selectable preset tasks grouped by category', async () => {
     // Arrange & Act
     const { getByTestId, getByText } = await render(<TaskPicker {...defaultProps} />)
 
@@ -149,7 +149,7 @@ describe('TaskPicker', () => {
     expect(getByTestId('task-picker-selected-count')).toBeTruthy()
   })
 
-  it('submits the locally selected task ids after the user confirms', async () => {
+  test('submits the locally selected task ids after the user confirms', async () => {
     // Arrange
     const { getByTestId } = await render(<TaskPicker {...defaultProps} />)
 
@@ -164,7 +164,7 @@ describe('TaskPicker', () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1)
   })
 
-  it('exposes selected accessibility state on selected task items', async () => {
+  test('exposes selected accessibility state on selected task items', async () => {
     // Arrange & Act
     const { getByTestId, getByText } = await render(
       <TaskPicker {...defaultProps} selectedTasks={['task1']} />
@@ -203,7 +203,7 @@ describe('TaskPicker', () => {
     ).toBe('運動, Not selected')
   })
 
-  it('shows unsaved-change affordances after the local selection changes', async () => {
+  test('shows unsaved-change affordances after the local selection changes', async () => {
     // Arrange
     const { getByTestId, getByText } = await render(<TaskPicker {...defaultProps} />)
 
@@ -218,7 +218,7 @@ describe('TaskPicker', () => {
     )
   })
 
-  it('resyncs local selected state when the picker reopens with different tasks', async () => {
+  test('resyncs local selected state when the picker reopens with different tasks', async () => {
     // Arrange
     const { getByTestId, rerender } = await render(
       <TaskPicker {...defaultProps} selectedTasks={['task1']} />
@@ -247,7 +247,7 @@ describe('TaskPicker', () => {
     })
   })
 
-  it('preserves unsaved selections when an assigned preset is deleted', async () => {
+  test('preserves unsaved selections when an assigned preset is deleted', async () => {
     // Arrange
     const alertMock = jest.mocked(Alert.alert)
     const { getByTestId, rerender } = await render(
@@ -276,7 +276,7 @@ describe('TaskPicker', () => {
     })
   })
 
-  it('keeps the picker open and shows an error when assignment persistence fails', async () => {
+  test('keeps the picker open and shows an error when assignment persistence fails', async () => {
     // Arrange
     mockOnTaskSelect.mockResolvedValue({
       success: false,
@@ -297,7 +297,7 @@ describe('TaskPicker', () => {
     expect(mockOnClose).not.toHaveBeenCalled()
   })
 
-  it('shows the first-preset action when there are no preset tasks', async () => {
+  test('shows the first-preset action when there are no preset tasks', async () => {
     // Arrange & Act
     const { getByText } = await render(
       <TaskPicker {...defaultProps} presetTasks={[]} />
@@ -308,7 +308,7 @@ describe('TaskPicker', () => {
     expect(getByText('presetEditor.addTask')).toBeTruthy()
   })
 
-  it('deletes the swiped preset only after the destructive action is confirmed', async () => {
+  test('deletes the swiped preset only after the destructive action is confirmed', async () => {
     // Arrange
     const alertMock = jest.mocked(Alert.alert)
     const { getByTestId } = await render(<TaskPicker {...defaultProps} />)
@@ -326,7 +326,7 @@ describe('TaskPicker', () => {
     expect(mockOnTaskDeleteAction).toHaveBeenCalledTimes(1)
   })
 
-  it('lets assistive technology confirm and delete a preset', async () => {
+  test('lets assistive technology confirm and delete a preset', async () => {
     // Arrange
     const alertMock = jest.mocked(Alert.alert)
     const { getByTestId } = await render(<TaskPicker {...defaultProps} />)
@@ -344,7 +344,7 @@ describe('TaskPicker', () => {
     })
   })
 
-  it('blocks swipe deletion while task selection is saving', async () => {
+  test('blocks swipe deletion while task selection is saving', async () => {
     // Arrange
     let resolveSave: (result: TaskAssignmentOperationResult) => void = () => {}
     mockOnTaskSelect.mockReturnValue(
@@ -376,7 +376,7 @@ describe('TaskPicker', () => {
     })
   })
 
-  it('prevents duplicate assignment saves while confirm is already pending', async () => {
+  test('prevents duplicate assignment saves while confirm is already pending', async () => {
     // Arrange
     let resolveSave: (result: TaskAssignmentOperationResult) => void = () => {}
     mockOnTaskSelect.mockReturnValue(

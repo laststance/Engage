@@ -38,7 +38,7 @@ describe('daily routine persistence with real SQLite', () => {
     jest.clearAllMocks()
   })
 
-  it('keeps existing tasks opted out when upgrading the database from version 3', async () => {
+  test('keeps existing tasks opted out when upgrading the database from version 3', async () => {
     // Arrange: recreate a version 3 task table containing a saved task.
     sqliteDatabase.exec(`
       DROP TRIGGER delete_task_daily_applications;
@@ -64,7 +64,7 @@ describe('daily routine persistence with real SQLite', () => {
       .toEqual({ version: 6 })
   })
 
-  it('upgrades version 4 with an index that targets only the deleted task’s routine history', async () => {
+  test('upgrades version 4 with an index that targets only the deleted task’s routine history', async () => {
     // Arrange
     const routine = await databaseService.createTask({
       title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
@@ -93,7 +93,7 @@ describe('daily routine persistence with real SQLite', () => {
     ])
   })
 
-  it('adds eligible routines only on the requested date and leaves future, disabled, and archived tasks out', async () => {
+  test('adds eligible routines only on the requested date and leaves future, disabled, and archived tasks out', async () => {
     // Arrange
     const routine = await databaseService.createTask({
       title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
@@ -117,7 +117,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect(await databaseService.getCompletions('2026-09-06')).toEqual([])
   })
 
-  it('preserves manual assignments and finished routines when applying the same day repeatedly', async () => {
+  test('preserves manual assignments and finished routines when applying the same day repeatedly', async () => {
     // Arrange
     const routine = await databaseService.createTask({
       title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
@@ -141,7 +141,7 @@ describe('daily routine persistence with real SQLite', () => {
     ])
   })
 
-  it('keeps a routine removed for today out after restarting but adds it tomorrow', async () => {
+  test('keeps a routine removed for today out after restarting but adds it tomorrow', async () => {
     // Arrange
     const routine = await databaseService.createTask({
       title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
@@ -161,7 +161,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect(tomorrow[0]).toMatchObject({ taskId: routine.id, date: '2026-09-07', completed: false })
   })
 
-  it('adds the next day even when yesterday remains unfinished', async () => {
+  test('adds the next day even when yesterday remains unfinished', async () => {
     // Arrange
     const routine = await databaseService.createTask({
       title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
@@ -177,7 +177,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect((await databaseService.getCompletions('2026-09-06'))[0].completed).toBe(false)
   })
 
-  it('preserves today and history when a routine is switched off', async () => {
+  test('preserves today and history when a routine is switched off', async () => {
     // Arrange
     const routine = await databaseService.createTask({
       title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
@@ -194,7 +194,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect((await databaseService.getTaskById(routine.id))?.dailyAutoAddFrom).toBeUndefined()
   })
 
-  it('rolls back routine assignments when saving application history fails', async () => {
+  test('rolls back routine assignments when saving application history fails', async () => {
     // Arrange
     await databaseService.createTask({
       title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
@@ -212,7 +212,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect(await databaseService.applyDailyTasks('2026-09-06')).toHaveLength(1)
   })
 
-  it('removes daily application history when its task is deleted', async () => {
+  test('removes daily application history when its task is deleted', async () => {
     // Arrange
     const routine = await databaseService.createTask({
       title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
@@ -226,7 +226,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect(sqliteDatabase.prepare('SELECT * FROM daily_task_applications').all()).toEqual([])
   })
 
-  it('restores schedules and today-only exclusions through a JSON backup roundtrip', async () => {
+  test('restores schedules and today-only exclusions through a JSON backup roundtrip', async () => {
     // Arrange
     const routine = await databaseService.createTask({
       title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
@@ -257,7 +257,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect(await databaseService.applyDailyTasks('2026-09-07')).toHaveLength(1)
   })
 
-  it('accepts older backups with no schedule or daily application history', async () => {
+  test('accepts older backups with no schedule or daily application history', async () => {
     // Arrange
     const legacyBackup = {
       version: '1.0', timestamp: Date.now(), categories: [{ id: 'life', name: '生活' }],
@@ -276,7 +276,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect(await databaseService.applyDailyTasks('2026-09-06')).toEqual([])
   })
 
-  it.each(['2026-02-31', '2026-02-29'])('rejects the nonexistent date %s in routine and journal writes', async (date) => {
+  test.each(['2026-02-31', '2026-02-29'])('rejects the nonexistent date %s in routine and journal writes', async (date) => {
     // Arrange
     const routine = await databaseService.createTask({
       title: 'Read', categoryId: 'life', archived: false,
@@ -295,7 +295,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect((await databaseService.getTaskById(routine.id))?.dailyAutoAddFrom).toBeUndefined()
   })
 
-  it.each([
+  test.each([
     { tasks: [{ id: 'routine', title: 'Read', categoryId: 'life', archived: false, createdAt: 1, updatedAt: 1, dailyAutoAddFrom: '2026-02-31' }] },
     { entries: [{ id: 'entry', date: '2026-02-29', note: 'Read', createdAt: 1, updatedAt: 1 }] },
     { completions: [{ id: 'completion', date: '2026-02-31', taskId: 'routine', completed: false, createdAt: 1 }] },
@@ -319,7 +319,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect(await databaseService.getTaskById(savedTask.id)).toMatchObject({ title: 'Keep me' })
   })
 
-  it('restores valid leap-day schedules, entries, assignments, and application history', async () => {
+  test('restores valid leap-day schedules, entries, assignments, and application history', async () => {
     // Arrange
     initializeBackupService(databaseService)
     const backup = {
@@ -343,7 +343,7 @@ describe('daily routine persistence with real SQLite', () => {
     expect((await databaseService.getTaskById('routine'))?.dailyAutoAddFrom).toBe('2024-02-29')
   })
 
-  it.each([
+  test.each([
     { dailyTaskApplications: 'invalid' },
     { dailyTaskApplications: [{ date: '2026-09-06', taskId: 'missing' }] },
     { dailyTaskApplications: [{ date: 'invalid', taskId: 'routine' }] },

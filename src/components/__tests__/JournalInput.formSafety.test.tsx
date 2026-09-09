@@ -49,7 +49,7 @@ describe('JournalInput form safety', () => {
     jest.useRealTimers()
   })
 
-  it('shows an unsaved draft state before autosave runs', async () => {
+  test('shows an unsaved draft state before autosave runs', async () => {
     // Arrange
     const onUpdate = jest.fn().mockResolvedValue(undefined)
     const { getAllByText, getByDisplayValue, getByTestId, getByText } =
@@ -67,7 +67,7 @@ describe('JournalInput form safety', () => {
     expect(onUpdate).not.toHaveBeenCalled()
   })
 
-  it('keeps failed journal text visible and retryable after persistence fails', async () => {
+  test('keeps failed journal text visible and retryable after persistence fails', async () => {
     // Arrange
     const onUpdate = jest
       .fn()
@@ -96,7 +96,7 @@ describe('JournalInput form safety', () => {
     expect(onUpdate).toHaveBeenLastCalledWith('Important draft')
   })
 
-  it('shows saved after autosave updates the parent journal entry', async () => {
+  test('shows saved after autosave updates the parent journal entry', async () => {
     // Arrange
     let finishSave: () => void = () => undefined
     const onUpdate = jest.fn(() => new Promise<void>((resolve) => {
@@ -138,7 +138,7 @@ describe('JournalInput form safety', () => {
     })
   })
 
-  it('does not replace a newer local draft when an older entry update arrives', async () => {
+  test('does not replace a newer local draft when an older entry update arrives', async () => {
     // Arrange
     const olderSavedEntry: Entry = {
       ...defaultEntry,
@@ -171,7 +171,7 @@ describe('JournalInput form safety', () => {
     expect(getByDisplayValue('Newer local draft')).toBeTruthy()
   })
 
-  it('keeps the journal return key for line breaks while the Done control closes editing', async () => {
+  test('keeps the journal return key for line breaks while the Done control closes editing', async () => {
     // Arrange
     const { getByTestId, getByText } = await renderJournalInput()
 
@@ -188,7 +188,7 @@ describe('JournalInput form safety', () => {
     expect(getByTestId('journal-text-input').props.submitBehavior).toBe('newline')
   })
 
-  it('does not dismiss the keyboard when the multiline journal return key is pressed', async () => {
+  test('does not dismiss the keyboard when the multiline journal return key is pressed', async () => {
     // Arrange
     const { getByTestId } = await renderJournalInput()
 
@@ -200,7 +200,7 @@ describe('JournalInput form safety', () => {
     expect(Keyboard.dismiss).not.toHaveBeenCalled()
   })
 
-  it('keeps newline characters in the journal draft text', async () => {
+  test('keeps newline characters in the journal draft text', async () => {
     // Arrange
     const { getByDisplayValue, getByTestId } = await renderJournalInput()
 
@@ -216,7 +216,7 @@ describe('JournalInput form safety', () => {
     ).toBeTruthy()
   })
 
-  it('saves a pending reflection to its original date when the day changes before autosave', async () => {
+  test('saves a pending reflection to its original date when the day changes before autosave', async () => {
     // Arrange
     const savePreviousDay = jest.fn().mockResolvedValue(undefined)
     const saveNextDay = jest.fn().mockResolvedValue(undefined)
@@ -253,7 +253,7 @@ describe('JournalInput form safety', () => {
     expect(getByTestId('journal-text-input').props.value).toBe('')
   })
 
-  it('does not save an unchanged reflection when its day closes', async () => {
+  test('does not save an unchanged reflection when its day closes', async () => {
     // Arrange
     const onUpdate = jest.fn().mockResolvedValue(undefined)
     const { unmount } = await renderJournalInput({ onUpdate })
@@ -265,7 +265,7 @@ describe('JournalInput form safety', () => {
     expect(onUpdate).not.toHaveBeenCalled()
   })
 
-  it('autosaves a pending reflection through its original callback after the date changes without remounting', async () => {
+  test('autosaves a pending reflection through its original callback after the date changes without remounting', async () => {
     // Arrange
     const savePreviousDay = jest.fn().mockResolvedValue(undefined)
     const saveNextDay = jest.fn().mockResolvedValue(undefined)
@@ -293,7 +293,7 @@ describe('JournalInput form safety', () => {
     expect(saveNextDay).not.toHaveBeenCalled()
   })
 
-  it('flushes a pending reflection on blur through its original callback after the date changes without remounting', async () => {
+  test('flushes a pending reflection on blur through its original callback after the date changes without remounting', async () => {
     // Arrange
     const savePreviousDay = jest.fn().mockResolvedValue(undefined)
     const saveNextDay = jest.fn().mockResolvedValue(undefined)
@@ -319,7 +319,7 @@ describe('JournalInput form safety', () => {
     expect(saveNextDay).not.toHaveBeenCalled()
   })
 
-  it('persists a reversal after an earlier autosave acknowledges different text', async () => {
+  test('persists a reversal after an earlier autosave acknowledges different text', async () => {
     // Arrange
     let finishFirstSave: () => void = () => undefined
     const onUpdate = jest.fn()
@@ -355,7 +355,7 @@ describe('JournalInput form safety', () => {
     expect(onUpdate).toHaveBeenNthCalledWith(2, '')
   })
 
-  it('flushes a reversal to its original day when midnight interrupts an earlier autosave', async () => {
+  test('flushes a reversal to its original day when midnight interrupts an earlier autosave', async () => {
     // Arrange
     let finishFirstSave: () => void = () => undefined
     const savePreviousDay = jest.fn()
@@ -388,7 +388,7 @@ describe('JournalInput form safety', () => {
     expect(saveNextDay).not.toHaveBeenCalled()
   })
 
-  it('keeps the final draft when an acknowledgment matches it before a different queued save', async () => {
+  test('keeps the final draft when an acknowledgment matches it before a different queued save', async () => {
     // Arrange
     let finishFirstSave: () => void = () => undefined
     const onUpdate = jest.fn()
@@ -427,7 +427,7 @@ describe('JournalInput form safety', () => {
     expect(onUpdate).toHaveBeenNthCalledWith(3, 'Final reflection')
   })
 
-  it('does not repeat a save when the latest draft returns to text already being saved', async () => {
+  test('does not repeat a save when the latest draft returns to text already being saved', async () => {
     // Arrange
     let finishSave: () => void = () => undefined
     const onUpdate = jest.fn(() => new Promise<void>((resolve) => {
@@ -454,7 +454,7 @@ describe('JournalInput form safety', () => {
     expect(onUpdate).toHaveBeenCalledTimes(1)
   })
 
-  it('does not duplicate an autosave already in progress when its day closes', async () => {
+  test('does not duplicate an autosave already in progress when its day closes', async () => {
     // Arrange
     let finishSave: () => void = () => undefined
     const onUpdate = jest.fn(() => new Promise<void>((resolve) => {
@@ -478,7 +478,7 @@ describe('JournalInput form safety', () => {
     expect(onUpdate).toHaveBeenCalledWith('Already saving')
   })
 
-  it('keeps the latest reflection last when its day closes during queued autosaves', async () => {
+  test('keeps the latest reflection last when its day closes during queued autosaves', async () => {
     // Arrange
     let finishFirstSave: () => void = () => undefined
     const onUpdate = jest.fn()

@@ -139,7 +139,7 @@ describe('useAppStore', () => {
   })
 
   describe('loadData', () => {
-    it('should load data from repositories successfully', async () => {
+    test('should load data from repositories successfully', async () => {
       // Setup mocks
       ;(categoryRepository.findAll as jest.Mock).mockResolvedValue(
         mockCategories
@@ -164,7 +164,7 @@ describe('useAppStore', () => {
       expect(state.error).toBeNull()
     })
 
-    it('should handle loading errors', async () => {
+    test('should handle loading errors', async () => {
       const error = new Error('Database error')
       ;(categoryRepository.findAll as jest.Mock).mockRejectedValue(error)
 
@@ -188,7 +188,7 @@ describe('useAppStore', () => {
       jest.useRealTimers()
     })
 
-    it('does not access routine tables while startup migrations are still running', async () => {
+    test('does not access routine tables while startup migrations are still running', async () => {
       // Arrange
       useAppStore.setState({ isInitialized: false })
 
@@ -200,7 +200,7 @@ describe('useAppStore', () => {
       expect(taskRepository.applyDailyTasks).not.toHaveBeenCalled()
     })
 
-    it.each(['createBackup', 'exportData'] as const)('takes a consistent %s snapshot after a pending routine refresh', async (action) => {
+    test.each(['createBackup', 'exportData'] as const)('takes a consistent %s snapshot after a pending routine refresh', async (action) => {
       // Arrange
       let finishRefresh: (completions: Completion[]) => void = () => undefined
       jest.mocked(taskRepository.applyDailyTasks).mockImplementationOnce(() => new Promise((resolve) => {
@@ -222,7 +222,7 @@ describe('useAppStore', () => {
       expect(backupOperation).toHaveBeenCalledTimes(1)
     })
 
-    it('shows today’s incomplete routines while preserving completed tasks and the calendar date', async () => {
+    test('shows today’s incomplete routines while preserving completed tasks and the calendar date', async () => {
       // Arrange
       const dailyCompletions: Completion[] = [
         { id: 'daily-walk', date: '2026-09-06', taskId: 'walk', completed: false, createdAt: 1 },
@@ -244,7 +244,7 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().selectedDate).toBe('2025-01-15')
     })
 
-    it('keeps a task deselected when the picker saves during a routine refresh', async () => {
+    test('keeps a task deselected when the picker saves during a routine refresh', async () => {
       // Arrange
       const dailyCompletions: Completion[] = [
         { id: 'daily-walk', date: '2026-09-06', taskId: 'walk', completed: false, createdAt: 1 },
@@ -267,7 +267,7 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().completions['2026-09-06']).toBeUndefined()
     })
 
-    it('refreshes the new local day when a pending edit crosses midnight', async () => {
+    test('refreshes the new local day when a pending edit crosses midnight', async () => {
       // Arrange
       let finishEdit: (completed: boolean) => void = () => undefined
       jest.mocked(completionRepository.toggle).mockImplementationOnce(() => new Promise((resolve) => {
@@ -287,7 +287,7 @@ describe('useAppStore', () => {
       expect(taskRepository.applyDailyTasks).toHaveBeenCalledWith('2026-09-07')
     })
 
-    it('retains visible tasks after a failed daily refresh and recovers on retry', async () => {
+    test('retains visible tasks after a failed daily refresh and recovers on retry', async () => {
       // Arrange
       useAppStore.setState({ completions: { '2025-01-15': mockCompletions } })
       jest.mocked(taskRepository.applyDailyTasks)
@@ -311,7 +311,7 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().completions['2026-09-06']).toEqual([])
     })
 
-    it('keeps a journal error visible when background routines refresh successfully', async () => {
+    test('keeps a journal error visible when background routines refresh successfully', async () => {
       // Arrange
       useAppStore.setState({ error: 'Journal could not be saved.', hasDailyTaskError: true })
       jest.mocked(taskRepository.applyDailyTasks).mockResolvedValue([])
@@ -324,7 +324,7 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().hasDailyTaskError).toBe(false)
     })
 
-    it('keeps a task error visible when background routines fail to refresh', async () => {
+    test('keeps a task error visible when background routines fail to refresh', async () => {
       // Arrange
       useAppStore.setState({ error: 'Task could not be saved.' })
       jest.mocked(taskRepository.applyDailyTasks).mockRejectedValue(new Error('SQLite unavailable'))
@@ -339,7 +339,7 @@ describe('useAppStore', () => {
   })
 
   describe('toggleTaskCompletion', () => {
-    it('creates a completed record when an assigned task is finished', async () => {
+    test('creates a completed record when an assigned task is finished', async () => {
       // Arrange
       ;(completionRepository.toggle as jest.Mock).mockResolvedValue(true)
 
@@ -360,7 +360,7 @@ describe('useAppStore', () => {
       expect(state.completions['2025-01-15'][0].completed).toBe(true)
     })
 
-    it('marks a completed task incomplete when it is toggled again', async () => {
+    test('marks a completed task incomplete when it is toggled again', async () => {
       // Arrange
       useAppStore.setState({
         completions: {
@@ -385,7 +385,7 @@ describe('useAppStore', () => {
       expect(state.completions['2025-01-15'][0].completed).toBe(false)
     })
 
-    it('rolls back the visible completion when persistence fails', async () => {
+    test('rolls back the visible completion when persistence fails', async () => {
       // Arrange
       useAppStore.setState({
         completions: {
@@ -415,7 +415,7 @@ describe('useAppStore', () => {
       )
     })
 
-    it('keeps another successful completion update when rollback is needed', async () => {
+    test('keeps another successful completion update when rollback is needed', async () => {
       // Arrange
       const concurrentCompletion = {
         id: 'comp2',
@@ -466,7 +466,7 @@ describe('useAppStore', () => {
   })
 
   describe('addTasksToDate', () => {
-    it('assigns newly selected tasks as incomplete records', async () => {
+    test('assigns newly selected tasks as incomplete records', async () => {
       // Arrange
       const assignedCompletion = {
         id: 'comp2',
@@ -519,7 +519,7 @@ describe('useAppStore', () => {
       expect(state.completions['2025-01-15'][1].completed).toBe(false)
     })
 
-    it('keeps the picker recoverable when task assignment persistence fails', async () => {
+    test('keeps the picker recoverable when task assignment persistence fails', async () => {
       // Arrange
       useAppStore.setState({
         completions: {
@@ -550,7 +550,7 @@ describe('useAppStore', () => {
       expect(state.error).toBe('SQLite is unavailable')
     })
 
-    it('keeps the latest visible completion while task assignment save finishes', async () => {
+    test('keeps the latest visible completion while task assignment save finishes', async () => {
       // Arrange
       const assignedCompletion = {
         id: 'comp2',
@@ -611,7 +611,7 @@ describe('useAppStore', () => {
   })
 
   describe('updatePresetTasks', () => {
-    it('removes a deleted preset from task lists and assigned days', async () => {
+    test('removes a deleted preset from task lists and assigned days', async () => {
       // Arrange
       const remainingCompletion = {
         id: 'comp2',
@@ -640,7 +640,7 @@ describe('useAppStore', () => {
       ])
     })
 
-    it('preserves loaded day references when presets are edited without deletion', async () => {
+    test('preserves loaded day references when presets are edited without deletion', async () => {
       // Arrange
       const loadedCompletions = {
         '2025-01-15': mockCompletions,
@@ -658,7 +658,7 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().completions).toBe(loadedCompletions)
     })
 
-    it('keeps loaded task data unchanged when reconciliation fails after deletion', async () => {
+    test('keeps loaded task data unchanged when reconciliation fails after deletion', async () => {
       // Arrange
       const loadedCompletions = {
         '2025-01-15': mockCompletions,
@@ -695,7 +695,7 @@ describe('useAppStore', () => {
   })
 
   describe('daily condition writes', () => {
-    it('updates only the requested day and leaves task completions unchanged', async () => {
+    test('updates only the requested day and leaves task completions unchanged', async () => {
       // Arrange
       const savedEntry: Entry = {
         id: 'entry-condition', date: '2026-09-04', note: 'A saved reflection',
@@ -714,7 +714,7 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().completions['2025-01-15']).toEqual(mockCompletions)
     })
 
-    it('keeps a backup behind a pending condition save so the snapshot contains the new value', async () => {
+    test('keeps a backup behind a pending condition save so the snapshot contains the new value', async () => {
       // Arrange
       let finishSave: (entry: Entry) => void = () => undefined
       jest.mocked(entryRepository.setCondition).mockImplementationOnce(
@@ -739,7 +739,7 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().entries['2026-09-05'].conditionLevel).toBe(2)
     })
 
-    it('retains the saved daily record after a write failure and accepts the next choice', async () => {
+    test('retains the saved daily record after a write failure and accepts the next choice', async () => {
       // Arrange
       const previousEntry: Entry = {
         id: 'day', date: '2026-09-05', note: 'Keep this note', conditionLevel: 4, createdAt: 1, updatedAt: 2,
@@ -766,7 +766,7 @@ describe('useAppStore', () => {
   })
 
   describe('updateJournalEntry', () => {
-    it('should update journal entry and local state', async () => {
+    test('should update journal entry and local state', async () => {
       const updatedEntry = {
         id: 'entry1',
         date: '2025-01-15',
@@ -790,7 +790,7 @@ describe('useAppStore', () => {
   })
 
   describe('category management', () => {
-    it('should create category and update state', async () => {
+    test('should create category and update state', async () => {
       const newCategory = { id: 'study', name: '勉強' }
       ;(categoryRepository.create as jest.Mock).mockResolvedValue(newCategory)
 
@@ -801,7 +801,7 @@ describe('useAppStore', () => {
       expect(state.categories).toContain(newCategory)
     })
 
-    it('should update category and update state', async () => {
+    test('should update category and update state', async () => {
       useAppStore.setState({ categories: [mockCategories[0]] })
 
       const updatedCategory = { id: 'business', name: '新事業' }
@@ -816,7 +816,7 @@ describe('useAppStore', () => {
       expect(state.categories[0]).toEqual(updatedCategory)
     })
 
-    it('should delete category and update state', async () => {
+    test('should delete category and update state', async () => {
       useAppStore.setState({ categories: mockCategories })
       ;(categoryRepository.delete as jest.Mock).mockResolvedValue(undefined)
 
@@ -839,7 +839,7 @@ describe('useAppStore', () => {
       })
     })
 
-    it('should get day progress correctly', () => {
+    test('should get day progress correctly', () => {
       const store = useAppStore.getState()
       const progress = store.getDayProgress('2025-01-15')
 
@@ -849,7 +849,7 @@ describe('useAppStore', () => {
       expect(progress.hasJournalEntry).toBe(true)
     })
 
-    it('should get task completion status', () => {
+    test('should get task completion status', () => {
       const store = useAppStore.getState()
       const status = store.getTaskCompletionStatus('2025-01-15')
 
@@ -857,7 +857,7 @@ describe('useAppStore', () => {
       expect(status.task2).toBe(false)
     })
 
-    it('should validate and update journal', async () => {
+    test('should validate and update journal', async () => {
       const journalEntry = {
         id: 'entry1',
         date: '2025-01-15',
@@ -882,7 +882,7 @@ describe('useAppStore', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('should reject invalid journal entries', async () => {
+    test('should reject invalid journal entries', async () => {
       ;(journalService.saveEntry as jest.Mock).mockResolvedValue({
         success: false,
         entry: null,
@@ -902,7 +902,7 @@ describe('useAppStore', () => {
       )
     })
 
-    it('should get motivational message', () => {
+    test('should get motivational message', () => {
       const store = useAppStore.getState()
       const message = store.getMotivationalMessage('2025-01-15')
 
@@ -910,7 +910,7 @@ describe('useAppStore', () => {
       expect(typeof message).toBe('string')
     })
 
-    it('should check daily flow completion', () => {
+    test('should check daily flow completion', () => {
       const store = useAppStore.getState()
       const completed = store.hasCompletedDailyFlow('2025-01-15')
 
@@ -928,7 +928,7 @@ describe('useAppStore', () => {
       })
     })
 
-    it('should get stats for week period', () => {
+    test('should get stats for week period', () => {
       const store = useAppStore.getState()
       const stats = store.getStatsForPeriod('week')
 
@@ -941,7 +941,7 @@ describe('useAppStore', () => {
       expect(stats).toHaveProperty('categoryBreakdown')
     })
 
-    it('should get stats for month period', () => {
+    test('should get stats for month period', () => {
       const store = useAppStore.getState()
       const stats = store.getStatsForPeriod('month')
 
@@ -954,14 +954,14 @@ describe('useAppStore', () => {
       expect(stats).toHaveProperty('categoryBreakdown')
     })
 
-    it('should get achievement data', () => {
+    test('should get achievement data', () => {
       const store = useAppStore.getState()
       const data = store.getAchievementData()
 
       expect(data['2025-01-15']).toBe(1) // One completion
     })
 
-    it('should get day data', () => {
+    test('should get day data', () => {
       const store = useAppStore.getState()
       const dayData = store.getDayData('2025-01-15')
 
@@ -971,7 +971,7 @@ describe('useAppStore', () => {
       expect(dayData.entry).toEqual(mockEntries[0])
     })
 
-    it('should get streak data', () => {
+    test('should get streak data', () => {
       const store = useAppStore.getState()
       const streakData = store.getStreakData('2025-01-15')
 
@@ -982,7 +982,7 @@ describe('useAppStore', () => {
   })
 
   describe('UI state management', () => {
-    it('should manage modal visibility', () => {
+    test('should manage modal visibility', () => {
       const store = useAppStore.getState()
 
       store.setTaskPickerVisible(true)
@@ -995,7 +995,7 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().isCategoryEditorVisible).toBe(true)
     })
 
-    it('should manage tab navigation', () => {
+    test('should manage tab navigation', () => {
       const store = useAppStore.getState()
 
       store.setCurrentTab('today')
@@ -1005,14 +1005,14 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().currentTab).toBe('stats')
     })
 
-    it('should manage selected date', () => {
+    test('should manage selected date', () => {
       const store = useAppStore.getState()
 
       store.selectDate('2025-01-16')
       expect(useAppStore.getState().selectedDate).toBe('2025-01-16')
     })
 
-    it('should manage error state', () => {
+    test('should manage error state', () => {
       useAppStore.setState({ error: 'Test error' })
 
       const store = useAppStore.getState()

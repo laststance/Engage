@@ -21,7 +21,7 @@ describe('TodayScreenErrorBoundary', () => {
     jest.restoreAllMocks()
   })
 
-  it('announces a localized fallback without raw diagnostics and restores Today after retry', async () => {
+  test('announces a localized fallback without raw diagnostics and restores Today after retry', async () => {
     // Arrange
     let shouldThrow = true
 

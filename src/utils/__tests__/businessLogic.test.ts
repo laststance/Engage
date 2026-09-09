@@ -83,7 +83,7 @@ const mockEntry: Entry = {
 
 describe('businessLogic utils', () => {
   describe('getSuggestedTasks', () => {
-    it('should return 3 suggested tasks with business and life mix', () => {
+    test('should return 3 suggested tasks with business and life mix', () => {
       const suggestions = getSuggestedTasks(mockTasks, mockCategories)
 
       expect(suggestions).toHaveLength(3)
@@ -92,14 +92,14 @@ describe('businessLogic utils', () => {
       expect(suggestions[2].categoryId).toBe('life')
     })
 
-    it('should handle empty task list', () => {
+    test('should handle empty task list', () => {
       const suggestions = getSuggestedTasks([], mockCategories)
       expect(suggestions).toHaveLength(0)
     })
   })
 
   describe('groupTasksByCategory', () => {
-    it('should group tasks by category correctly', () => {
+    test('should group tasks by category correctly', () => {
       const groups = groupTasksByCategory(mockTasks, mockCategories)
 
       expect(groups.business).toHaveLength(2)
@@ -112,7 +112,7 @@ describe('businessLogic utils', () => {
   })
 
   describe('calculateDayProgress', () => {
-    it('should calculate progress correctly', () => {
+    test('should calculate progress correctly', () => {
       const progress = calculateDayProgress(
         '2025-01-15',
         mockTasks,
@@ -133,7 +133,7 @@ describe('businessLogic utils', () => {
       expect(progress.categoryProgress.life.total).toBe(2)
     })
 
-    it('should handle day with no completions', () => {
+    test('should handle day with no completions', () => {
       const progress = calculateDayProgress(
         '2025-01-16',
         mockTasks,
@@ -149,24 +149,24 @@ describe('businessLogic utils', () => {
   })
 
   describe('isTaskCompleted', () => {
-    it('should return true for completed task', () => {
+    test('should return true for completed task', () => {
       const completed = isTaskCompleted('task1', '2025-01-15', mockCompletions)
       expect(completed).toBe(true)
     })
 
-    it('should return false for non-completed task', () => {
+    test('should return false for non-completed task', () => {
       const completed = isTaskCompleted('task2', '2025-01-15', mockCompletions)
       expect(completed).toBe(false)
     })
 
-    it('should return false for different date', () => {
+    test('should return false for different date', () => {
       const completed = isTaskCompleted('task1', '2025-01-16', mockCompletions)
       expect(completed).toBe(false)
     })
   })
 
   describe('getTaskCompletionStatus', () => {
-    it('should return completion status for multiple tasks', () => {
+    test('should return completion status for multiple tasks', () => {
       const status = getTaskCompletionStatus(
         ['task1', 'task2', 'task3'],
         '2025-01-15',
@@ -180,13 +180,13 @@ describe('businessLogic utils', () => {
   })
 
   describe('validateJournalEntry', () => {
-    it('should validate normal journal entry', () => {
+    test('should validate normal journal entry', () => {
       const result = validateJournalEntry('This is a normal entry')
       expect(result.isValid).toBe(true)
       expect(result.errors).toHaveLength(0)
     })
 
-    it('should reject too long entry', () => {
+    test('should reject too long entry', () => {
       const longEntry = 'a'.repeat(1001)
       const result = validateJournalEntry(longEntry)
       expect(result.isValid).toBe(false)
@@ -195,28 +195,28 @@ describe('businessLogic utils', () => {
       )
     })
 
-    it('should accept empty entry', () => {
+    test('should accept empty entry', () => {
       const result = validateJournalEntry('')
       expect(result.isValid).toBe(true)
     })
   })
 
   describe('getJournalPlaceholder', () => {
-    it('should return completion-specific placeholder', () => {
+    test('should return completion-specific placeholder', () => {
       const placeholder = getJournalPlaceholder(true)
       expect(placeholder).toBe(
         '今日達成したことについて振り返ってみましょう...'
       )
     })
 
-    it('should return default placeholder', () => {
+    test('should return default placeholder', () => {
       const placeholder = getJournalPlaceholder(false)
       expect(placeholder).toBe('日記を書いてみましょう...')
     })
   })
 
   describe('hasCompletedDailyFlow', () => {
-    it('should return true when both tasks and journal are completed', () => {
+    test('should return true when both tasks and journal are completed', () => {
       const completed = hasCompletedDailyFlow(
         '2025-01-15',
         mockCompletions,
@@ -225,12 +225,12 @@ describe('businessLogic utils', () => {
       expect(completed).toBe(true)
     })
 
-    it('should return false when no tasks completed', () => {
+    test('should return false when no tasks completed', () => {
       const completed = hasCompletedDailyFlow('2025-01-16', [], mockEntry)
       expect(completed).toBe(false)
     })
 
-    it('should return false when no journal entry', () => {
+    test('should return false when no journal entry', () => {
       const completed = hasCompletedDailyFlow(
         '2025-01-15',
         mockCompletions,
@@ -239,7 +239,7 @@ describe('businessLogic utils', () => {
       expect(completed).toBe(false)
     })
 
-    it('should return false when journal entry is empty', () => {
+    test('should return false when journal entry is empty', () => {
       const emptyEntry = { ...mockEntry, note: '' }
       const completed = hasCompletedDailyFlow(
         '2025-01-15',
@@ -251,7 +251,7 @@ describe('businessLogic utils', () => {
   })
 
   describe('getMotivationalMessage', () => {
-    it('should return start message for no completions', () => {
+    test('should return start message for no completions', () => {
       const progress = calculateDayProgress(
         '2025-01-16',
         mockTasks,
@@ -263,7 +263,7 @@ describe('businessLogic utils', () => {
       expect(message).toBe('タスクを選んで今日を始めましょう！')
     })
 
-    it('should return perfect day message for 100% completion with journal', () => {
+    test('should return perfect day message for 100% completion with journal', () => {
       const allCompletions: Completion[] = [
         {
           id: 'c1',
@@ -305,7 +305,7 @@ describe('businessLogic utils', () => {
       expect(message).toBe('素晴らしい！今日も完璧な一日でした！')
     })
 
-    it('should return journal reminder for 100% completion without journal', () => {
+    test('should return journal reminder for 100% completion without journal', () => {
       const allCompletions: Completion[] = [
         {
           id: 'c1',
@@ -347,7 +347,7 @@ describe('businessLogic utils', () => {
       expect(message).toBe('タスク完了！日記を書いて一日を振り返りましょう')
     })
 
-    it('should return encouragement for partial completion', () => {
+    test('should return encouragement for partial completion', () => {
       const progress = calculateDayProgress(
         '2025-01-15',
         mockTasks,

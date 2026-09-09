@@ -92,19 +92,19 @@ export const groupTasksByCategory = (tasks: Task[]): Record<string, Task[]> => {
 
 describe('PresetTaskEditor Helper Functions', () => {
   describe('validateTaskList', () => {
-    it('should validate a list with valid tasks', () => {
+    test('should validate a list with valid tasks', () => {
       const result = validateTaskList(mockTasks)
       expect(result.isValid).toBe(true)
       expect(result.errors).toHaveLength(0)
     })
 
-    it('should reject empty task list', () => {
+    test('should reject empty task list', () => {
       const result = validateTaskList([])
       expect(result.isValid).toBe(false)
       expect(result.errors).toContain('少なくとも1つのタスクが必要です')
     })
 
-    it('should reject tasks with empty titles', () => {
+    test('should reject tasks with empty titles', () => {
       const tasksWithEmptyTitles = [
         { ...mockTasks[0], title: '' },
         { ...mockTasks[1], title: '   ' }, // whitespace only
@@ -114,7 +114,7 @@ describe('PresetTaskEditor Helper Functions', () => {
       expect(result.errors).toContain('少なくとも1つのタスクが必要です')
     })
 
-    it('should detect duplicate task names in same category', () => {
+    test('should detect duplicate task names in same category', () => {
       const duplicateTasks = [
         mockTasks[0],
         { ...mockTasks[0], id: 'different-id' }, // Same title and category
@@ -126,7 +126,7 @@ describe('PresetTaskEditor Helper Functions', () => {
       )
     })
 
-    it('should allow same task names in different categories', () => {
+    test('should allow same task names in different categories', () => {
       const sameTitleDifferentCategory = [
         mockTasks[0],
         { ...mockTasks[0], id: 'different-id', categoryId: 'life' },
@@ -138,17 +138,17 @@ describe('PresetTaskEditor Helper Functions', () => {
   })
 
   describe('getCategoryColor', () => {
-    it('should return blue for business category', () => {
+    test('should return blue for business category', () => {
       const color = getCategoryColor('business', mockCategories)
       expect(color).toBe('bg-blue-500')
     })
 
-    it('should return green for life category', () => {
+    test('should return green for life category', () => {
       const color = getCategoryColor('life', mockCategories)
       expect(color).toBe('bg-green-500')
     })
 
-    it('should return generated color for custom categories', () => {
+    test('should return generated color for custom categories', () => {
       const customCategories = [
         ...mockCategories,
         { id: 'study', name: '勉強' },
@@ -157,14 +157,14 @@ describe('PresetTaskEditor Helper Functions', () => {
       expect(color).toMatch(/^bg-(orange|purple|pink|indigo|yellow)-500$/)
     })
 
-    it('should return gray for unknown categories', () => {
+    test('should return gray for unknown categories', () => {
       const color = getCategoryColor('unknown', mockCategories)
       expect(color).toBe('bg-gray-500')
     })
   })
 
   describe('groupTasksByCategory', () => {
-    it('should group tasks by category correctly', () => {
+    test('should group tasks by category correctly', () => {
       const grouped = groupTasksByCategory(mockTasks)
 
       expect(grouped).toHaveProperty('business')
@@ -175,12 +175,12 @@ describe('PresetTaskEditor Helper Functions', () => {
       expect(grouped.life[0].title).toBe('運動 (20分以上)')
     })
 
-    it('should handle empty task list', () => {
+    test('should handle empty task list', () => {
       const grouped = groupTasksByCategory([])
       expect(Object.keys(grouped)).toHaveLength(0)
     })
 
-    it('should handle multiple tasks in same category', () => {
+    test('should handle multiple tasks in same category', () => {
       const tasksWithMultipleInSameCategory = [
         ...mockTasks,
         {

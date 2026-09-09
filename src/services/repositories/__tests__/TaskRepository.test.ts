@@ -35,7 +35,7 @@ describe('TaskRepository', () => {
   })
 
   describe('findAll', () => {
-    it('should return all tasks from database service', async () => {
+    test('should return all tasks from database service', async () => {
       const mockTasks = [
         {
           id: 'task1',
@@ -57,7 +57,7 @@ describe('TaskRepository', () => {
   })
 
   describe('findByCategoryId', () => {
-    it('should return tasks filtered by category', async () => {
+    test('should return tasks filtered by category', async () => {
       const mockRows = [
         {
           id: 'task1',
@@ -90,7 +90,7 @@ describe('TaskRepository', () => {
   })
 
   describe('findActiveTasksByCategory', () => {
-    it('should return tasks grouped by category', async () => {
+    test('should return tasks grouped by category', async () => {
       const businessRows = [
         {
           id: 'task1',
@@ -135,7 +135,7 @@ describe('TaskRepository', () => {
   })
 
   describe('searchByTitle', () => {
-    it('should search tasks by title', async () => {
+    test('should search tasks by title', async () => {
       const mockRows = [
         {
           id: 'task1',
@@ -161,7 +161,7 @@ describe('TaskRepository', () => {
   })
 
   describe('getTaskCount', () => {
-    it('should return total task count', async () => {
+    test('should return total task count', async () => {
       mockDatabaseService.executeQueryFirst.mockResolvedValue({ count: 5 })
 
       const result = await taskRepository.getTaskCount()
@@ -172,7 +172,7 @@ describe('TaskRepository', () => {
       expect(result).toBe(5)
     })
 
-    it('should return 0 when no result', async () => {
+    test('should return 0 when no result', async () => {
       mockDatabaseService.executeQueryFirst.mockResolvedValue(null)
 
       const result = await taskRepository.getTaskCount()
@@ -182,7 +182,7 @@ describe('TaskRepository', () => {
   })
 
   describe('getTaskCountByCategory', () => {
-    it('should return task count grouped by category', async () => {
+    test('should return task count grouped by category', async () => {
       const mockResult = [
         { category_id: 'business', count: 3 },
         { category_id: 'life', count: 5 },
@@ -198,7 +198,7 @@ describe('TaskRepository', () => {
       })
     })
 
-    it('should handle missing categories', async () => {
+    test('should handle missing categories', async () => {
       const mockResult = [{ category_id: 'business', count: 3 }]
 
       mockDatabaseService.executeQuery.mockResolvedValue(mockResult)
@@ -212,7 +212,7 @@ describe('TaskRepository', () => {
   })
 
   describe('seedDefaultTasks', () => {
-    it('should seed default tasks when none exist', async () => {
+    test('should seed default tasks when none exist', async () => {
       mockDatabaseService.executeQueryFirst.mockResolvedValue({ count: 0 })
       mockDatabaseService.executeTransaction.mockResolvedValue(undefined)
 
@@ -221,7 +221,7 @@ describe('TaskRepository', () => {
       expect(mockDatabaseService.executeTransaction).toHaveBeenCalled()
     })
 
-    it('should not seed when tasks already exist', async () => {
+    test('should not seed when tasks already exist', async () => {
       mockDatabaseService.executeQueryFirst.mockResolvedValue({ count: 5 })
 
       await taskRepository.seedDefaultTasks()
@@ -231,7 +231,7 @@ describe('TaskRepository', () => {
   })
 
   describe('createMultiple', () => {
-    it('should create multiple tasks in transaction', async () => {
+    test('should create multiple tasks in transaction', async () => {
       const tasksToCreate = [
         { title: 'Task 1', categoryId: 'business', archived: false },
         { title: 'Task 2', categoryId: 'life', archived: false },

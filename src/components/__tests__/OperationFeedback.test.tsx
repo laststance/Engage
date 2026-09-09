@@ -3,7 +3,7 @@ import { fireEvent, render } from '@testing-library/react-native'
 import { OperationFeedback } from '@/src/components/OperationFeedback'
 
 describe('OperationFeedback', () => {
-  it('shows the feedback message and retry action for recoverable failures', async () => {
+  test('shows the feedback message and retry action for recoverable failures', async () => {
     // Arrange
     const onRetry = jest.fn()
 

@@ -31,7 +31,7 @@ const activeStats: StatsData = {
 }
 
 describe('Statistics completion causality', () => {
-  it('explains the next action when the selected period has no completions', async () => {
+  test('explains the next action when the selected period has no completions', async () => {
     // Arrange
     const { getByTestId, getByText } = await render(
       <Statistics
@@ -46,7 +46,7 @@ describe('Statistics completion causality', () => {
     expect(getByText('stats.periodEmptyNextAction')).toBeTruthy()
   })
 
-  it('recaps the completed tasks that feed Calendar and Stats', async () => {
+  test('recaps the completed tasks that feed Calendar and Stats', async () => {
     // Arrange
     const { getByTestId, getByText } = await render(
       <Statistics
@@ -61,7 +61,7 @@ describe('Statistics completion causality', () => {
     expect(getByText('stats.periodRecap')).toBeTruthy()
   })
 
-  it('exposes selected state as the segmented period changes', async () => {
+  test('exposes selected state as the segmented period changes', async () => {
     // Arrange
     const { getByTestId } = await render(
       <Statistics

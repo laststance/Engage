@@ -12,7 +12,7 @@ describe('daily condition save announcements', () => {
     jest.restoreAllMocks()
   })
 
-  it('announces a persisted selection only after saving finishes', async () => {
+  test('announces a persisted selection only after saving finishes', async () => {
     // Arrange
     let finishSave: (success: boolean) => void = () => undefined
     const save = jest.fn(() => new Promise<boolean>((resolve) => { finishSave = resolve }))
@@ -33,7 +33,7 @@ describe('daily condition save announcements', () => {
     expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith('condition.saved')
   })
 
-  it('announces a rejected save while preserving the previously recorded face', async () => {
+  test('announces a rejected save while preserving the previously recorded face', async () => {
     // Arrange
     const screen = await render(<ConditionPicker value={4} onChangeAction={jest.fn().mockResolvedValue(false)} />)
 
@@ -46,7 +46,7 @@ describe('daily condition save announcements', () => {
     expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith('condition.saveFailed')
   })
 
-  it('announces a failed clear while keeping the recorded condition available to retry', async () => {
+  test('announces a failed clear while keeping the recorded condition available to retry', async () => {
     // Arrange
     const screen = await render(<ConditionPicker value={4} onChangeAction={jest.fn().mockRejectedValue(new Error('Disk full'))} />)
 
@@ -59,7 +59,7 @@ describe('daily condition save announcements', () => {
     expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith('condition.saveFailed')
   })
 
-  it('announces that the condition is unrecorded after clearing succeeds', async () => {
+  test('announces that the condition is unrecorded after clearing succeeds', async () => {
     // Arrange
     const screen = await render(<ConditionPicker value={4} onChangeAction={jest.fn().mockResolvedValue(true)} />)
 
@@ -70,7 +70,7 @@ describe('daily condition save announcements', () => {
     expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith('condition.unrecorded')
   })
 
-  it('keeps Android save feedback in its live region without a duplicate announcement', async () => {
+  test('keeps Android save feedback in its live region without a duplicate announcement', async () => {
     // Arrange
     jest.replaceProperty(Platform, 'OS', 'android')
     const screen = await render(<ConditionPicker value={null} onChangeAction={jest.fn().mockResolvedValue(true)} />)

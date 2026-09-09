@@ -24,14 +24,14 @@ describe('Calendar', () => {
     jest.clearAllMocks()
   })
 
-  it('renders correctly', async () => {
+  test('renders correctly', async () => {
     const { getByText } = await render(<Calendar {...defaultProps} />)
 
     // Should show current month/year
     expect(getByText(/January 2024/)).toBeTruthy()
   })
 
-  it('displays achievement indicators for dates with data', async () => {
+  test('displays achievement indicators for dates with data', async () => {
     const { getByTestId } = await render(<Calendar {...defaultProps} />)
 
     // Should have achievement indicators for dates with completion data
@@ -40,7 +40,7 @@ describe('Calendar', () => {
     expect(getByTestId('achievement-indicator-2024-01-20')).toBeTruthy()
   })
 
-  it('calls onDateSelect when a date is tapped', async () => {
+  test('calls onDateSelect when a date is tapped', async () => {
     const { getByTestId } = await render(<Calendar {...defaultProps} />)
 
     const dateButton = getByTestId('calendar-date-2024-01-10')
@@ -49,7 +49,7 @@ describe('Calendar', () => {
     expect(mockOnDateSelect).toHaveBeenCalledWith('2024-01-10')
   })
 
-  it('highlights the selected date', async () => {
+  test('highlights the selected date', async () => {
     const { getByTestId } = await render(<Calendar {...defaultProps} />)
 
     const selectedDate = getByTestId('calendar-date-2024-01-15')
@@ -60,7 +60,7 @@ describe('Calendar', () => {
     )
   })
 
-  it('marks the selected date cell for assistive technologies', async () => {
+  test('marks the selected date cell for assistive technologies', async () => {
     // Arrange
     const { getByTestId } = await render(<Calendar {...defaultProps} />)
 
@@ -77,7 +77,7 @@ describe('Calendar', () => {
     })
   })
 
-  it('navigates to previous month', async () => {
+  test('navigates to previous month', async () => {
     const { getByTestId, getByText } = await render(<Calendar {...defaultProps} />)
 
     const prevButton = getByTestId('calendar-prev-month')
@@ -86,7 +86,7 @@ describe('Calendar', () => {
     expect(getByText(/December 2023/)).toBeTruthy()
   })
 
-  it('navigates to next month', async () => {
+  test('navigates to next month', async () => {
     const { getByTestId, getByText } = await render(<Calendar {...defaultProps} />)
 
     const nextButton = getByTestId('calendar-next-month')
@@ -95,7 +95,7 @@ describe('Calendar', () => {
     expect(getByText(/February 2024/)).toBeTruthy()
   })
 
-  it('shows different achievement levels with different colors', async () => {
+  test('shows different achievement levels with different colors', async () => {
     const { getByTestId } = await render(<Calendar {...defaultProps} />)
 
     // Different achievement levels should have different visual indicators
@@ -105,7 +105,7 @@ describe('Calendar', () => {
     expect(lowAchievement.props.style).not.toEqual(highAchievement.props.style)
   })
 
-  it('handles empty achievement data gracefully', async () => {
+  test('handles empty achievement data gracefully', async () => {
     const { queryByTestId } = await render(
       <Calendar {...defaultProps} achievementData={{}} />
     )
@@ -114,7 +114,7 @@ describe('Calendar', () => {
     expect(queryByTestId('achievement-indicator-2024-01-10')).toBeNull()
   })
 
-  it('shows today indicator for current date', async () => {
+  test('shows today indicator for current date', async () => {
     const today = new Date().toISOString().split('T')[0]
     const { getByTestId } = await render(
       <Calendar {...defaultProps} selectedDate={today} />

@@ -78,14 +78,14 @@ const mockEntries: Record<string, Entry> = {
 
 describe('statisticsEngine', () => {
   describe('calculateStreakDays', () => {
-    it('should calculate current streak correctly', () => {
+    test('should calculate current streak correctly', () => {
       const result = calculateStreakDays(mockCompletions, '2025-01-19')
 
       expect(result.currentStreak).toBe(1) // Only 2025-01-19 is consecutive from current date
       expect(result.streakDates).toEqual(['2025-01-19'])
     })
 
-    it('should handle no completions', () => {
+    test('should handle no completions', () => {
       const result = calculateStreakDays({}, '2025-01-19')
 
       expect(result.currentStreak).toBe(0)
@@ -93,7 +93,7 @@ describe('statisticsEngine', () => {
       expect(result.streakDates).toEqual([])
     })
 
-    it('should calculate longest streak', () => {
+    test('should calculate longest streak', () => {
       const consecutiveCompletions: Record<string, Completion[]> = {
         '2025-01-15': [
           {
@@ -132,7 +132,7 @@ describe('statisticsEngine', () => {
   })
 
   describe('calculateCompletionRate', () => {
-    it('should calculate completion rate correctly', () => {
+    test('should calculate completion rate correctly', () => {
       const rate = calculateCompletionRate(
         mockCompletions,
         '2025-01-15',
@@ -143,12 +143,12 @@ describe('statisticsEngine', () => {
       expect(rate).toBe(0.8)
     })
 
-    it('should handle no completions', () => {
+    test('should handle no completions', () => {
       const rate = calculateCompletionRate({}, '2025-01-15', '2025-01-19')
       expect(rate).toBe(0)
     })
 
-    it('should handle single day range', () => {
+    test('should handle single day range', () => {
       const rate = calculateCompletionRate(
         mockCompletions,
         '2025-01-15',
@@ -159,7 +159,7 @@ describe('statisticsEngine', () => {
   })
 
   describe('calculateCategoryBreakdown', () => {
-    it('should calculate category breakdown correctly', () => {
+    test('should calculate category breakdown correctly', () => {
       const breakdown = calculateCategoryBreakdown(
         mockTasks,
         mockCompletions,
@@ -174,7 +174,7 @@ describe('statisticsEngine', () => {
       expect(breakdown.life.total).toBe(3) // 1 task * 3 days
     })
 
-    it('should handle empty categories', () => {
+    test('should handle empty categories', () => {
       const breakdown = calculateCategoryBreakdown(
         [],
         mockCompletions,
@@ -191,7 +191,7 @@ describe('statisticsEngine', () => {
   })
 
   describe('calculateJournalStats', () => {
-    it('should calculate journal stats correctly', () => {
+    test('should calculate journal stats correctly', () => {
       const stats = calculateJournalStats(
         mockEntries,
         '2025-01-15',
@@ -204,7 +204,7 @@ describe('statisticsEngine', () => {
       expect(stats.longestEntry).toBe(13) // "Good progress"
     })
 
-    it('should handle no entries', () => {
+    test('should handle no entries', () => {
       const stats = calculateJournalStats({}, '2025-01-15', '2025-01-17')
 
       expect(stats.journalDays).toBe(0)
@@ -215,7 +215,7 @@ describe('statisticsEngine', () => {
   })
 
   describe('calculateWeeklyStats', () => {
-    it('should calculate weekly stats correctly', () => {
+    test('should calculate weekly stats correctly', () => {
       const stats = calculateWeeklyStats(
         mockTasks,
         mockCompletions,
@@ -237,7 +237,7 @@ describe('statisticsEngine', () => {
   })
 
   describe('calculateMonthlyStats', () => {
-    it('should calculate monthly stats correctly', () => {
+    test('should calculate monthly stats correctly', () => {
       const stats = calculateMonthlyStats(
         mockTasks,
         mockCompletions,
@@ -260,7 +260,7 @@ describe('statisticsEngine', () => {
   })
 
   describe('calculateAchievementData', () => {
-    it('should calculate achievement data correctly', () => {
+    test('should calculate achievement data correctly', () => {
       const data = calculateAchievementData(mockCompletions)
 
       expect(data['2025-01-15']).toBe(2)
@@ -270,7 +270,7 @@ describe('statisticsEngine', () => {
       expect(data['2025-01-18']).toBeUndefined()
     })
 
-    it('should filter by date range', () => {
+    test('should filter by date range', () => {
       const data = calculateAchievementData(
         mockCompletions,
         '2025-01-16',
@@ -285,7 +285,7 @@ describe('statisticsEngine', () => {
   })
 
   describe('calculateProductivityTrends', () => {
-    it('should calculate productivity trends correctly', () => {
+    test('should calculate productivity trends correctly', () => {
       const trends = calculateProductivityTrends(
         mockCompletions,
         mockEntries,
@@ -312,7 +312,7 @@ describe('statisticsEngine', () => {
       expect(trends.weeklyAverages).toBeTruthy()
     })
 
-    it('should handle no completions', () => {
+    test('should handle no completions', () => {
       const trends = calculateProductivityTrends(
         {},
         {},

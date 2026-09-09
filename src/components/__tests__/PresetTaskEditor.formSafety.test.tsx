@@ -103,7 +103,7 @@ describe('PresetTaskEditor form safety', () => {
     })
   })
 
-  it('shows inline task-name validation while typing and explains disabled Save', async () => {
+  test('shows inline task-name validation while typing and explains disabled Save', async () => {
     // Arrange
     const onSave = jest.fn()
     const { getAllByText, getByTestId, getByText } = await renderEditor({ onSave })
@@ -124,7 +124,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(onSave).not.toHaveBeenCalled()
   })
 
-  it('marks both duplicate preset tasks and prevents saving that conflict', async () => {
+  test('marks both duplicate preset tasks and prevents saving that conflict', async () => {
     // Arrange
     const onSave = jest.fn()
     const { getByTestId, getAllByText } = await renderEditor({ onSave })
@@ -141,7 +141,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(onSave).not.toHaveBeenCalled()
   })
 
-  it('focuses the newly added task title input so users can type immediately', async () => {
+  test('focuses the newly added task title input so users can type immediately', async () => {
     // Arrange
     const { getByTestId } = await renderEditor()
 
@@ -153,7 +153,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(getByTestId('task-title-input-0').props.autoFocus).toBe(false)
   })
 
-  it('hides the preset Save action while users type a newly added task', async () => {
+  test('hides the preset Save action while users type a newly added task', async () => {
     // Arrange
     const { getByTestId, queryByTestId } = await renderEditor()
 
@@ -168,7 +168,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(queryByTestId('preset-editor-keyboard-done-button')).toBeNull()
   })
 
-  it('restores preset Save and Cancel actions after the native keyboard hides', async () => {
+  test('restores preset Save and Cancel actions after the native keyboard hides', async () => {
     // Arrange
     const { getByTestId, queryByTestId } = await renderEditor()
     const keyboardDidHideHandler = (
@@ -188,7 +188,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(getByTestId('preset-editor-cancel')).toBeTruthy()
   })
 
-  it('hides the editor without calling cancel when visibility changes', async () => {
+  test('hides the editor without calling cancel when visibility changes', async () => {
     // Arrange
     const editorProps = {
       categories: mockCategories,
@@ -209,7 +209,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(editorProps.onCancel).not.toHaveBeenCalled()
   })
 
-  it('reopens with persisted values instead of a discarded preset draft', async () => {
+  test('reopens with persisted values instead of a discarded preset draft', async () => {
     // Arrange
     const editorProps = {
       categories: mockCategories,
@@ -231,7 +231,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(getByTestId('task-title-input-0').props.value).toBe('Networking')
   })
 
-  it('preserves the active draft when live preset tasks refresh while visible', async () => {
+  test('preserves the active draft when live preset tasks refresh while visible', async () => {
     // Arrange
     const editorProps = {
       categories: mockCategories,
@@ -257,7 +257,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(getByTestId('task-title-input-0').props.value).toBe('Active draft')
   })
 
-  it('keeps a newly added task in place when category changes during editing', async () => {
+  test('keeps a newly added task in place when category changes during editing', async () => {
     // Arrange
     const { getAllByTestId, getByTestId } = await renderEditor()
 
@@ -290,7 +290,7 @@ describe('PresetTaskEditor form safety', () => {
     })
   })
 
-  it('keeps the Add Category label inside its button when the section heading needs more width', async () => {
+  test('keeps the Add Category label inside its button when the section heading needs more width', async () => {
     // Arrange
     const { getByTestId, getByText } = await renderEditor()
 
@@ -307,7 +307,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(getByText('presetEditor.addCategory')).toBeTruthy()
   })
 
-  it('centers the Add Category label vertically within its minimum touch target', async () => {
+  test('centers the Add Category label vertically within its minimum touch target', async () => {
     // Arrange
     const { getByTestId } = await renderEditor()
 
@@ -318,7 +318,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(addCategoryButton.props.className).toContain('justify-center')
   })
 
-  it('keeps preset text inputs above the keyboard without custom Done controls', async () => {
+  test('keeps preset text inputs above the keyboard without custom Done controls', async () => {
     // Arrange
     const { getByTestId, queryByTestId } = await renderEditor()
 
@@ -345,7 +345,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(queryByTestId('preset-editor-keyboard-done-button')).toBeNull()
   })
 
-  it('dismisses the preset keyboard from the return key without custom controls', async () => {
+  test('dismisses the preset keyboard from the return key without custom controls', async () => {
     // Arrange
     const { getByTestId, queryByTestId } = await renderEditor()
 
@@ -359,7 +359,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(Keyboard.dismiss).toHaveBeenCalledTimes(1)
   })
 
-  it('keeps preset actions hidden while focus moves from title to minutes', async () => {
+  test('keeps preset actions hidden while focus moves from title to minutes', async () => {
     // Arrange
     const { getByTestId, queryByTestId } = await renderEditor()
     const taskTitleInput = getByTestId('task-title-input-0')
@@ -380,7 +380,7 @@ describe('PresetTaskEditor form safety', () => {
     expect(cancelAnimationFrame).toHaveBeenCalledTimes(1)
   })
 
-  it('exposes selected state on category chips for screen readers', async () => {
+  test('exposes selected state on category chips for screen readers', async () => {
     // Arrange
     const { getByTestId } = await renderEditor()
 
@@ -398,7 +398,7 @@ describe('PresetTaskEditor form safety', () => {
     })
   })
 
-  it('keeps destructive task removal behind a confirmation dialog', async () => {
+  test('keeps destructive task removal behind a confirmation dialog', async () => {
     // Arrange
     const { getByTestId } = await renderEditor()
 
@@ -413,7 +413,7 @@ describe('PresetTaskEditor form safety', () => {
     )
   })
 
-  it('exposes busy and disabled state while saving preset tasks', async () => {
+  test('exposes busy and disabled state while saving preset tasks', async () => {
     // Arrange
     let resolveSave: () => void = () => {}
     const onSave = jest.fn(
@@ -449,7 +449,7 @@ describe('PresetTaskEditor form safety', () => {
       jest.mocked(dateUtils.getCurrentDate).mockRestore()
     })
 
-    it('shows unscheduled presets as off with a task-specific switch name', async () => {
+    test('shows unscheduled presets as off with a task-specific switch name', async () => {
       // Arrange & Act
       const { getByRole, getAllByText } = await renderEditor()
 
@@ -469,7 +469,7 @@ describe('PresetTaskEditor form safety', () => {
       ).toHaveLength(2)
     })
 
-    it('keeps an active daily routine on and preserves its start date when saved', async () => {
+    test('keeps an active daily routine on and preserves its start date when saved', async () => {
       // Arrange
       const onSave = jest.fn()
       const { getByTestId, getByText } = await renderEditor({
@@ -493,7 +493,7 @@ describe('PresetTaskEditor form safety', () => {
       ])
     })
 
-    it('toggles from the enlarged touch target while exposing one native switch per task', async () => {
+    test('toggles from the enlarged touch target while exposing one native switch per task', async () => {
       // Arrange
       const { getByTestId, getAllByRole } = await renderEditor()
       const touchTarget = getByTestId('task-daily-auto-add-touch-target-0')
@@ -520,7 +520,7 @@ describe('PresetTaskEditor form safety', () => {
       expect(getAllByRole('switch')).toHaveLength(2)
     })
 
-    it('saves a newly enabled routine from tomorrow across a month boundary', async () => {
+    test('saves a newly enabled routine from tomorrow across a month boundary', async () => {
       // Arrange
       jest.mocked(dateUtils.getCurrentDate).mockReturnValue('2026-09-30')
       const onSave = jest.fn()
@@ -547,7 +547,7 @@ describe('PresetTaskEditor form safety', () => {
       ])
     })
 
-    it('starts a newly enabled routine tomorrow when the editor is saved after midnight', async () => {
+    test('starts a newly enabled routine tomorrow when the editor is saved after midnight', async () => {
       // Arrange
       const onSave = jest.fn()
       const { getByTestId } = await renderEditor({
@@ -573,7 +573,7 @@ describe('PresetTaskEditor form safety', () => {
       ])
     })
 
-    it('removes the routine start date when an enabled preset is turned off and saved', async () => {
+    test('removes the routine start date when an enabled preset is turned off and saved', async () => {
       // Arrange
       const onSave = jest.fn()
       const { getByTestId } = await renderEditor({
@@ -599,7 +599,7 @@ describe('PresetTaskEditor form safety', () => {
       ])
     })
 
-    it('does not postpone an active routine when its draft switch is turned off and back on', async () => {
+    test('does not postpone an active routine when its draft switch is turned off and back on', async () => {
       // Arrange
       const onSave = jest.fn()
       const { getByTestId } = await renderEditor({
@@ -626,7 +626,7 @@ describe('PresetTaskEditor form safety', () => {
       ])
     })
 
-    it('discards a routine switch change without saving it when the user cancels', async () => {
+    test('discards a routine switch change without saving it when the user cancels', async () => {
       // Arrange
       const onSave = jest.fn()
       const onCancel = jest.fn()

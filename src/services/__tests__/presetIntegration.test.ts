@@ -18,7 +18,7 @@ describe('Preset Management Integration', () => {
   })
 
   describe('Real-time updates between preset editor and task selection', () => {
-    it('should reflect task changes immediately after preset update', async () => {
+    test('should reflect task changes immediately after preset update', async () => {
       // Initial state
       const initialCategories: Category[] = [
         { id: 'business', name: '事業' },
@@ -69,7 +69,7 @@ describe('Preset Management Integration', () => {
       expect(updatedPresets.life[0].title).toBe('運動 (20分以上)')
     })
 
-    it('should handle category creation and immediate task assignment', async () => {
+    test('should handle category creation and immediate task assignment', async () => {
       const initialCategories: Category[] = [
         { id: 'business', name: '事業' },
         { id: 'life', name: '生活' },
@@ -106,7 +106,7 @@ describe('Preset Management Integration', () => {
       expect(categories.find((c) => c.name === '勉強')).toBeTruthy()
     })
 
-    it('should maintain task selection state when presets are modified', async () => {
+    test('should maintain task selection state when presets are modified', async () => {
       // Simulate a scenario where user has selected tasks, then modifies presets
       const categories: Category[] = [
         { id: 'business', name: '事業' },
@@ -165,7 +165,7 @@ describe('Preset Management Integration', () => {
       expect(stillValidSelections).toHaveLength(2)
     })
 
-    it('should handle task deletion gracefully in selection context', async () => {
+    test('should handle task deletion gracefully in selection context', async () => {
       const categories: Category[] = [
         { id: 'business', name: '事業' },
         { id: 'life', name: '生活' },
@@ -217,7 +217,7 @@ describe('Preset Management Integration', () => {
   })
 
   describe('State synchronization', () => {
-    it('should maintain consistency between categories and tasks', async () => {
+    test('should maintain consistency between categories and tasks', async () => {
       const categories: Category[] = [
         { id: 'business', name: '事業' },
         { id: 'life', name: '生活' },
@@ -254,7 +254,7 @@ describe('Preset Management Integration', () => {
       expect(validation.orphanedTasks[0].id).toBe('task2')
     })
 
-    it('should provide suggested tasks after preset initialization', async () => {
+    test('should provide suggested tasks after preset initialization', async () => {
       // Mock first launch scenario
       mockCategoryRepository.findAll.mockResolvedValueOnce([])
       mockTaskRepository.findAll.mockResolvedValueOnce([])

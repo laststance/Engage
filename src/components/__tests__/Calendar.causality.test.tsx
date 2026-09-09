@@ -3,7 +3,7 @@ import { fireEvent, render } from '@testing-library/react-native'
 import { Calendar } from '../Calendar'
 
 describe('Calendar completion causality', () => {
-  it('shows and clears a condition independently of the task-completion background', async () => {
+  test('shows and clears a condition independently of the task-completion background', async () => {
     // Arrange
     const entries = {
       '2026-09-05': { id: 'day', date: '2026-09-05', note: '', conditionLevel: 2, createdAt: 1, updatedAt: 2 },
@@ -30,7 +30,7 @@ describe('Calendar completion causality', () => {
     jest.useRealTimers()
   })
 
-  it('guides users to complete a Today habit when the month has no completions', async () => {
+  test('guides users to complete a Today habit when the month has no completions', async () => {
     // Arrange
     const { getByTestId, getByText, queryByTestId } = await render(
       <Calendar
@@ -46,7 +46,7 @@ describe('Calendar completion causality', () => {
     expect(queryByTestId('calendar-selected-day-recap')).toBeNull()
   })
 
-  it('recaps completions for the selected date when the heatmap updates', async () => {
+  test('recaps completions for the selected date when the heatmap updates', async () => {
     // Arrange
     const { getByTestId, getByText } = await render(
       <Calendar
@@ -61,7 +61,7 @@ describe('Calendar completion causality', () => {
     expect(getByText('calendar.selectedDateCompleted')).toBeTruthy()
   })
 
-  it('keeps high-completion day numbers readable when the heatmap turns dark green', async () => {
+  test('keeps high-completion day numbers readable when the heatmap turns dark green', async () => {
     // Arrange
     const { getByTestId } = await render(
       <Calendar
@@ -86,7 +86,7 @@ describe('Calendar completion causality', () => {
     expect(highestCompletionDay.props.className).toContain('text-white')
   })
 
-  it('hides the selected-day recap when month navigation leaves that date behind', async () => {
+  test('hides the selected-day recap when month navigation leaves that date behind', async () => {
     // Arrange
     const { getByTestId, queryByTestId } = await render(
       <Calendar
@@ -103,7 +103,7 @@ describe('Calendar completion causality', () => {
     expect(queryByTestId('calendar-selected-day-recap')).toBeNull()
   })
 
-  it('exposes selected, current, and disabled states on calendar cells', async () => {
+  test('exposes selected, current, and disabled states on calendar cells', async () => {
     // Arrange
     jest.useFakeTimers().setSystemTime(new Date(2026, 4, 15, 12))
     const onDateSelect = jest.fn()

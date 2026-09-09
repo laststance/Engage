@@ -4,7 +4,7 @@ import { ConditionPicker } from '../ConditionPicker'
 import type { ConditionLevel } from '@/src/types'
 
 describe('daily condition picker', () => {
-  it('starts unrecorded with all five choices visible and no selected default', async () => {
+  test('starts unrecorded with all five choices visible and no selected default', async () => {
     // Arrange
     const save = jest.fn().mockResolvedValue(true)
 
@@ -19,7 +19,7 @@ describe('daily condition picker', () => {
     expect(save).not.toHaveBeenCalled()
   })
 
-  it('records Good with one press and clears it only through the explicit Clear action', async () => {
+  test('records Good with one press and clears it only through the explicit Clear action', async () => {
     // Arrange
     const save = jest.fn<Promise<boolean>, [ConditionLevel | null]>().mockResolvedValue(true)
     /**
@@ -55,7 +55,7 @@ describe('daily condition picker', () => {
     expect(screen.getByRole('radio', { name: 'condition.good' })).not.toBeChecked()
   })
 
-  it('shows the tapped face while saving, then restores the saved face and allows retry on failure', async () => {
+  test('shows the tapped face while saving, then restores the saved face and allows retry on failure', async () => {
     // Arrange
     let finishSave: (success: boolean) => void = () => undefined
     const save = jest.fn(() => new Promise<boolean>((resolve) => { finishSave = resolve }))
@@ -78,7 +78,7 @@ describe('daily condition picker', () => {
     expect(screen.getByText('condition.saveFailed')).toBeVisible()
   })
 
-  it('keeps the saved face visible when clearing fails', async () => {
+  test('keeps the saved face visible when clearing fails', async () => {
     // Arrange
     const screen = await render(<ConditionPicker value={2} onChangeAction={jest.fn().mockRejectedValue(new Error('Disk full'))} />)
 
@@ -90,7 +90,7 @@ describe('daily condition picker', () => {
     expect(screen.getByText('condition.saveFailed')).toBeVisible()
   })
 
-  it('blocks recording until initialization finishes', async () => {
+  test('blocks recording until initialization finishes', async () => {
     // Arrange
     const save = jest.fn()
     const screen = await render(<ConditionPicker value={null} onChangeAction={save} disabled />)

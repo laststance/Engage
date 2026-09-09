@@ -15,7 +15,7 @@ describe('JournalService', () => {
   })
 
   describe('validateEntry', () => {
-    it('should validate normal journal entry', async () => {
+    test('should validate normal journal entry', async () => {
       const result = await journalService.validateEntry(
         'This is a normal entry'
       )
@@ -25,7 +25,7 @@ describe('JournalService', () => {
       expect(result.warnings).toHaveLength(0)
     })
 
-    it('should warn about empty entry', async () => {
+    test('should warn about empty entry', async () => {
       const result = await journalService.validateEntry('')
 
       expect(result.isValid).toBe(true)
@@ -33,7 +33,7 @@ describe('JournalService', () => {
       expect(result.warnings).toContain('空の日記エントリーです')
     })
 
-    it('should warn about short entry', async () => {
+    test('should warn about short entry', async () => {
       const result = await journalService.validateEntry('短い')
 
       expect(result.isValid).toBe(true)
@@ -43,7 +43,7 @@ describe('JournalService', () => {
       )
     })
 
-    it('should reject too long entry', async () => {
+    test('should reject too long entry', async () => {
       const longEntry = 'a'.repeat(1001)
       const result = await journalService.validateEntry(longEntry)
 
@@ -53,7 +53,7 @@ describe('JournalService', () => {
       )
     })
 
-    it('should warn about long entry', async () => {
+    test('should warn about long entry', async () => {
       const longEntry = 'a'.repeat(850)
       const result = await journalService.validateEntry(longEntry)
 
@@ -63,7 +63,7 @@ describe('JournalService', () => {
       )
     })
 
-    it('should warn about sensitive content', async () => {
+    test('should warn about sensitive content', async () => {
       const result = await journalService.validateEntry('My password is 123456')
 
       expect(result.isValid).toBe(true)
@@ -82,7 +82,7 @@ describe('JournalService', () => {
       updatedAt: Date.now(),
     }
 
-    it('should save valid entry successfully', async () => {
+    test('should save valid entry successfully', async () => {
       mockEntryRepository.upsert.mockResolvedValue(mockEntry)
 
       const result = await journalService.saveEntry('2025-01-15', 'Test entry')
@@ -96,7 +96,7 @@ describe('JournalService', () => {
       )
     })
 
-    it('should reject invalid entry', async () => {
+    test('should reject invalid entry', async () => {
       const longEntry = 'a'.repeat(1001)
       const result = await journalService.saveEntry('2025-01-15', longEntry)
 
@@ -107,7 +107,7 @@ describe('JournalService', () => {
       expect(mockEntryRepository.upsert).not.toHaveBeenCalled()
     })
 
-    it('should handle repository errors', async () => {
+    test('should handle repository errors', async () => {
       mockEntryRepository.upsert.mockRejectedValue(new Error('Database error'))
 
       const result = await journalService.saveEntry('2025-01-15', 'Test entry')
@@ -116,7 +116,7 @@ describe('JournalService', () => {
       expect(result.errors).toContain('Database error')
     })
 
-    it('should trim whitespace from content', async () => {
+    test('should trim whitespace from content', async () => {
       mockEntryRepository.upsert.mockResolvedValue(mockEntry)
 
       await journalService.saveEntry('2025-01-15', '  Test entry  ')
@@ -137,7 +137,7 @@ describe('JournalService', () => {
       updatedAt: Date.now(),
     }
 
-    it('should get entry successfully', async () => {
+    test('should get entry successfully', async () => {
       mockEntryRepository.findByDate.mockResolvedValue(mockEntry)
 
       const result = await journalService.getEntry('2025-01-15')
@@ -146,7 +146,7 @@ describe('JournalService', () => {
       expect(mockEntryRepository.findByDate).toHaveBeenCalledWith('2025-01-15')
     })
 
-    it('should return null for non-existent entry', async () => {
+    test('should return null for non-existent entry', async () => {
       mockEntryRepository.findByDate.mockResolvedValue(null)
 
       const result = await journalService.getEntry('2025-01-15')
@@ -154,7 +154,7 @@ describe('JournalService', () => {
       expect(result).toBeNull()
     })
 
-    it('should handle repository errors', async () => {
+    test('should handle repository errors', async () => {
       mockEntryRepository.findByDate.mockRejectedValue(
         new Error('Database error')
       )
@@ -183,7 +183,7 @@ describe('JournalService', () => {
       },
     ]
 
-    it('should search entries successfully', async () => {
+    test('should search entries successfully', async () => {
       mockEntryRepository.searchByContent.mockResolvedValue(mockEntries)
 
       const result = await journalService.searchEntries('great')
@@ -192,14 +192,14 @@ describe('JournalService', () => {
       expect(mockEntryRepository.searchByContent).toHaveBeenCalledWith('great')
     })
 
-    it('should reject short search terms', async () => {
+    test('should reject short search terms', async () => {
       await expect(journalService.searchEntries('a')).rejects.toThrow(
         '検索語は2文字以上で入力してください'
       )
       expect(mockEntryRepository.searchByContent).not.toHaveBeenCalled()
     })
 
-    it('should trim search term', async () => {
+    test('should trim search term', async () => {
       mockEntryRepository.searchByContent.mockResolvedValue(mockEntries)
 
       await journalService.searchEntries('  great  ')
@@ -209,7 +209,7 @@ describe('JournalService', () => {
   })
 
   describe('getJournalStats', () => {
-    it('should calculate journal stats correctly', async () => {
+    test('should calculate journal stats correctly', async () => {
       mockEntryRepository.getEntryCount.mockResolvedValue(10)
       mockEntryRepository.getNonEmptyEntryCount.mockResolvedValue(8)
       mockEntryRepository.getAverageEntryLength.mockResolvedValue(50)
@@ -256,7 +256,7 @@ describe('JournalService', () => {
       },
     ]
 
-    it('should export entries as JSON', async () => {
+    test('should export entries as JSON', async () => {
       mockEntryRepository.findNonEmptyEntries.mockResolvedValue(mockEntries)
 
       const result = await journalService.exportEntries()
@@ -268,7 +268,7 @@ describe('JournalService', () => {
       expect(exportData.entries[0].note).toBe('Test entry')
     })
 
-    it('should export entries for date range', async () => {
+    test('should export entries for date range', async () => {
       mockEntryRepository.findByDateRange.mockResolvedValue(mockEntries)
 
       const result = await journalService.exportEntries(
@@ -296,7 +296,7 @@ describe('JournalService', () => {
       ],
     }
 
-    it('should import valid entries', async () => {
+    test('should import valid entries', async () => {
       mockEntryRepository.upsert.mockResolvedValue({
         id: 'entry1',
         date: '2025-01-15',
@@ -317,13 +317,13 @@ describe('JournalService', () => {
       )
     })
 
-    it('should reject invalid JSON', async () => {
+    test('should reject invalid JSON', async () => {
       await expect(
         journalService.importEntries('invalid json')
       ).rejects.toThrow()
     })
 
-    it('should handle invalid entry data', async () => {
+    test('should handle invalid entry data', async () => {
       const invalidData = {
         entries: [
           { date: '2025-01-15' }, // Missing note
@@ -342,14 +342,14 @@ describe('JournalService', () => {
   })
 
   describe('getSuggestedPrompts', () => {
-    it('should return base prompts when no completions', () => {
+    test('should return base prompts when no completions', () => {
       const prompts = journalService.getSuggestedPrompts(false)
 
       expect(prompts).toContain('今日一番嬉しかったことは何ですか？')
       expect(prompts).toContain('今日学んだことを書いてみましょう')
     })
 
-    it('should return completion prompts when has completions', () => {
+    test('should return completion prompts when has completions', () => {
       const prompts = journalService.getSuggestedPrompts(true)
 
       expect(prompts).toContain('今日のタスク完了を祝いましょう！')

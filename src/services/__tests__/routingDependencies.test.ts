@@ -3,7 +3,7 @@
 import { createRequire } from 'node:module'
 
 describe('Expo routing dependency compatibility', () => {
-  it('keeps encoded route parameters readable after upgrading the URI decoder', () => {
+  test('keeps encoded route parameters readable after upgrading the URI decoder', () => {
     // Arrange
     // Use Node's actual resolver so Jest transforms cannot hide a module-format regression.
     const expoRouterRequire = createRequire(require.resolve('expo-router/package.json'))

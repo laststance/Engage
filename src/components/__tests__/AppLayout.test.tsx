@@ -9,7 +9,7 @@ import { AppSection } from '../AppSection'
 jest.mock('@react-native-vector-icons/ionicons', () => 'Ionicons')
 
 describe('App layout primitives', () => {
-  it('renders the shared screen title and description without custom headers', async () => {
+  test('renders the shared screen title and description without custom headers', async () => {
     // Arrange
     const { getByTestId, getByText } = await render(
       <AppScreen
@@ -30,7 +30,7 @@ describe('App layout primitives', () => {
     expect(getByText('Screen body')).toBeTruthy()
   })
 
-  it('groups content in a titled section with a card surface', async () => {
+  test('groups content in a titled section with a card surface', async () => {
     // Arrange
     const { getByTestId, getByText } = await render(
       <AppSection title="Daily summary" titleTestID="section-title">
@@ -46,7 +46,7 @@ describe('App layout primitives', () => {
     expect(getByText('Three completed habits')).toBeTruthy()
   })
 
-  it('keeps list rows pressable and exposes selected accessibility state', async () => {
+  test('keeps list rows pressable and exposes selected accessibility state', async () => {
     // Arrange
     const handlePress = jest.fn()
     const { getByTestId, getByText } = await render(

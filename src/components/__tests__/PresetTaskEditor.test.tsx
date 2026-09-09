@@ -50,7 +50,7 @@ describe('PresetTaskEditor', () => {
     onCreateCategory: mockOnCreateCategory,
   }
 
-  it('renders correctly when visible', async () => {
+  test('renders correctly when visible', async () => {
     const { getByText, getByTestId } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
@@ -61,7 +61,7 @@ describe('PresetTaskEditor', () => {
     expect(getByText('運動 (20分以上)')).toBeTruthy()
   })
 
-  it('does not render when not visible', async () => {
+  test('does not render when not visible', async () => {
     const { queryByText } = await render(
       <PresetTaskEditor {...defaultProps} isVisible={false} />
     )
@@ -69,7 +69,7 @@ describe('PresetTaskEditor', () => {
     expect(queryByText('プリセットタスク編集')).toBeNull()
   })
 
-  it('allows adding a new task', async () => {
+  test('allows adding a new task', async () => {
     const { getByTestId, getAllByDisplayValue } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
@@ -82,7 +82,7 @@ describe('PresetTaskEditor', () => {
     expect(titleInputs.length).toBeGreaterThan(0)
   })
 
-  it('allows editing task title', async () => {
+  test('allows editing task title', async () => {
     const { getByDisplayValue } = await render(<PresetTaskEditor {...defaultProps} />)
 
     const titleInput = getByDisplayValue('ネットワーキング')
@@ -91,7 +91,7 @@ describe('PresetTaskEditor', () => {
     expect(titleInput.props.value).toBe('新しいネットワーキング')
   })
 
-  it('allows editing task duration', async () => {
+  test('allows editing task duration', async () => {
     const { getByDisplayValue } = await render(<PresetTaskEditor {...defaultProps} />)
 
     const minutesInput = getByDisplayValue('20')
@@ -100,7 +100,7 @@ describe('PresetTaskEditor', () => {
     expect(minutesInput.props.value).toBe('30')
   })
 
-  it('allows changing task category', async () => {
+  test('allows changing task category', async () => {
     const { getByTestId } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
@@ -113,7 +113,7 @@ describe('PresetTaskEditor', () => {
     expect(categoryOption).toBeTruthy()
   })
 
-  it('shows delete confirmation when deleting a task', async () => {
+  test('shows delete confirmation when deleting a task', async () => {
     const { getByTestId } = await render(<PresetTaskEditor {...defaultProps} />)
 
     const deleteButton = getByTestId('delete-task-0')
@@ -126,7 +126,7 @@ describe('PresetTaskEditor', () => {
     )
   })
 
-  it('allows creating a new category', async () => {
+  test('allows creating a new category', async () => {
     const { getByTestId, getByPlaceholderText } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
@@ -148,7 +148,7 @@ describe('PresetTaskEditor', () => {
     })
   })
 
-  it('validates tasks before saving', async () => {
+  test('validates tasks before saving', async () => {
     const { getByTestId, getByDisplayValue, getByText } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
@@ -172,7 +172,7 @@ describe('PresetTaskEditor', () => {
     expect(mockOnSave).not.toHaveBeenCalled()
   })
 
-  it('detects duplicate task names in same category', async () => {
+  test('detects duplicate task names in same category', async () => {
     const { getByTestId, getByDisplayValue, getByText } = await render(
       <PresetTaskEditor {...defaultProps} />
     )
@@ -197,7 +197,7 @@ describe('PresetTaskEditor', () => {
     expect(mockOnSave).not.toHaveBeenCalled()
   })
 
-  it('saves valid tasks successfully', async () => {
+  test('saves valid tasks successfully', async () => {
     mockOnSave.mockResolvedValue(undefined)
 
     const { getByTestId } = await render(
@@ -224,7 +224,7 @@ describe('PresetTaskEditor', () => {
     })
   })
 
-  it('shows confirmation when canceling with changes', async () => {
+  test('shows confirmation when canceling with changes', async () => {
     const { getByTestId } = await render(<PresetTaskEditor {...defaultProps} />)
 
     const cancelButton = getByTestId('preset-editor-cancel')
@@ -237,7 +237,7 @@ describe('PresetTaskEditor', () => {
     )
   })
 
-  it('handles save errors gracefully', async () => {
+  test('handles save errors gracefully', async () => {
     mockOnSave.mockRejectedValue(new Error('Save failed'))
 
     const { getByTestId, getByText } = await render(
@@ -259,7 +259,7 @@ describe('PresetTaskEditor', () => {
     })
   })
 
-  it('handles category creation errors gracefully', async () => {
+  test('handles category creation errors gracefully', async () => {
     mockOnCreateCategory.mockRejectedValue(
       new Error('Category creation failed')
     )

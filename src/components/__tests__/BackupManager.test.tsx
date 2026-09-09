@@ -48,7 +48,7 @@ describe('BackupManager', () => {
     )
   })
 
-  it('shows generic metadata loading without announcing backup operations', async () => {
+  test('shows generic metadata loading without announcing backup operations', async () => {
     // Arrange
     store.listBackups.mockReturnValue(new Promise(() => undefined))
     store.getBackupStats.mockReturnValue(new Promise(() => undefined))
@@ -76,7 +76,7 @@ describe('BackupManager', () => {
     }
   })
 
-  it('shows inline success feedback instead of a blocking alert after creating a backup', async () => {
+  test('shows inline success feedback instead of a blocking alert after creating a backup', async () => {
     // Arrange
     store.createBackup.mockResolvedValue({
       success: true,
@@ -100,7 +100,7 @@ describe('BackupManager', () => {
     expect(Alert.alert).not.toHaveBeenCalled()
   })
 
-  it('marks only Create as busy while a backup is being created', async () => {
+  test('marks only Create as busy while a backup is being created', async () => {
     // Arrange
     let resolveBackup: (result: {
       success: boolean
@@ -155,7 +155,7 @@ describe('BackupManager', () => {
     await createBackupAction
   })
 
-  it('marks only the selected backup as busy while it is being deleted', async () => {
+  test('marks only the selected backup as busy while it is being deleted', async () => {
     // Arrange
     const firstFileName = 'engage-first.json'
     const secondFileName = 'engage-second.json'

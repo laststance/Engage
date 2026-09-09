@@ -37,7 +37,7 @@ describe('daily condition persistence with real SQLite', () => {
     jest.clearAllMocks()
   })
 
-  it('upgrades existing journals from version 5 without assigning a default condition', async () => {
+  test('upgrades existing journals from version 5 without assigning a default condition', async () => {
     // Arrange
     sqliteDatabase.exec(`
       ALTER TABLE entries DROP COLUMN condition_level;
@@ -58,7 +58,7 @@ describe('daily condition persistence with real SQLite', () => {
       .toEqual({ version: 6 })
   })
 
-  it('keeps a condition-only day after restarting without counting it as a journal or task completion', async () => {
+  test('keeps a condition-only day after restarting without counting it as a journal or task completion', async () => {
     // Arrange
     await databaseService.setEntryCondition('2026-09-05', 2)
     const restartedDatabase = new DatabaseService()
@@ -74,7 +74,7 @@ describe('daily condition persistence with real SQLite', () => {
       .toEqual({ journalDays: 0, totalEntries: 0, averageLength: 0, longestEntry: 0 })
   })
 
-  it('preserves the journal while changing and clearing a condition on the same day', async () => {
+  test('preserves the journal while changing and clearing a condition on the same day', async () => {
     // Arrange
     await databaseService.upsertEntry('2026-09-05', 'A long walk helped')
     await databaseService.setEntryCondition('2026-09-05', 4)
@@ -91,7 +91,7 @@ describe('daily condition persistence with real SQLite', () => {
     expect(sqliteDatabase.prepare('SELECT COUNT(*) AS count FROM entries').get()).toEqual({ count: 1 })
   })
 
-  it('preserves the recorded condition when a delayed journal save or journal clear arrives', async () => {
+  test('preserves the recorded condition when a delayed journal save or journal clear arrives', async () => {
     // Arrange
     await databaseService.setEntryCondition('2026-09-05', 5)
 
@@ -104,7 +104,7 @@ describe('daily condition persistence with real SQLite', () => {
     expect(clearedJournal).toMatchObject({ note: '', conditionLevel: 5 })
   })
 
-  it('loads the oldest condition and note even after more than 30 newer daily records exist', async () => {
+  test('loads the oldest condition and note even after more than 30 newer daily records exist', async () => {
     // Arrange
     await databaseService.upsertEntry('2020-01-01', 'An older reflection')
     await databaseService.setEntryCondition('2020-01-01', 4)
@@ -123,7 +123,7 @@ describe('daily condition persistence with real SQLite', () => {
       .toEqual([expect.objectContaining({ conditionLevel: 4 })])
   })
 
-  it('roundtrips recorded and cleared conditions together with notes through a JSON backup', async () => {
+  test('roundtrips recorded and cleared conditions together with notes through a JSON backup', async () => {
     // Arrange
     await databaseService.upsertEntry('2026-09-04', 'Keep this note')
     await databaseService.setEntryCondition('2026-09-04', 4)
@@ -148,7 +148,7 @@ describe('daily condition persistence with real SQLite', () => {
     expect(await databaseService.getEntry('2026-09-05')).toMatchObject({ note: '', conditionLevel: null })
   })
 
-  it('restores legacy backups with no condition field as unrecorded', async () => {
+  test('restores legacy backups with no condition field as unrecorded', async () => {
     // Arrange
     const backup = {
       version: '1.0.0', timestamp: Date.now(), categories: [], tasks: [], completions: [], settings: [],
@@ -165,7 +165,7 @@ describe('daily condition persistence with real SQLite', () => {
     expect(await databaseService.getEntry('2026-09-04')).toMatchObject({ note: 'Legacy journal', conditionLevel: null })
   })
 
-  it.each([0, 6, 2.5, '4', false])('rejects a corrupt condition (%j) without replacing saved data', async (conditionLevel) => {
+  test.each([0, 6, 2.5, '4', false])('rejects a corrupt condition (%j) without replacing saved data', async (conditionLevel) => {
     // Arrange
     await databaseService.upsertEntry('2026-09-05', 'Keep my data')
     initializeBackupService(databaseService)

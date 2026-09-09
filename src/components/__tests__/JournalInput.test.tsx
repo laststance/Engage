@@ -37,7 +37,7 @@ describe('JournalInput', () => {
     jest.clearAllMocks()
   })
 
-  it('renders correctly', async () => {
+  test('renders correctly', async () => {
     const { getByTestId, getByPlaceholderText } = await render(
       <JournalInput {...defaultProps} />
     )
@@ -49,7 +49,7 @@ describe('JournalInput', () => {
     ).toBeTruthy()
   })
 
-  it('displays the provided entry note', async () => {
+  test('displays the provided entry note', async () => {
     const entryWithNote = {
       ...defaultEntry,
       note: '今日は良い一日でした。'
@@ -62,7 +62,7 @@ describe('JournalInput', () => {
     expect(getByDisplayValue('今日は良い一日でした。')).toBeTruthy()
   })
 
-  it('updates text when user types', async () => {
+  test('updates text when user types', async () => {
     const { getByTestId } = await render(<JournalInput {...defaultProps} />)
 
     const textInput = getByTestId('journal-text-input')
@@ -72,7 +72,7 @@ describe('JournalInput', () => {
     expect(textInput.props.value).toBe('新しいテキスト')
   })
 
-  it('auto-saves when text input loses focus', async () => {
+  test('auto-saves when text input loses focus', async () => {
     const { getByTestId } = await render(<JournalInput {...defaultProps} />)
 
     const textInput = getByTestId('journal-text-input')
@@ -85,7 +85,7 @@ describe('JournalInput', () => {
     }, { timeout: 5000 })
   })
 
-  it('displays character count', async () => {
+  test('displays character count', async () => {
     const entryWithText = {
       ...defaultEntry,
       note: 'テスト'
@@ -99,7 +99,7 @@ describe('JournalInput', () => {
     expect(getByTestId('character-count').props.children).toContain('3')
   })
 
-  it('respects maxLength prop', async () => {
+  test('respects maxLength prop', async () => {
     const { getByTestId } = await render(
       <JournalInput {...defaultProps} maxLength={10} />
     )
@@ -108,7 +108,7 @@ describe('JournalInput', () => {
     expect(textInput.props.maxLength).toBe(10)
   })
 
-  it('handles null entry gracefully', async () => {
+  test('handles null entry gracefully', async () => {
     const { getByTestId } = await render(
       <JournalInput {...defaultProps} entry={null} />
     )
@@ -117,7 +117,7 @@ describe('JournalInput', () => {
     expect(textInput.props.value).toBe('')
   })
 
-  it('shows custom placeholder when provided', async () => {
+  test('shows custom placeholder when provided', async () => {
     const customPlaceholder = 'カスタムプレースホルダー'
     const { getByPlaceholderText } = await render(
       <JournalInput {...defaultProps} placeholder={customPlaceholder} />
@@ -126,7 +126,7 @@ describe('JournalInput', () => {
     expect(getByPlaceholderText(customPlaceholder)).toBeTruthy()
   })
 
-  it('handles long text properly', async () => {
+  test('handles long text properly', async () => {
     const longText = 'あ'.repeat(400)
     const entryWithLongText = {
       ...defaultEntry,
@@ -141,7 +141,7 @@ describe('JournalInput', () => {
     expect(textInput.props.value).toBe(longText)
   })
 
-  it('shows save indicator when auto-saving', async () => {
+  test('shows save indicator when auto-saving', async () => {
     const { getByTestId } = await render(<JournalInput {...defaultProps} />)
 
     const textInput = getByTestId('journal-text-input')
@@ -153,7 +153,7 @@ describe('JournalInput', () => {
     })
   })
 
-  it('shows retry feedback when journal persistence fails', async () => {
+  test('shows retry feedback when journal persistence fails', async () => {
     // Arrange
     const failingOnUpdate = jest
       .fn()

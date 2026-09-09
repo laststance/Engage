@@ -86,7 +86,7 @@ describe('DaySheet', () => {
     mockOnTaskToggle.mockResolvedValue(completionSuccess)
   })
 
-  it('shows a primary habit selection action when the day has no assigned tasks', async () => {
+  test('shows a primary habit selection action when the day has no assigned tasks', async () => {
     // Arrange & Act
     const { getByText, getByTestId } = await render(
       <DaySheet {...defaultProps} tasks={[]} />
@@ -99,7 +99,7 @@ describe('DaySheet', () => {
     expect(mockOnTaskSelectionPress).toHaveBeenCalledTimes(1)
   })
 
-  it('exposes checked accessibility state for completed task rows', async () => {
+  test('exposes checked accessibility state for completed task rows', async () => {
     // Arrange & Act
     const { getByTestId } = await render(
       <DaySheet {...defaultProps} completions={completedCompletions} />
@@ -111,7 +111,7 @@ describe('DaySheet', () => {
     })
   })
 
-  it('disables both task-selection controls until the day is ready, then makes them usable', async () => {
+  test('disables both task-selection controls until the day is ready, then makes them usable', async () => {
     // Arrange
     const { getByTestId, rerender } = await render(
       <DaySheet {...defaultProps} tasks={[]} isTaskSelectionDisabled />
@@ -141,7 +141,7 @@ describe('DaySheet', () => {
     expect(mockOnTaskSelectionPress).toHaveBeenCalledTimes(2)
   })
 
-  it('shows completion immediately while persistence is queued and rolls back when it fails', async () => {
+  test('shows completion immediately while persistence is queued and rolls back when it fails', async () => {
     // Arrange
     let finishToggle: (result: TaskCompletionOperationResult) => void = () => undefined
     mockOnTaskToggle.mockImplementationOnce(
@@ -185,7 +185,7 @@ describe('DaySheet', () => {
     expect(getByText('daySheet.taskCompletionFailed')).toBeVisible()
   })
 
-  it('shows completion acknowledgement after a task is completed', async () => {
+  test('shows completion acknowledgement after a task is completed', async () => {
     // Arrange
     const { getByTestId, getByText } = await render(
       <DaySheet {...defaultProps} tasks={[...mockTasks, secondTask]} />
@@ -200,7 +200,7 @@ describe('DaySheet', () => {
     })
   })
 
-  it('keeps pending completion checked through a stale refresh and after successful persistence', async () => {
+  test('keeps pending completion checked through a stale refresh and after successful persistence', async () => {
     // Arrange
     let finishToggle: (result: TaskCompletionOperationResult) => void = () => undefined
     mockOnTaskToggle.mockImplementationOnce(
@@ -250,7 +250,7 @@ describe('DaySheet', () => {
     expect(mockOnTaskToggle).toHaveBeenCalledTimes(1)
   })
 
-  it('shows closure feedback when the final assigned task is completed', async () => {
+  test('shows closure feedback when the final assigned task is completed', async () => {
     // Arrange
     mockOnTaskToggle.mockResolvedValue({
       success: true,
@@ -275,7 +275,7 @@ describe('DaySheet', () => {
     })
   })
 
-  it('shows undo acknowledgement after a completed task is marked incomplete', async () => {
+  test('shows undo acknowledgement after a completed task is marked incomplete', async () => {
     // Arrange
     mockOnTaskToggle.mockResolvedValue({
       success: true,
@@ -296,7 +296,7 @@ describe('DaySheet', () => {
     })
   })
 
-  it('shows retry feedback when completion persistence fails', async () => {
+  test('shows retry feedback when completion persistence fails', async () => {
     // Arrange
     mockOnTaskToggle.mockResolvedValue({
       success: false,

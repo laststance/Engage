@@ -122,7 +122,7 @@ describe('Today routine selection', () => {
     useAppStore.setState(initialStoreState, true)
   })
 
-  it('keeps Today selection disabled until initialization finishes', async () => {
+  test('keeps Today selection disabled until initialization finishes', async () => {
     // Arrange
     useAppStore.setState({ isInitialized: false })
     const { getByTestId, queryByTestId } = await render(<TodayScreen />)
@@ -144,7 +144,7 @@ describe('Today routine selection', () => {
     expect(getByTestId('routine-task-picker')).toBeVisible()
   })
 
-  it('enables historical calendar-day selection after initialization without changing the selected date', async () => {
+  test('enables historical calendar-day selection after initialization without changing the selected date', async () => {
     // Arrange
     useAppStore.setState({ isInitialized: false, selectedDate: '2026-09-03' })
     const { getByTestId, queryByTestId } = await render(
@@ -169,7 +169,7 @@ describe('Today routine selection', () => {
     expect(useAppStore.getState().selectedDate).toBe('2026-09-03')
   })
 
-  it('closes yesterday\'s picker draft when Today advances to the next local date', async () => {
+  test('closes yesterday\'s picker draft when Today advances to the next local date', async () => {
     // Arrange
     const { getByTestId, queryByTestId, rerender } = await render(<TodayScreen />)
     await fireEvent.press(getByTestId('open-task-picker'))
@@ -187,7 +187,7 @@ describe('Today routine selection', () => {
     expect(queryByTestId('routine-task-picker')).toBeNull()
   })
 
-  it('waits for a routine refresh before opening the first selection draft with current assignments', async () => {
+  test('waits for a routine refresh before opening the first selection draft with current assignments', async () => {
     // Arrange
     let finishRefresh: (didSucceed: boolean) => void = () => undefined
     mockRefreshDailyTasks.mockImplementationOnce(
@@ -233,7 +233,7 @@ describe('Today routine selection', () => {
     )
   })
 
-  it('opens a fresh next-day draft with that day\'s refreshed routine selections', async () => {
+  test('opens a fresh next-day draft with that day\'s refreshed routine selections', async () => {
     // Arrange
     const { getByTestId, queryByTestId, rerender } = await render(<TodayScreen />)
     await fireEvent.press(getByTestId('open-task-picker'))
@@ -267,7 +267,7 @@ describe('Today routine selection', () => {
     expect(getByTestId('day-date')).toHaveTextContent('2026-09-06')
   })
 
-  it('shows the routine refresh error and keeps task selection closed when refresh fails', async () => {
+  test('shows the routine refresh error and keeps task selection closed when refresh fails', async () => {
     // Arrange
     mockRefreshDailyTasks.mockImplementationOnce(async () => {
       useAppStore.setState({ hasDailyTaskError: true })

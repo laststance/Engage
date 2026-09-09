@@ -48,7 +48,7 @@ const createDailyReminder = (
 })
 
 describe('notification permission helpers', () => {
-  it('maps Expo permission responses to user-facing states', () => {
+  test('maps Expo permission responses to user-facing states', () => {
     // Arrange
     const grantedPermission = createPermissionResponse(
       permissionStatuses.granted,
@@ -71,7 +71,7 @@ describe('notification permission helpers', () => {
     )
   })
 
-  it('reads the reminder time from a daily trigger', () => {
+  test('reads the reminder time from a daily trigger', () => {
     // Arrange
     const trigger: Notifications.NotificationTrigger = {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,
@@ -98,7 +98,7 @@ describe('useNotifications', () => {
     ).mockResolvedValue([])
   })
 
-  it('loads enabled scheduled reminder state from Expo', async () => {
+  test('loads enabled scheduled reminder state from Expo', async () => {
     // Arrange
     ;(Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue(
       createPermissionResponse(permissionStatuses.granted, true)
@@ -123,7 +123,7 @@ describe('useNotifications', () => {
     })
   })
 
-  it('schedules a daily reminder after permission is enabled', async () => {
+  test('schedules a daily reminder after permission is enabled', async () => {
     // Arrange
     ;(Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue(
       createPermissionResponse(permissionStatuses.granted, true)

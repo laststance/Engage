@@ -17,7 +17,7 @@ describe('PresetService', () => {
   })
 
   describe('initializeDefaults', () => {
-    it('should create default categories and tasks on first launch', async () => {
+    test('should create default categories and tasks on first launch', async () => {
       // Mock empty database (first launch)
       mockCategoryRepository.findAll.mockResolvedValue([])
       mockTaskRepository.findAll.mockResolvedValue([])
@@ -86,7 +86,7 @@ describe('PresetService', () => {
       expect(result.tasksCreated).toBe(11)
     })
 
-    it('should seed default tasks when migrations already created categories', async () => {
+    test('should seed default tasks when migrations already created categories', async () => {
       // Arrange
       mockCategoryRepository.findAll.mockResolvedValue([
         { id: 'business', name: '事業' },
@@ -115,7 +115,7 @@ describe('PresetService', () => {
       expect(result.tasksCreated).toBe(11)
     })
 
-    it('should not recreate removed default presets when tasks already exist', async () => {
+    test('should not recreate removed default presets when tasks already exist', async () => {
       // Arrange
       mockCategoryRepository.findAll.mockResolvedValue([
         { id: 'business', name: '事業' },
@@ -148,7 +148,7 @@ describe('PresetService', () => {
       expect(result.tasksCreated).toBe(0)
     })
 
-    it('should seed default tasks when only archived tasks remain', async () => {
+    test('should seed default tasks when only archived tasks remain', async () => {
       // Arrange
       mockCategoryRepository.findAll.mockResolvedValue([
         { id: 'business', name: '事業' },
@@ -188,7 +188,7 @@ describe('PresetService', () => {
   })
 
   describe('getSuggestedTasks', () => {
-    it('should return 3 recommended tasks for first-time users', async () => {
+    test('should return 3 recommended tasks for first-time users', async () => {
       const mockTasks = [
         {
           id: 'task1',
@@ -234,7 +234,7 @@ describe('PresetService', () => {
       expect(suggestedTasks[2].title).toBe('読書・勉強')
     })
 
-    it('should fill with other tasks if recommended tasks are not available', async () => {
+    test('should fill with other tasks if recommended tasks are not available', async () => {
       const mockTasks = [
         {
           id: 'task1',
@@ -275,7 +275,7 @@ describe('PresetService', () => {
   })
 
   describe('isFirstLaunch', () => {
-    it('should return true when no categories or tasks exist', async () => {
+    test('should return true when no categories or tasks exist', async () => {
       mockCategoryRepository.findAll.mockResolvedValue([])
       mockTaskRepository.findAll.mockResolvedValue([])
 
@@ -284,7 +284,7 @@ describe('PresetService', () => {
       expect(isFirst).toBe(true)
     })
 
-    it('should return false when data exists', async () => {
+    test('should return false when data exists', async () => {
       mockCategoryRepository.findAll.mockResolvedValue([
         { id: 'business', name: '事業' },
       ])
@@ -297,7 +297,7 @@ describe('PresetService', () => {
   })
 
   describe('getPresetTasksByCategory', () => {
-    it('should group tasks by category', async () => {
+    test('should group tasks by category', async () => {
       const mockCategories = [
         { id: 'business', name: '事業' },
         { id: 'life', name: '生活' },
@@ -334,7 +334,7 @@ describe('PresetService', () => {
   })
 
   describe('validatePresetIntegrity', () => {
-    it('should validate that all required categories exist', async () => {
+    test('should validate that all required categories exist', async () => {
       mockCategoryRepository.findAll.mockResolvedValue([
         { id: 'business', name: '事業' },
         // Missing 'life' category
@@ -347,7 +347,7 @@ describe('PresetService', () => {
       expect(validation.missingCategories).toContain('life')
     })
 
-    it('should detect orphaned tasks', async () => {
+    test('should detect orphaned tasks', async () => {
       mockCategoryRepository.findAll.mockResolvedValue([
         { id: 'business', name: '事業' },
       ])
@@ -369,7 +369,7 @@ describe('PresetService', () => {
       expect(validation.orphanedTasks[0].id).toBe('orphaned-task')
     })
 
-    it('should return valid when everything is correct', async () => {
+    test('should return valid when everything is correct', async () => {
       mockCategoryRepository.findAll.mockResolvedValue([
         { id: 'business', name: '事業' },
         { id: 'life', name: '生活' },

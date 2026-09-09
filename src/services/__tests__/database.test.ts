@@ -31,7 +31,7 @@ describe('DatabaseService', () => {
   })
 
   describe('initialization', () => {
-    it('should initialize database successfully', async () => {
+    test('should initialize database successfully', async () => {
       mockDb.execAsync.mockResolvedValue(undefined)
       mockDb.getFirstAsync.mockResolvedValue(null) // No existing migrations
 
@@ -41,14 +41,14 @@ describe('DatabaseService', () => {
       expect(mockDb.execAsync).toHaveBeenCalled()
     })
 
-    it('should throw DatabaseError on initialization failure', async () => {
+    test('should throw DatabaseError on initialization failure', async () => {
       const error = new Error('Database connection failed')
       ;(SQLite.openDatabaseAsync as jest.Mock).mockRejectedValue(error)
 
       await expect(databaseService.initialize()).rejects.toThrow(DatabaseError)
     })
 
-    it('should apply migrations correctly', async () => {
+    test('should apply migrations correctly', async () => {
       mockDb.execAsync.mockResolvedValue(undefined)
       mockDb.getFirstAsync.mockResolvedValue(null) // No existing migrations
       mockDb.runAsync.mockResolvedValue({ changes: 1, lastInsertRowId: 1 })
@@ -75,7 +75,7 @@ describe('DatabaseService', () => {
     })
 
     describe('getAllTasks', () => {
-      it('should return all non-archived tasks', async () => {
+      test('should return all non-archived tasks', async () => {
         const mockTasks = [
           {
             id: 'task1',
@@ -105,7 +105,7 @@ describe('DatabaseService', () => {
         })
       })
 
-      it('should handle database errors', async () => {
+      test('should handle database errors', async () => {
         mockDb.getAllAsync.mockRejectedValue(new Error('Database error'))
 
         await expect(databaseService.getAllTasks()).rejects.toThrow(
@@ -115,7 +115,7 @@ describe('DatabaseService', () => {
     })
 
     describe('createTask', () => {
-      it('should create a new task successfully', async () => {
+      test('should create a new task successfully', async () => {
         const taskData = {
           title: 'New Task',
           categoryId: 'life',
@@ -147,7 +147,7 @@ describe('DatabaseService', () => {
         )
       })
 
-      it('should validate task data', async () => {
+      test('should validate task data', async () => {
         const invalidTask = {
           title: '',
           categoryId: 'invalid',
@@ -159,7 +159,7 @@ describe('DatabaseService', () => {
         )
       })
 
-      it('should handle negative default minutes', async () => {
+      test('should handle negative default minutes', async () => {
         const invalidTask = {
           title: 'Test Task',
           categoryId: 'business',
@@ -174,7 +174,7 @@ describe('DatabaseService', () => {
     })
 
     describe('updateTask', () => {
-      it('should update an existing task', async () => {
+      test('should update an existing task', async () => {
         const existingTask = {
           id: 'task1',
           title: 'Original Task',
@@ -215,7 +215,7 @@ describe('DatabaseService', () => {
         )
       })
 
-      it('should throw error for non-existent task', async () => {
+      test('should throw error for non-existent task', async () => {
         mockDb.getFirstAsync.mockResolvedValue(null)
 
         await expect(
@@ -225,7 +225,7 @@ describe('DatabaseService', () => {
     })
 
     describe('deleteTask', () => {
-      it('should delete an existing task', async () => {
+      test('should delete an existing task', async () => {
         mockDb.runAsync.mockResolvedValue({ changes: 1, lastInsertRowId: 1 })
 
         await databaseService.deleteTask('task1')
@@ -236,7 +236,7 @@ describe('DatabaseService', () => {
         )
       })
 
-      it('should throw error when task not found', async () => {
+      test('should throw error when task not found', async () => {
         mockDb.runAsync.mockResolvedValue({ changes: 0, lastInsertRowId: 0 })
 
         await expect(databaseService.deleteTask('nonexistent')).rejects.toThrow(
@@ -255,7 +255,7 @@ describe('DatabaseService', () => {
     })
 
     describe('getEntry', () => {
-      it('should return entry for valid date', async () => {
+      test('should return entry for valid date', async () => {
         const mockEntry = {
           id: 'entry1',
           date: '2024-01-15',
@@ -275,7 +275,7 @@ describe('DatabaseService', () => {
         })
       })
 
-      it('should return null for non-existent entry', async () => {
+      test('should return null for non-existent entry', async () => {
         mockDb.getFirstAsync.mockResolvedValue(null)
 
         const result = await databaseService.getEntry('2024-01-15')
@@ -283,7 +283,7 @@ describe('DatabaseService', () => {
         expect(result).toBeNull()
       })
 
-      it('should validate date format', async () => {
+      test('should validate date format', async () => {
         await expect(databaseService.getEntry('invalid-date')).rejects.toThrow(
           DatabaseError
         )
@@ -291,7 +291,7 @@ describe('DatabaseService', () => {
     })
 
     describe('upsertEntry', () => {
-      it('should create new entry when none exists', async () => {
+      test('should create new entry when none exists', async () => {
         mockDb.getFirstAsync.mockResolvedValue(null) // No existing entry
         mockDb.runAsync.mockResolvedValue({ changes: 1, lastInsertRowId: 1 })
 
@@ -314,7 +314,7 @@ describe('DatabaseService', () => {
         )
       })
 
-      it('should update existing entry', async () => {
+      test('should update existing entry', async () => {
         const existingEntry = {
           id: 'entry1',
           date: '2024-01-15',
@@ -353,7 +353,7 @@ describe('DatabaseService', () => {
     })
 
     describe('getCompletions', () => {
-      it('should return completions for a date', async () => {
+      test('should return completions for a date', async () => {
         const mockCompletions = [
           {
             id: 'completion1',
@@ -379,7 +379,7 @@ describe('DatabaseService', () => {
     })
 
     describe('toggleCompletion', () => {
-      it('should create completion when none exists', async () => {
+      test('should create completion when none exists', async () => {
         mockDb.getFirstAsync.mockResolvedValue(null) // No existing completion
         mockDb.runAsync.mockResolvedValue({ changes: 1, lastInsertRowId: 1 })
 
@@ -403,7 +403,7 @@ describe('DatabaseService', () => {
         )
       })
 
-      it('should toggle completed status when completion exists', async () => {
+      test('should toggle completed status when completion exists', async () => {
         const existingCompletion = {
           id: 'completion1',
           date: '2024-01-15',
@@ -430,7 +430,7 @@ describe('DatabaseService', () => {
     })
 
     describe('getCompletionsByDateRange', () => {
-      it('should return completions within date range', async () => {
+      test('should return completions within date range', async () => {
         const mockCompletions = [
           {
             id: 'completion1',
@@ -475,7 +475,7 @@ describe('DatabaseService', () => {
     })
 
     describe('getSetting', () => {
-      it('should return setting value', async () => {
+      test('should return setting value', async () => {
         mockDb.getFirstAsync.mockResolvedValue({ value: 'test-value' })
 
         const result = await databaseService.getSetting('test-key')
@@ -487,7 +487,7 @@ describe('DatabaseService', () => {
         )
       })
 
-      it('should return null for non-existent setting', async () => {
+      test('should return null for non-existent setting', async () => {
         mockDb.getFirstAsync.mockResolvedValue(null)
 
         const result = await databaseService.getSetting('non-existent')
@@ -497,7 +497,7 @@ describe('DatabaseService', () => {
     })
 
     describe('setSetting', () => {
-      it('should set setting value', async () => {
+      test('should set setting value', async () => {
         mockDb.runAsync.mockResolvedValue({ changes: 1, lastInsertRowId: 1 })
 
         await databaseService.setSetting('test-key', 'test-value')
@@ -508,7 +508,7 @@ describe('DatabaseService', () => {
         )
       })
 
-      it('should validate setting key', async () => {
+      test('should validate setting key', async () => {
         await expect(databaseService.setSetting('', 'value')).rejects.toThrow(
           DatabaseError
         )
@@ -524,7 +524,7 @@ describe('DatabaseService', () => {
       await databaseService.initialize()
     })
 
-    it('should execute transaction successfully', async () => {
+    test('should execute transaction successfully', async () => {
       const operations = [
         jest.fn().mockResolvedValue(undefined),
         jest.fn().mockResolvedValue(undefined),
@@ -538,7 +538,7 @@ describe('DatabaseService', () => {
       expect(mockDb.execAsync).toHaveBeenCalledWith('COMMIT')
     })
 
-    it('should rollback on transaction failure', async () => {
+    test('should rollback on transaction failure', async () => {
       const operations = [
         jest.fn().mockResolvedValue(undefined),
         jest.fn().mockRejectedValue(new Error('Operation failed')),
@@ -562,7 +562,7 @@ describe('DatabaseService', () => {
     })
 
     describe('exportData', () => {
-      it('should export all data successfully', async () => {
+      test('should export all data successfully', async () => {
         const mockCategories = [{ id: 'business', name: 'Business' }]
         const mockTasks = [
           {

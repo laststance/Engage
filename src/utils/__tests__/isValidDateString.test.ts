@@ -1,7 +1,7 @@
 import { isValidDateString } from '@/src/utils/isValidDateString'
 
 describe('calendar date validation', () => {
-  it.each(['2026-02-28', '2024-02-29', '2000-02-29', '2026-12-31'])(
+  test.each(['2026-02-28', '2024-02-29', '2000-02-29', '2026-12-31'])(
     'accepts the existing calendar date %s',
     (date) => {
       // Arrange / Act
@@ -12,7 +12,7 @@ describe('calendar date validation', () => {
     }
   )
 
-  it.each([
+  test.each([
     '2026-02-31',
     '2026-02-29',
     '1900-02-29',
