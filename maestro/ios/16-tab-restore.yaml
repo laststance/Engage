@@ -1,0 +1,39 @@
+appId: com.laststance.engage
+tags:
+  - ios
+---
+# QA-16: redux-storage-middleware restores the last tab from AsyncStorage.
+# The first launch clears state. clearState: false appears only on the relaunch.
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 15000
+
+- tapOn: "stats-tab"
+
+- extendedWaitUntil:
+    visible:
+      id: "stats-screen"
+    timeout: 15000
+
+# session-tab-saved-stats appears only after the debounced setItem resolves.
+- extendedWaitUntil:
+    visible:
+      id: "session-tab-saved-stats"
+    timeout: 15000
+
+- launchApp:
+    clearState: false
+    stopApp: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: "stats-screen"
+    timeout: 15000

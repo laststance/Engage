@@ -41,16 +41,19 @@ tags:
     timeout: 10000
 
 # A cold launch retains the saved routine setting.
+# session-tab-saved-today appears only after the debounced setItem resolves.
+- extendedWaitUntil:
+    visible:
+      id: "session-tab-saved-today"
+    timeout: 15000
 - launchApp:
     stopApp: true
 - waitForAnimationToEnd:
     timeout: 5000
 - extendedWaitUntil:
     visible:
-      id: "calendar-screen"
+      id: "today-screen"
     timeout: 10000
-- tapOn:
-    id: "today-tab"
 - tapOn:
     id: "task-selection-button"
 - tapOn:
@@ -90,16 +93,19 @@ tags:
     notVisible:
       id: "preset-editor-close"
     timeout: 10000
+# session-tab-saved-today appears only after the debounced setItem resolves.
+- extendedWaitUntil:
+    visible:
+      id: "session-tab-saved-today"
+    timeout: 15000
 - launchApp:
     stopApp: true
 - waitForAnimationToEnd:
     timeout: 5000
 - extendedWaitUntil:
     visible:
-      id: "calendar-screen"
+      id: "today-screen"
     timeout: 10000
-- tapOn:
-    id: "today-tab"
 - tapOn:
     id: "task-selection-button"
 - tapOn:

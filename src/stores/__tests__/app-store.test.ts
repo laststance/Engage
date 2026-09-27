@@ -1,4 +1,5 @@
-import { useAppStore } from '../app-store'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { storageApi, useAppStore } from '../app-store'
 import {
   taskRepository,
   entryRepository,
@@ -1019,6 +1020,46 @@ describe('useAppStore', () => {
       store.clearError()
 
       expect(useAppStore.getState().error).toBeNull()
+    })
+  })
+
+  describe('session persistence', () => {
+    test('restores the last open tab and leaves in-memory tasks alone', async () => {
+      // Arrange
+      const status = storageApi.getHydrationState()
+      if (status !== 'hydrated' && status !== 'error') {
+        await new Promise<void>((resolve) => {
+          storageApi.onFinishHydration(() => resolve())
+        })
+      }
+      jest.useFakeTimers()
+
+      try {
+        useAppStore.getState().setCurrentTab('stats')
+        await jest.advanceTimersByTimeAsync(300)
+        const saved = jest
+          .mocked(AsyncStorage.setItem)
+          .mock.calls.filter((call) => call[0] === 'engage')
+          .at(-1)?.[1]
+        expect(JSON.parse(String(saved))).toEqual({
+          version: 0,
+          state: { session: { currentTab: 'stats' } },
+        })
+
+        jest.mocked(AsyncStorage.getItem).mockResolvedValueOnce(String(saved))
+        useAppStore.setState({ tasks: mockTasks, currentTab: 'calendar' })
+
+        // Act
+        await storageApi.rehydrate()
+
+        // Assert
+        expect(useAppStore.getState().currentTab).toBe('stats')
+        expect(useAppStore.getState().tasks).toEqual(mockTasks)
+      } finally {
+        jest.clearAllTimers()
+        jest.useRealTimers()
+        jest.mocked(AsyncStorage.getItem).mockImplementation(() => Promise.resolve(null))
+      }
     })
   })
 })

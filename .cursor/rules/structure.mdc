@@ -15,7 +15,7 @@ app/                    # Expo Router screens (file-based routing)
 src/                   # Core application logic
 ├── components/        # Business logic components
 ├── services/          # Database & API services
-├── stores/            # Zustand state stores
+├── stores/            # Redux Toolkit state stores
 ├── types/             # TypeScript definitions
 └── utils/             # Helper functions
 
@@ -37,10 +37,10 @@ maestro/               # E2E test files
 ### State Management Flow
 
 ```
-UI Component → Zustand Store → Service Layer → SQLite/AsyncStorage
+UI Component → Redux Toolkit Store → Service Layer → SQLite/AsyncStorage
 ```
 
-- **Global**: Zustand stores (`src/stores/`) for habits, user data
+- **Global**: Redux Toolkit store (`src/stores/`) for habits, user data
 - **Local**: React hooks for component state, forms, UI state
 - **Persistence**: SQLite for structured data, AsyncStorage for preferences
 

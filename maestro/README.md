@@ -35,6 +35,7 @@ pnpm test:e2e:production:single maestro/ios/06-calendar-browsing.yaml
 - `10-data-persistence.yaml`: SQLite state survives restart
 - `11-backup-create.yaml`: backup creation regression
 - `12-calendar-preset-save.yaml`: nested Calendar preset save returns to DayModal without a white screen
+- `16-tab-restore.yaml`: redux-storage-middleware restores the Stats tab when relaunch sets `clearState: false`
 
 ### Tagged On-Demand Flows
 - `01-app-launch.yaml` (`smoke`): launch-only diagnosis

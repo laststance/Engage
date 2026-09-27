@@ -1,4 +1,12 @@
-import { create } from 'zustand'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { createStorageMiddleware } from '@laststance/redux-storage-middleware'
+import {
+  combineReducers,
+  configureStore,
+  createSlice,
+  type PayloadAction,
+} from '@reduxjs/toolkit'
+import { useSyncExternalStore } from 'react'
 import {
   Task,
   Entry,
@@ -138,27 +146,37 @@ interface AppState {
   getBackupStats: () => Promise<any>
 }
 
-export const useAppStore = create<AppState>((set, get) => ({
-  // Initial state
-  categories: [],
-  tasks: [],
-  entries: {},
-  completions: {},
-  selectedDate: formatDate(new Date()),
-  isTaskPickerVisible: false,
-  isPresetEditorVisible: false,
-  isCategoryEditorVisible: false,
-  currentTab: 'calendar',
-  isLoading: false,
-  isInitialized: false,
-  hasDailyTaskError: false,
-  error: null,
-  isFirstLaunch: false,
-  suggestedTasks: [],
-  isOffline: false,
-  offlineCapabilities: {},
-  dataIntegrityStatus: 'unknown',
+export type AppTab = AppState['currentTab']
 
+type AppActionKey = {
+  [K in keyof AppState]: AppState[K] extends (...args: never[]) => unknown
+    ? unknown extends AppState[K]
+      ? never
+      : K
+    : never
+}[keyof AppState]
+
+type AppActions = Pick<AppState, AppActionKey>
+type AppData = Omit<AppState, AppActionKey | 'currentTab'>
+
+/**
+ * Zustand-shaped update used by store actions and {@link useAppStore}.setState.
+ * A function receives the latest public state and returns the partial to merge.
+ */
+type SetAppState = (
+  partial: Partial<AppState> | ((state: AppState) => Partial<AppState>),
+  replace?: boolean,
+) => void
+
+/**
+ * Builds the imperative actions {@link useAppStore} exposes on top of the RTK slices.
+ * Called once when this module loads, before any screen reads the store.
+ * @param set - Merges a partial into the slices, sending `currentTab` to the session slice.
+ * @param get - Reads the latest public state, including these actions, so queued work can call another action.
+ * @returns The action map. Data fields live in the slice, not in this object.
+ */
+function createActions(set: SetAppState, get: () => AppState): AppActions {
+  return {
   // Actions
   loadData: async () => {
     try {
@@ -993,7 +1011,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   getBackupStats: async () => {
     return backupService.getBackupStats()
   },
-}))
+  }
+}
 
 let dataMutationQueue: Promise<unknown> | undefined
 
@@ -1015,4 +1034,291 @@ function enqueueDataMutation<Result>(operation: () => Promise<Result>): Promise<
   })
   dataMutationQueue = queuedResult
   return queuedResult
+}
+
+const initialAppData: AppData = {
+  categories: [],
+  tasks: [],
+  entries: {},
+  completions: {},
+  selectedDate: formatDate(new Date()),
+  isTaskPickerVisible: false,
+  isPresetEditorVisible: false,
+  isCategoryEditorVisible: false,
+  isLoading: false,
+  isInitialized: false,
+  hasDailyTaskError: false,
+  error: null,
+  isFirstLaunch: false,
+  suggestedTasks: [],
+  isOffline: false,
+  offlineCapabilities: {},
+  dataIntegrityStatus: 'unknown',
+}
+
+const APP_DATA_KEYS = Object.keys(initialAppData) as (keyof AppData)[]
+
+const appSlice = createSlice({
+  name: 'app',
+  initialState: initialAppData,
+  reducers: {
+    patchApp(state, action: PayloadAction<Partial<AppData>>) {
+      Object.assign(state, action.payload)
+    },
+    replaceApp(_state, action: PayloadAction<AppData>) {
+      return action.payload
+    },
+  },
+})
+
+const sessionSlice = createSlice({
+  name: 'session',
+  initialState: { currentTab: 'calendar' as AppTab },
+  reducers: {
+    setCurrentTab(state, action: PayloadAction<AppTab>) {
+      state.currentTab = action.payload
+    },
+  },
+})
+
+interface RootState {
+  app: AppData
+  session: { currentTab: AppTab }
+}
+
+const rootReducer = combineReducers({
+  app: appSlice.reducer,
+  session: sessionSlice.reducer,
+})
+
+let lastSavedTab: AppTab | null = null
+const saveListeners = new Set<() => void>()
+
+/**
+ * Records the tab that AsyncStorage accepted so E2E can wait for the write.
+ * Called from the middleware `onSaveComplete` callback after `setItem` settles.
+ * @param tab - The session tab included in that write.
+ */
+function publishSavedTab(tab: AppTab): void {
+  lastSavedTab = tab
+  saveListeners.forEach((listener) => {
+    listener()
+  })
+}
+
+const { middleware, reducer, api: storageApi } = createStorageMiddleware<RootState>({
+  rootReducer,
+  key: 'engage',
+  // SQLite owns tasks, entries, and completions. Persisting `app` would let a late hydration overwrite them.
+  slices: ['session'],
+  storage: AsyncStorage,
+  performance: { debounceMs: 300 },
+  onSaveComplete: (state) => {
+    publishSavedTab(state.session.currentTab)
+  },
+})
+
+export { storageApi }
+
+const store = configureStore({
+  reducer,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(middleware),
+})
+
+let actions: AppActions | undefined
+let cachedRoot: RootState | undefined
+let cachedSnapshot: AppState | undefined
+let snapshotDirty = false
+const actionOverrides: Partial<Record<keyof AppActions, AppActions[keyof AppActions]>> = {}
+
+/**
+ * Reads the public Zustand-shaped state, including stable action functions.
+ * Called by {@link useAppStore}.getState and by actions that need a sibling action.
+ * @returns The latest app data, the session tab, and {@link createActions}.
+ */
+function readState(): AppState {
+  const root = store.getState()
+  // createActions assigns `actions` after this function exists, so setup reads have no methods yet.
+  const publicActions = actions ?? {}
+  return {
+    ...root.app,
+    currentTab: root.session.currentTab,
+    ...publicActions,
+    ...actionOverrides,
+  } as AppState
+}
+
+/**
+ * Copies data fields out of a Zustand partial so action functions never enter Redux.
+ * Called by {@link commit} for both merges and full replacements.
+ * @param partial - The resolved setState value.
+ * @returns Only keys owned by the app slice.
+ */
+function dataFrom(partial: Partial<AppState>): Partial<AppData> {
+  const data: Partial<AppData> = {}
+  for (const key of APP_DATA_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(partial, key)) {
+      data[key] = partial[key] as AppData[typeof key]
+    }
+  }
+  return data
+}
+
+/**
+ * Keeps function replacements from {@link useAppStore}.setState, which tests use to stub one action.
+ * Called by {@link commit} before the slice dispatch so the next snapshot includes the stub.
+ * @param resolved - The merged or replacement values.
+ * @param replace - When true, stubs that are absent from `resolved` are removed.
+ * @returns True when the stub map changed.
+ */
+function takeActionOverrides(resolved: Partial<AppState>, replace: boolean): boolean {
+  let changed = false
+  if (replace) {
+    for (const key of Object.keys(actionOverrides) as (keyof AppActions)[]) {
+      delete actionOverrides[key]
+      changed = true
+    }
+  }
+
+  for (const key of Object.keys(resolved) as (keyof AppState)[]) {
+    const value = resolved[key]
+    if (typeof value !== 'function') {
+      continue
+    }
+    actionOverrides[key as keyof AppActions] = value as AppActions[keyof AppActions]
+    changed = true
+  }
+  return changed
+}
+
+/**
+ * Applies a Zustand `set` / `setState` onto the RTK slices.
+ * Store actions and tests call this. `currentTab` updates the persisted session slice; other fields stay in memory.
+ * @param partial - The next values, or a function of the current public state.
+ * @param replace - When true, data fields missing from `partial` return to their initial values.
+ */
+function commit(partial: Parameters<SetAppState>[0], replace = false): void {
+  const current = readState()
+  const resolved = typeof partial === 'function' ? partial(current) : partial
+  const data = dataFrom(resolved)
+  const overridesChanged = takeActionOverrides(resolved, replace)
+  // The Redux root does not change when only an action stub is replaced.
+  if (overridesChanged) {
+    snapshotDirty = true
+  }
+  let dispatched = false
+
+  if (replace) {
+    store.dispatch(appSlice.actions.replaceApp({ ...initialAppData, ...data }))
+    dispatched = true
+  } else if (Object.keys(data).length > 0) {
+    store.dispatch(appSlice.actions.patchApp(data))
+    dispatched = true
+  }
+
+  // Skip an unchanged tab so a no-op setState does not schedule another AsyncStorage write.
+  if (
+    Object.prototype.hasOwnProperty.call(resolved, 'currentTab') &&
+    resolved.currentTab !== store.getState().session.currentTab
+  ) {
+    store.dispatch(sessionSlice.actions.setCurrentTab(resolved.currentTab as AppTab))
+    dispatched = true
+  }
+
+  if (overridesChanged && !dispatched) {
+    store.dispatch({ type: 'engage/actionOverridesChanged' })
+  }
+}
+
+/**
+ * Returns a stable snapshot for {@link useSyncExternalStore}.
+ * React calls this on every store notification and during render.
+ * @returns The cached public state until the Redux root reference changes.
+ */
+function getSnapshot(): AppState {
+  const root = store.getState()
+  if (!snapshotDirty && cachedRoot === root && cachedSnapshot) {
+    return cachedSnapshot
+  }
+  snapshotDirty = false
+  cachedSnapshot = readState()
+  cachedRoot = root
+  return cachedSnapshot
+}
+
+actions = createActions(commit, readState)
+
+interface UseAppStore {
+  (): AppState
+  <T>(selector: (state: AppState) => T): T
+  getState: () => AppState
+  setState: SetAppState
+}
+
+/**
+ * Subscribes a component to the public store shape that screens already select.
+ * Screens call this during render; tests call `getState` and `setState` without a Provider.
+ * @param selector - Optional projection. Omit it to read the whole public state.
+ * @returns The selected value, or the whole state when no selector is passed.
+ */
+function useAppStoreHook<T>(selector?: (state: AppState) => T): T | AppState {
+  return useSyncExternalStore(
+    store.subscribe,
+    () => (selector ? selector(getSnapshot()) : getSnapshot()),
+    () => (selector ? selector(getSnapshot()) : getSnapshot()),
+  )
+}
+
+export const useAppStore = Object.assign(useAppStoreHook, {
+  getState: readState,
+  setState: commit,
+}) as UseAppStore
+
+/**
+ * Tells the tab layout when redux-storage-middleware has finished its initial read.
+ * The tab layout calls this while deciding whether to restore the saved tab.
+ * @returns True after hydration succeeds or fails. False while the read is still running.
+ */
+export function useStorageHydrationSettled(): boolean {
+  return useSyncExternalStore(
+    (listener) => {
+      // onFinishHydration runs the listener immediately when already settled.
+      // Ignore that synchronous call; getSnapshot already reports the settled value.
+      let ignoreCurrent = true
+      const unsubscribe = storageApi.onFinishHydration(() => {
+        if (ignoreCurrent) {
+          return
+        }
+        listener()
+      })
+      ignoreCurrent = false
+      return unsubscribe
+    },
+    () => {
+      const status = storageApi.getHydrationState()
+      return status === 'hydrated' || status === 'error'
+    },
+    () => {
+      const status = storageApi.getHydrationState()
+      return status === 'hydrated' || status === 'error'
+    },
+  )
+}
+
+/**
+ * Exposes the last tab AsyncStorage accepted, for the E2E marker only.
+ * The tab layout calls this to render `session-tab-saved-*` after `setItem` resolves.
+ * @returns The saved tab, or null before the first successful write.
+ */
+export function useLastSavedTab(): AppTab | null {
+  return useSyncExternalStore(
+    (listener) => {
+      saveListeners.add(listener)
+      return () => {
+        saveListeners.delete(listener)
+      }
+    },
+    () => lastSavedTab,
+    () => lastSavedTab,
+  )
 }
