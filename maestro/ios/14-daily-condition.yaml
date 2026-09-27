@@ -43,14 +43,25 @@ tags:
     timeout: 10000
 
 # A cold start retains Good on the original calendar day.
+# The last tab was Today, so open Calendar before checking the month marker.
+# session-tab-saved-today appears only after the debounced setItem resolves.
+- extendedWaitUntil:
+    visible:
+      id: "session-tab-saved-today"
+    timeout: 15000
 - launchApp:
     stopApp: true
 - waitForAnimationToEnd:
     timeout: 5000
 - extendedWaitUntil:
     visible:
-      id: "calendar-screen"
+      id: "today-screen"
     timeout: 15000
+- tapOn: "calendar-tab"
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
 - assertVisible:
     id: "calendar-condition-.*"
 
@@ -115,14 +126,25 @@ tags:
     timeout: 10000
 
 # Clearing is persistent and never turns an unrecorded day into Okay.
+# The last tab was Today again. Calendar is one tap away.
+# session-tab-saved-today appears only after the debounced setItem resolves.
+- extendedWaitUntil:
+    visible:
+      id: "session-tab-saved-today"
+    timeout: 15000
 - launchApp:
     stopApp: true
 - waitForAnimationToEnd:
     timeout: 5000
 - extendedWaitUntil:
     visible:
-      id: "calendar-screen"
+      id: "today-screen"
     timeout: 15000
+- tapOn: "calendar-tab"
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
 - assertNotVisible:
     id: "calendar-condition-.*"
 - tapOn:

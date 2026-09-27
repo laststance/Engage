@@ -9,7 +9,7 @@ Engage is a React Native habit tracker built with Expo. It focuses on daily task
 - React 19.2
 - Expo Router
 - SQLite via `expo-sqlite`
-- Zustand
+- Redux Toolkit
 - NativeWind with Tailwind CSS v3
 - Jest and React Native Testing Library
 - Maestro for iOS E2E tests
@@ -97,7 +97,7 @@ maestro/ios/            Maestro E2E flows
 src/components/         App feature components
 src/hooks/              App hooks
 src/services/           SQLite, repositories, backup, offline services
-src/stores/             Zustand app store
+src/stores/             Redux Toolkit app store
 src/types/              Domain types
 src/utils/              Date, statistics, and business logic helpers
 website/                Static support and privacy pages published by GitHub Pages

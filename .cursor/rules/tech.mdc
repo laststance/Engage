@@ -8,7 +8,7 @@ alwaysApply: true
 
 **Core**: React Native 0.86.0 + React 19.2.3 + Expo ~57.0.6 + TypeScript ~6.0.3
 **UI**: NativeWind 4.2.6 + Gluestack UI + TailwindCSS 3.4.19 + Reanimated 4.5.0
-**State**: Zustand 5.0.14 + Expo SQLite 57.0.1 + AsyncStorage 2.2.0
+**State**: Redux Toolkit 2.12 + react-redux 9.3 + Expo SQLite 57.0.1 + AsyncStorage 2.2.0
 
 ## Critical Rules
 
@@ -29,7 +29,7 @@ npm run ios  # Uses tmux internally for React Native iOS development
 - **Components**: Functional only, hooks over classes
 - **Styling**: NativeWind classes over StyleSheet.create()
 - **Routing**: Expo Router file-based (`app/` directory)
-- **State**: Zustand for global, React hooks for local
+- **State**: Redux Toolkit for global, React hooks for local
 
 ### Platform Priority
 
