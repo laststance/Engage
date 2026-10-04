@@ -29,7 +29,10 @@
     "@gluestack-ui/utils",
     // Android resolves this fallback while static analysis selects icon-symbol.ios.tsx.
     "@react-native-vector-icons/material-icons",
+    // TypeScript 7 supplies the tsc binary; Babel and Testing Library load these by name.
+    "@typescript/native",
     "babel-plugin-module-resolver",
+    "babel-preset-expo",
     "expo",
     "expo-device",
     // Expo config and runtime integration load these outside the source import graph.
@@ -48,6 +51,7 @@
     "react-native-svg",
     "react-native-web",
     "react-native-worklets",
+    "react-test-renderer",
     "tailwind-variants"
   ],
 
