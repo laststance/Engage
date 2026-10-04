@@ -106,6 +106,7 @@ website/                Static support and privacy pages published by GitHub Pag
 ## Notes
 
 - See [dependency compatibility](docs/dependency-compatibility.md) for the TypeScript 7/6 setup and Expo version exceptions.
+- See [App Store metadata](store-assets/app-store-metadata.md) for the current iOS release details and Japanese update notes.
 - See the [Maestro E2E guide](maestro/README.md) for suite and selector details, and [dependency patches](patches/README.md) for patched package behavior.
 - Keep native package versions compatible with Expo SDK 57. Use `pnpm exec expo install --check` before merging dependency updates.
 - Regenerate ignored `ios/` and `android/` projects with `pnpm exec expo prebuild --clean` after an SDK change; inspect local native customizations first because clean prebuild replaces those directories.

@@ -13,8 +13,8 @@
 
 ### Description
 
-The published App Store listing is localized in Japanese. Keep the release
-notes for 1.0.12 aligned with the submitted iOS build:
+The published App Store listing is localized in Japanese. Use these release
+notes when submitting the iOS 1.0.12 (17) build:
 
 #### What's New (Japanese, 1.0.12)
 
