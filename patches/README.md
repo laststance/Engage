@@ -8,6 +8,6 @@ This patch changes only the package module type and function export to preserve 
 
 Remove this patch when Expo Router's query parser accepts the fixed decoder's native module format, then rerun the routing regression and native navigation tests.
 
-## react-native-css-interop 0.2.6
+## react-native-css-interop 0.2.7
 
-This existing patch is retained unchanged by the daily-condition work.
+The existing patch is unchanged while its dependency target moves to 0.2.7.

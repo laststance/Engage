@@ -29,12 +29,15 @@ pnpm test:e2e:production:single maestro/ios/06-calendar-browsing.yaml
 ### Main Suite
 - `02-tab-navigation.yaml`: app shell / Expo Router / tab wiring
 - `04-task-completion.yaml`: task assignment + completion
-- `05-journal-entry.yaml`: journal input + autosave
+- `05-journal-entry.yaml`: journal input + autosave, including the footer above the compact-iPhone keyboard
 - `06-calendar-browsing.yaml`: calendar navigation + DayModal date regression
 - `07-edit-presets.yaml`: TaskPicker to PresetTaskEditor modal flow + keyboard/category stability regression
 - `10-data-persistence.yaml`: SQLite state survives restart
 - `11-backup-create.yaml`: backup creation regression
 - `12-calendar-preset-save.yaml`: nested Calendar preset save returns to DayModal without a white screen
+- `13-daily-routine-setting.yaml`: daily routine selection persists after saving
+- `14-daily-condition.yaml`: daily condition persists independently of journal text
+- `15-calendar-content-reachability.yaml`: lower calendar content remains reachable on compact iPhones or with larger text
 - `16-tab-restore.yaml`: redux-storage-middleware restores the Stats tab when relaunch sets `clearState: false`
 
 ### Tagged On-Demand Flows

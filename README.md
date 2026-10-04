@@ -17,7 +17,7 @@ Engage is a React Native habit tracker built with Expo. It focuses on daily task
 ## Requirements
 
 - Node.js 24.19.0
-- pnpm 11.13.0 through Corepack
+- pnpm 11.13.1 through Corepack
 - Xcode 26.4 or newer for Expo SDK 57 iOS builds
 - Maestro for E2E testing
 - Expo development and E2E scripts pin Metro to port 8090.
@@ -71,7 +71,7 @@ Useful maintenance commands:
 ```bash
 pnpm build:e2e:clean
 pnpm test:e2e:clean
-pnpm test:e2e:production:single maestro/ios/app-launch.yaml
+pnpm test:e2e:production:single maestro/ios/01-app-launch.yaml
 ```
 
 ## Deployment
@@ -105,6 +105,8 @@ website/                Static support and privacy pages published by GitHub Pag
 
 ## Notes
 
+- See [dependency compatibility](docs/dependency-compatibility.md) for the TypeScript 7/6 setup and Expo version exceptions.
+- See the [Maestro E2E guide](maestro/README.md) for suite and selector details, and [dependency patches](patches/README.md) for patched package behavior.
 - Keep native package versions compatible with Expo SDK 57. Use `pnpm exec expo install --check` before merging dependency updates.
 - Regenerate ignored `ios/` and `android/` projects with `pnpm exec expo prebuild --clean` after an SDK change; inspect local native customizations first because clean prebuild replaces those directories.
 - Keep Tailwind on v3 while using NativeWind 4.x.
