@@ -15,7 +15,8 @@ React type definitions stay on the React 19.2 line used by Expo.
 TypeScript uses the [official side-by-side setup](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/):
 `@typescript/native` provides the TypeScript 7.0.2 `tsc` binary, while the
 `typescript` alias exposes TypeScript 6's JavaScript API to `ts-jest` and
-`typescript-eslint`. `pnpm exec tsc6 --version` reports 6.0.3.
+`typescript-eslint`. The alias pins `@typescript/typescript6@6.0.2`; its
+`pnpm exec tsc6 --version` binary reports 6.0.3.
 
 The `expo.install.exclude` entries are intentional exceptions to Expo's exact
 version suggestions: Jest 30 and its types passed the full unit suite; Reanimated

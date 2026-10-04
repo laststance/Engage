@@ -94,7 +94,7 @@ This project uses GitHub Actions for automated testing, security scanning, quali
    - Builds production E2E app
    - Runs Maestro tests from `maestro/ios/`
    - Uploads test results and simulator logs
-   - Uses the standard GitHub-hosted `macos-26` runner so React Native 0.83 has a current macOS/Xcode toolchain
+   - Uses the standard GitHub-hosted `macos-26` runner so React Native 0.86 has a current macOS/Xcode toolchain
    - Does not run automatically on pull requests; trigger manually when a PR needs device-level validation
    - **Note**: Standard GitHub-hosted runners are free for public repositories, but private repositories or larger runners can be billed
 

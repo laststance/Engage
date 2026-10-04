@@ -2,7 +2,7 @@
   "expo": {
     "name": "Engage",
     "slug": "engage",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "engage",
@@ -30,7 +30,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.laststance.engage",
-      "buildNumber": "16",
+      "buildNumber": "17",
       "supportsTablet": false,
       "requireFullScreen": false,
       "infoPlist": {
