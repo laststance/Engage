@@ -30,6 +30,7 @@ interface JournalInputProps {
   onUpdate: (content: string) => Promise<void>
   placeholder?: string
   maxLength?: number
+  onFocusChangeAction?: (focused: boolean) => void
 }
 
 type JournalSaveStatus = 'idle' | 'draft' | 'saving' | 'saved' | 'error'
@@ -61,7 +62,7 @@ const getJournalFeedbackKind = (
 
 /**
  * Edits and autosaves one day's journal whenever DaySheet renders its reflection field.
- * @param props - The active date, persisted entry, update callback, and input limits.
+ * @param props - The active date, persisted entry, update callback, input limits, and optional focus notification.
  * @returns A keyboard-aware journal field with validation and save feedback.
  * @example
  * <JournalInput date="2026-07-17" entry={entry} onUpdate={saveEntry} />
@@ -72,6 +73,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   onUpdate,
   placeholder,
   maxLength = 1000,
+  onFocusChangeAction,
 }) => {
   const { t } = useTranslation()
   const triggerFeedback = useInteractionFeedback()
@@ -274,10 +276,12 @@ export const JournalInput: React.FC<JournalInputProps> = ({
 
   const handleFocus = () => {
     setIsFocused(true)
+    onFocusChangeAction?.(true)
   }
 
   const handleBlur = () => {
     setIsFocused(false)
+    onFocusChangeAction?.(false)
     // Force save on blur if there are unsaved changes
     if (pendingSaveRef.current || text !== lastPersistedTextRef.current) {
       if (autoSaveTimeoutRef.current) {
@@ -358,7 +362,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
       {/* Text Input Container */}
       <Box
         className={`
-          rounded-lg p-4 min-h-[120px] border-2
+          rounded-lg p-4 min-h-[176px] border-2
           ${
             isFocused
               ? 'bg-blue-50 border-blue-200'

@@ -49,6 +49,22 @@ describe('JournalInput form safety', () => {
     jest.useRealTimers()
   })
 
+  test('keeps the reflection editor tall and notifies its day view when editing begins and ends', async () => {
+    // Arrange
+    const onFocusChangeAction = jest.fn()
+    const { getByTestId } = await renderJournalInput({ onFocusChangeAction })
+    const input = getByTestId('journal-text-input')
+
+    // Act
+    await fireEvent(input, 'focus')
+    await fireEvent(input, 'blur')
+
+    // Assert
+    expect(input.props.style.minHeight).toBeGreaterThanOrEqual(144)
+    expect(onFocusChangeAction).toHaveBeenNthCalledWith(1, true)
+    expect(onFocusChangeAction).toHaveBeenNthCalledWith(2, false)
+  })
+
   test('shows an unsaved draft state before autosave runs', async () => {
     // Arrange
     const onUpdate = jest.fn().mockResolvedValue(undefined)

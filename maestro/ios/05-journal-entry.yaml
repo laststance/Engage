@@ -36,6 +36,10 @@ tags:
 # Type journal entry
 - inputText: "Hello"
 
+# The editor footer stays above the keyboard while writing.
+- assertVisible:
+    id: "character-count"
+
 # Verify auto-save triggers (the "Saved" or "Auto-saved" label appears)
 - extendedWaitUntil:
     visible:

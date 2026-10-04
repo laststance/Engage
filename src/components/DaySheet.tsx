@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -22,7 +22,10 @@ import i18n, { getCategoryDisplayName } from '@/src/i18n/config'
 import { parseDate } from '@/src/utils/dateUtils'
 import { groupTasksByCategory } from '@/src/utils/businessLogic'
 import { COMPLETION_FEEDBACK_DURATION_MS } from '@/src/constants/interaction'
-import { JOURNAL_KEYBOARD_EXTRA_SCROLL_PADDING_PX } from '@/src/constants/journal'
+import {
+  JOURNAL_KEYBOARD_EXTRA_SCROLL_PADDING_PX,
+  JOURNAL_KEYBOARD_FOCUSED_SCROLL_PADDING_PX,
+} from '@/src/constants/journal'
 import { useInteractionFeedback } from '@/src/hooks/useInteractionFeedback'
 
 interface DaySheetProps {
@@ -93,6 +96,9 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
   const triggerFeedback = useInteractionFeedback()
   const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingTaskIdRef = useRef<string | null>(null)
+  const scrollViewRef = useRef<ScrollView>(null)
+  const isJournalFocusedRef = useRef(false)
+  const [isJournalFocused, setIsJournalFocused] = useState(false)
   const [pendingTask, setPendingTask] = useState<
     Pick<Completion, 'taskId' | 'completed'> | null
   >(null)
@@ -129,6 +135,24 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
         clearTimeout(feedbackTimeoutRef.current)
       }
     }
+  }, [])
+
+  useEffect(() => {
+    const keyboardSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      // The resized scroll area can expose the full reflection only after the keyboard opens.
+      if (isJournalFocusedRef.current) {
+        scrollViewRef.current?.scrollToEnd({ animated: true })
+      }
+    })
+
+    return () => keyboardSubscription.remove()
+  }, [])
+
+  const handleJournalFocusChange = useCallback((focused: boolean) => {
+    isJournalFocusedRef.current = focused
+    setIsJournalFocused(focused)
+    // Cover focus changes while a hardware keyboard keeps the viewport unchanged.
+    if (focused) scrollViewRef.current?.scrollToEnd({ animated: true })
   }, [])
 
   const showTaskFeedback = useCallback(
@@ -260,13 +284,21 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
         testID="day-sheet-keyboard-avoiding-view"
       >
         <ScrollView
-          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+          ref={scrollViewRef}
+          onLayout={() => {
+            // KeyboardAvoidingView may resize after keyboardDidShow fires.
+            if (isJournalFocusedRef.current) {
+              scrollViewRef.current?.scrollToEnd({ animated: true })
+            }
+          }}
           keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: JOURNAL_KEYBOARD_EXTRA_SCROLL_PADDING_PX,
+            paddingBottom: isJournalFocused
+              ? JOURNAL_KEYBOARD_FOCUSED_SCROLL_PADDING_PX
+              : JOURNAL_KEYBOARD_EXTRA_SCROLL_PADDING_PX,
           }}
         >
           <VStack space="lg" className="p-4">
@@ -478,6 +510,7 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
               date={date}
               entry={journalEntry}
               onUpdate={onJournalUpdate}
+              onFocusChangeAction={handleJournalFocusChange}
             />
           </VStack>
         </ScrollView>
