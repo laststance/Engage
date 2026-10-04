@@ -29,9 +29,10 @@ tags:
 - assertVisible:
     id: "journal-text-input"
 
-# Tap journal input
+# Tap the visible top of the editor on compact iPhones; focus must reveal its footer.
 - tapOn:
     id: "journal-text-input"
+    point: "50%,10%"
 
 # Type journal entry
 - inputText: "Hello"
