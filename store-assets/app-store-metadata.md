@@ -7,18 +7,18 @@
 - **App Name**: Engage
 - **Subtitle**: Daily Habit Tracker
 - **Bundle ID**: com.laststance.engage
-- **iOS Version**: 1.0.12 (build 17)
+- **iOS Version**: 1.0.13 (build 18)
 - **Category**: Productivity
 - **Content Rating**: 4+ (Ages 4 and up)
 
 ### Description
 
 The published App Store listing is localized in Japanese. Use these release
-notes when submitting the iOS 1.0.12 (17) build:
+notes when submitting the iOS 1.0.13 (18) build:
 
-#### What's New (Japanese, 1.0.12)
+#### What's New (Japanese, 1.0.13)
 
-日記の入力中にテキスト欄が見えるよう、キーボード表示時のレイアウトを改善しました。安定性も向上しました。
+日記を入力したあとにテキスト欄が画面外へ移動する問題を修正しました。長い日記も入力欄の中でスクロールできるようになりました。アプリ起動時の安定性も改善しました。
 
 #### Short Description (30 characters)
 
