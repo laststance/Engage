@@ -66,9 +66,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Maestro
+        env:
+          MAESTRO_VERSION: 2.11.0
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "${HOME}/.maestro/bin" >> "$GITHUB_PATH"
+          "${HOME}/.maestro/bin/maestro" --version
 
       - name: Setup iOS Simulator
         run: |

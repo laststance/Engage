@@ -39,6 +39,47 @@ pnpm test:e2e:production:single maestro/ios/06-calendar-browsing.yaml
 - `14-daily-condition.yaml`: daily condition persists independently of journal text
 - `15-calendar-content-reachability.yaml`: lower calendar content remains reachable on compact iPhones or with larger text
 - `16-tab-restore.yaml`: redux-storage-middleware restores the Stats tab when relaunch sets `clearState: false`
+- `17-journal-keyboard-visibility.yaml`: keeps the journal below the fixed header and above the keyboard after short/long input and autosave in Calendar and Today
+
+### Journal viewport regression
+
+Use Maestro CLI **2.11.0**, also pinned in the iOS workflow. Run the viewport flow
+on a compact iPhone as well as the current iOS runtime:
+
+```bash
+maestro --udid <simulator-udid> test maestro/ios/17-journal-keyboard-visibility.yaml
+```
+
+Build the full suite with `pnpm build:e2e`. For the headless alternative, use
+`E2E_TEST=true EXPO_PUBLIC_E2E_TEST=true pnpm ios:headless` so tab-persistence flows
+can observe their save-completion markers. Rebuild the embedded bundle after
+changing these environment variables; Metro's transform cache may otherwise
+retain the ordinary Release configuration. When using `expo export:embed` to
+refresh an existing bundle, pass `--reset-cache` without `CI` in the environment:
+Expo intentionally ignores that flag in CI. Confirm the generated bundle contains
+`session-tab-saved-` before running the full suite.
+
+The flow uses `below`/`above` selectors to check the editor's top-edge ordering
+against the fixed header and keyboard accessory. Checking only
+`journal-text-input` visibility can miss a field whose first line is hidden behind
+the header. A separate `height: 144` assertion (with one-point tolerance) rejects
+an editor that grows with long input; relative selectors alone do not check its
+bottom edge. Run this flow on a compact iPhone to exercise keyboard constraints.
+
+### iOS 27 launch failures
+
+An app built with Xcode 27 must use UIKit's scene lifecycle on iOS 27. A crash
+containing `UIScene life cycle is required for apps built with this SDK` happens
+before the calendar renders, so a later `calendar-screen` timeout is a symptom of
+the native launch failure. Check the simulator crash report before changing test
+timeouts or selectors.
+
+Engage enables the supported SDK 57 backport through
+`expo-build-properties` → `ios.enableSceneSupport`. After changing this setting,
+regenerate the ignored native project with `pnpm exec expo prebuild --platform ios --clean`
+and build the app again. The generated AppDelegate must implement
+`ExpoReactNativeFactoryProvider`, and Info.plist must declare
+`UIApplicationSceneManifest` with `EXExpoAppSceneDelegate`.
 
 ### Tagged On-Demand Flows
 - `01-app-launch.yaml` (`smoke`): launch-only diagnosis
