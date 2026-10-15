@@ -1,0 +1,111 @@
+appId: com.laststance.engage
+tags:
+  - ios
+---
+# Regression: the writing area must stay between the fixed header and keyboard.
+# Header ordering and fixed editor height detect scrolling and growth regressions.
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 10000
+- tapOn:
+    id: "calendar-date-.*-15"
+    retryTapIfNoChange: false
+- assertVisible:
+    id: "day-modal-close"
+- scrollUntilVisible:
+    element:
+      id: "journal-text-input"
+    direction: DOWN
+- tapOn:
+    id: "journal-text-input"
+    point: "50%,10%"
+- inputText: "Hello"
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+- assertVisible:
+    text: "Today's Reflection"
+    below:
+      id: "day-modal-close"
+- assertVisible:
+    id: "journal-text-input"
+    height: 144
+    tolerance: 1
+    below: "Today's Reflection"
+    above:
+      id: "journal-keyboard-done-button"
+
+# A growing multiline editor pushes the active line behind the keyboard.
+- inputText: >-
+    A longer reflection keeps the current writing line visible while the keyboard is open.
+    I can describe what went well today and what I learned without losing the text field.
+    This paragraph wraps across many lines on a compact phone so the editor must scroll internally.
+    Saving the reflection must not move the first line behind the modal header or expand the editor below the keyboard.
+    The same writing area stays available as more words are entered and the saved feedback appears.
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+- assertVisible:
+    text: "Today's Reflection"
+    below:
+      id: "day-modal-close"
+- assertVisible:
+    id: "journal-text-input"
+    height: 144
+    tolerance: 1
+    below: "Today's Reflection"
+    above:
+      id: "journal-keyboard-done-button"
+- tapOn:
+    id: "journal-keyboard-done-button"
+- tapOn:
+    id: "day-modal-close"
+
+# Today shares the editor and must preserve the same keyboard-safe geometry.
+- tapOn: "today-tab"
+- scrollUntilVisible:
+    element:
+      id: "journal-text-input"
+    direction: DOWN
+- tapOn:
+    id: "journal-text-input"
+    point: "50%,10%"
+- inputText: " Today remains editable."
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+- assertVisible:
+    text: "Today's Reflection"
+    below:
+      id: "today-description"
+- assertVisible:
+    id: "journal-text-input"
+    height: 144
+    tolerance: 1
+    below: "Today's Reflection"
+    above:
+      id: "journal-keyboard-done-button"
+- inputText: >-
+    Today also keeps a longer reflection inside the visible editing area.
+    The active line stays above the keyboard as this paragraph wraps onto more lines.
+    Autosave preserves the draft without stretching the editor below the Done toolbar.
+    I can finish this note without scrolling the whole page to find my words.
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+- assertVisible:
+    text: "Today's Reflection"
+    below:
+      id: "today-description"
+- assertVisible:
+    id: "journal-text-input"
+    height: 144
+    tolerance: 1
+    below: "Today's Reflection"
+    above:
+      id: "journal-keyboard-done-button"
+- tapOn:
+    id: "journal-keyboard-done-button"
