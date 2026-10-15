@@ -109,10 +109,20 @@ jobs:
           # Clean previous builds
           pnpm build:e2e:clean || true
 
+          # Release defaults build both simulator architectures; CI only runs the host architecture.
+          SIMULATOR_ARCH=$(uname -m)
+          case "$SIMULATOR_ARCH" in
+            arm64|x86_64) ;;
+            *) echo "::error::Unsupported simulator architecture: $SIMULATOR_ARCH"; exit 1 ;;
+          esac
+          SIMULATOR_XCCONFIG="$RUNNER_TEMP/e2e-simulator.xcconfig"
+          printf 'ARCHS = %s\n' "$SIMULATOR_ARCH" > "$SIMULATOR_XCCONFIG"
+          echo "Building Release for simulator architecture: $SIMULATOR_ARCH"
+
           # Build, install, and launch the production app for testing.
           # `expo run:ios` stays alive to stream Metro logs after launch, so the
           # CI step treats the app launch log line as the readiness signal.
-          nohup pnpm build:e2e > "$E2E_BUILD_LOG" 2>&1 &
+          nohup env XCODE_XCCONFIG_FILE="$SIMULATOR_XCCONFIG" pnpm build:e2e > "$E2E_BUILD_LOG" 2>&1 &
           BUILD_PID=$!
 
           SECONDS=0
@@ -166,7 +176,7 @@ jobs:
       - name: Run Maestro E2E tests
         run: |
           # Run all E2E tests
-          pnpm test:e2e:production
+          pnpm test:e2e:production --format JUNIT --output maestro-results.xml
 
       - name: Upload Maestro test results
         if: always()
@@ -177,6 +187,10 @@ jobs:
           path: |
             ~/.maestro/tests/**/*
             maestro-results.xml
+            e2e-build.log
+            .expo/xcodebuild.log
+            .expo/xcodebuild-error.log
+          include-hidden-files: true
           retention-days: 30
 
       - name: Upload app logs

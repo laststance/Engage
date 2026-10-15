@@ -66,6 +66,14 @@ the header. A separate `height: 144` assertion (with one-point tolerance) reject
 an editor that grows with long input; relative selectors alone do not check its
 bottom edge. Run this flow on a compact iPhone to exercise keyboard constraints.
 
+CI keeps the Release configuration but builds only the runner's native simulator
+architecture (`arm64` or `x86_64`) through a temporary Xcode configuration file.
+Building both simulator architectures duplicated native compilation and exceeded
+the 40-minute build deadline. This override applies only to the CI simulator
+build. The test-results artifact includes Expo build output and detailed Xcode
+logs even when the build fails before Maestro starts, plus the JUnit report when
+Maestro runs.
+
 ### iOS 27 launch failures
 
 An app built with Xcode 27 must use UIKit's scene lifecycle on iOS 27. A crash
