@@ -60,7 +60,8 @@ describe('JournalInput form safety', () => {
     await fireEvent(input, 'blur')
 
     // Assert
-    expect(input.props.style.minHeight).toBeGreaterThanOrEqual(144)
+    expect(input.props.style.height).toBe(144)
+    expect(input.props.scrollEnabled).toBe(true)
     expect(onFocusChangeAction).toHaveBeenNthCalledWith(1, true)
     expect(onFocusChangeAction).toHaveBeenNthCalledWith(2, false)
   })

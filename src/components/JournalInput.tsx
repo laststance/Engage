@@ -391,7 +391,8 @@ export const JournalInput: React.FC<JournalInputProps> = ({
           scrollEnabled={true}
           submitBehavior="newline"
           style={{
-            minHeight: JOURNAL_TEXT_INPUT_MIN_HEIGHT_PX,
+            // Keep long drafts scrolling inside the editor instead of growing behind the keyboard.
+            height: JOURNAL_TEXT_INPUT_MIN_HEIGHT_PX,
           }}
         />
       </Box>
