@@ -1,7 +1,7 @@
 # iPhone Duo readiness
 
 Assessed on October 22, 2026, against `origin/main` at `6742ccc` (Engage 1.0.13).
-Status: source preparation, native fold/rotation QA, and final automated acceptance complete. Store delivery is a separate step.
+Status: source preparation, native fold/rotation QA, and the recorded automated acceptance are complete. Release metadata now targets 1.0.14 (build 19); Store delivery remains pending.
 
 ## Apple requirements and Engage decisions
 
@@ -26,6 +26,8 @@ Sources: [Expo build images](https://docs.expo.dev/build-reference/infrastructur
 The statistics fix is an existing display-refresh defect discovered during this audit, not an iPhone Duo-only requirement. The compiler output confirms that both period calculations were cached by function identity. SQLite retains the new journal while the old screen displays zero. The narrowly scoped [React Compiler opt-out](https://react.dev/reference/react-compiler/directives/use-no-memo) keeps the rest of the application's compiler configuration enabled.
 
 ## Verification completed
+
+The recorded native checks below precede the 1.0.14 (19) metadata bump. Pre-patch dynamic recordings and post-patch automated results are distinguished below; they do not establish acceptance or publication of a future signed Store build.
 
 - Regression test fails on the original `AppScreen` because horizontal padding is missing, then passes with the fix.
 - Synthetic right-edge, left-edge, and cleared insets update in the same mounted screen without losing the draft. Hook values are injected; this does not prove operating-system geometry.
@@ -54,7 +56,7 @@ The initial patch installation was blocked by the repository's `minimumReleaseAg
 
 After installing the patches, all 34 suites / 377 tests, typecheck, lint, iOS prebuild, and a fresh Xcode 27.1 Release simulator build passed. The rebuilt app passed **14/14 Duo flows in 6 minutes 38 seconds** and **3/3 compact iPhone SE flows in 1 minute 53 seconds**, including journal keyboard geometry, saved statistics, and persistence after relaunch. Generated and built native configuration still includes Scene support, four orientations, and no full-screen requirement. These patch-specific results, logs, and source/binary fingerprints are retained separately under `.gstack/qa-reports/expo-sdk57-patches/`. Both task-owned simulators were shut down after validation.
 
-The dependency audit still reports two high-severity advisories: `node-forge@1.4.0` (GHSA-86w9-cpqp-85rv) and `braces@3.0.3` (GHSA-vfj7-8cjw-p6xm). Both resolutions and integrity hashes are identical in the pre-update and updated lockfiles. These existing findings are outside the eight requested Expo compatibility updates; the audit is not a passing release gate.
+The dependency audit still reports two high-severity advisories: `node-forge@1.4.0` (GHSA-86w9-cpqp-85rv) and `braces@3.0.3` (GHSA-vfj7-8cjw-p6xm). Both resolutions and integrity hashes are identical in the pre-update and updated lockfiles. The npm audit response names `>=1.4.1` / `>=3.0.4` as patched ranges, but registry queries during release preparation confirm that neither version is published; GitHub advisories list no patched release. These existing findings remain unresolved and are disclosed separately from CI results; no audit suppression or security gate relaxation is applied.
 
 ## Native acceptance gate
 
@@ -85,7 +87,7 @@ Local evidence is retained under `.gstack/qa-reports/iphone-duo-native/`, includ
 
 ## Store delivery
 
-After native acceptance, prepare a new iOS build/version, submit for review, and verify public availability separately. No EAS build, App Store submission, badge, or public release is implied by the checks above.
+Release metadata is prepared for iOS 1.0.14 (build 19), with Japanese update notes in [App Store metadata](../store-assets/app-store-metadata.md). Build and validate that release candidate, submit it for review, and verify public availability separately. No EAS build, App Store submission, badge, or public release is implied by the checks above.
 
 Apple's current [screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications) list:
 
@@ -93,4 +95,4 @@ Apple's current [screenshot specifications](https://developer.apple.com/help/app
 - Inner display: 2007 × 2853 or 2853 × 2007 pixels.
 - No alpha channel or transparency.
 
-Genuine Calendar captures from both simulator displays are prepared in the local evidence directory as `screenshots/duo-outer-portrait.jpg` and `screenshots/duo-inner-portrait.jpg`. They retain the native dimensions and have no alpha channel; original PNG captures are retained too. They are review candidates using synthetic QA data, and have not been uploaded. Submitting Duo screenshots enables the optimization badge. The specifications say these screenshots become required in April 2027 for apps using iOS 27.1 SDK or later. See also [Apple's submission announcement](https://developer.apple.com/news/?id=kkphp5qo).
+Genuine Calendar captures from both simulator displays are prepared in the local evidence directory as `screenshots/duo-outer-portrait.jpg` and `screenshots/duo-inner-portrait.jpg`. They retain the native dimensions and have no alpha channel; original PNG captures are retained too. These pre-patch review candidates use synthetic QA data and have not been uploaded; capture the 1.0.14 release candidate before submission. Submitting Duo screenshots enables the optimization badge. The specifications say these screenshots become required in April 2027 for apps using iOS 27.1 SDK or later. See also [Apple's submission announcement](https://developer.apple.com/news/?id=kkphp5qo).

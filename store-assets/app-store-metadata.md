@@ -7,18 +7,18 @@
 - **App Name**: Engage
 - **Subtitle**: Daily Habit Tracker
 - **Bundle ID**: com.laststance.engage
-- **iOS Version**: 1.0.13 (build 18)
+- **iOS Version**: 1.0.14 (build 19)
 - **Category**: Productivity
 - **Content Rating**: 4+ (Ages 4 and up)
 
 ### Description
 
 The published App Store listing is localized in Japanese. Use these release
-notes when submitting the iOS 1.0.13 (18) build:
+notes when submitting the iOS 1.0.14 (19) build:
 
-#### What's New (Japanese, 1.0.13)
+#### What's New (Japanese, 1.0.14)
 
-日記を入力したあとにテキスト欄が画面外へ移動する問題を修正しました。長い日記も入力欄の中でスクロールできるようになりました。アプリ起動時の安定性も改善しました。
+iPhone Duoに対応しました。画面を開閉したり回転したりしても、タスクや日記を快適に操作できます。日記やタスクの編集時にキーボード周辺の余白が崩れる問題と、保存した日記の件数が統計にすぐ反映されない問題を修正しました。
 
 #### Short Description (30 characters)
 
@@ -66,16 +66,17 @@ habit, tracker, productivity, journal, routine, calendar, tasks, goals, daily, m
 
 ## Screenshots Requirements
 
-### iPhone Screenshots (Required)
+### iPhone Screenshots
 
-- **6.7" Display (iPhone 15 Pro Max)**: 1290 x 2796 pixels
-- **6.1" Display (iPhone 15 Pro)**: 1179 x 2556 pixels
-- **5.5" Display (iPhone 8 Plus)**: 1242 x 2208 pixels
+- Preserve the currently approved conventional iPhone screenshot sets.
+- **iPhone Duo outer display**: 1398 x 2034 pixels (portrait), or 2034 x 1398 (landscape).
+- **iPhone Duo inner display**: 2007 x 2853 pixels (portrait), or 2853 x 2007 (landscape).
+- Use JPEG or PNG without alpha/transparency. Capture the release candidate with synthetic demonstration data.
+- Duo screenshots are optional on October 22, 2026 and enable the optimization badge. Apple states that they become required in April 2027 for apps built with iOS 27.1 SDK or later.
 
-### iPad Screenshots (Optional but Recommended)
+See [Apple's current screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications). Validate App Store Connect's accepted display-set identifiers at submission time.
 
-- **12.9" Display (iPad Pro)**: 2048 x 2732 pixels
-- **11" Display (iPad Pro)**: 1668 x 2388 pixels
+Engage remains iPhone-only (`supportsTablet: false`). Preserve inherited iPad assets if App Store Connect carries them forward; this release does not expand iPad distribution.
 
 ### Screenshot Descriptions
 

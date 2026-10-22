@@ -1,7 +1,7 @@
 {
   "name": "engage",
   "main": "expo-router/entry",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "scripts": {
     "start": "expo start --port 8090",
     "android": "expo run:android --port 8090",
