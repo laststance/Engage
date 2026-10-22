@@ -568,6 +568,8 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
     <SafeAreaView className="flex-1 bg-white">
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          // iOS scroll insets avoid a padding/layout feedback loop when switching displays.
+          enabled={Platform.OS !== 'ios'}
           className="flex-1"
           testID="preset-editor-keyboard-avoiding-view"
         >

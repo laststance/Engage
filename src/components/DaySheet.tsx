@@ -292,13 +292,16 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
     <Box className="flex-1 bg-gray-50" testID="day-sheet">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        // iOS scroll insets avoid a padding/layout feedback loop when switching displays.
+        enabled={Platform.OS !== 'ios'}
         className="flex-1"
         testID="day-sheet-keyboard-avoiding-view"
       >
         <ScrollView
           ref={scrollViewRef}
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
           onLayout={() => {
-            // KeyboardAvoidingView may resize after keyboardDidShow fires.
+            // Reposition the focused editor when its viewport changes size.
             if (isJournalFocusedRef.current) {
               scrollToJournal()
             }
