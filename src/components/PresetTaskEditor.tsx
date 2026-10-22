@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import {
   Modal,
   ScrollView,
@@ -40,6 +40,12 @@ interface PresetTaskEditorProps {
 }
 
 type PresetTaskEditorSessionProps = Omit<PresetTaskEditorProps, 'isVisible'>
+
+// RN exposes this host ref at runtime, but omits it from ScrollView's TS declaration.
+// Fabric measureLayout requires the host instance; getInnerViewNode returns a number.
+type PresetScrollView = ScrollView & {
+  getInnerViewRef: ScrollView['getNativeScrollRef']
+}
 
 interface EditingTask {
   id?: string
@@ -255,10 +261,11 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
   const [isPresetKeyboardVisible, setIsPresetKeyboardVisible] = useState(false)
   const [operationFeedback, setOperationFeedback] =
     useState<PresetEditorFeedback | null>(null)
-  const taskListScrollViewRef = useRef<ScrollView>(null)
+  const taskListScrollViewRef = useRef<PresetScrollView>(null)
   const taskTitleInputRefs = useRef<Record<number, TextInput | null>>({})
   const taskMinutesInputRefs = useRef<Record<number, TextInput | null>>({})
   const newCategoryInputRef = useRef<TextInput>(null)
+  const presetMeasurementVersionRef = useRef(0)
   const pendingFooterRestoreFrameRef = useRef<
     ReturnType<typeof requestAnimationFrame> | null
   >(null)
@@ -273,6 +280,50 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
   const saveDisabledReason = taskValidation.formMessages[0] ?? null
   const isSaveDisabled = isLoading || !taskValidation.isValid
   const shouldShowPresetEditorActions = !isPresetKeyboardVisible
+
+  /**
+   * Keeps the active single-line preset field near the top when its viewport reflows.
+   * ScrollView layout callbacks call this after folding or rotation because iOS may retain
+   * focus without repeating its focus scroll. Content-relative coordinates avoid mixing
+   * modal origins and keyboard notifications from different displays during the transition.
+   * @returns Nothing; preserves the draft and focus while revealing the measured field.
+   * @example
+   * revealFocusedPresetInput() // keeps minutes visible after closing the inner display
+   */
+  const revealFocusedPresetInput = useCallback((): void => {
+    const version = ++presetMeasurementVersionRef.current
+    if (Platform.OS !== 'ios') {
+      return
+    }
+
+    const input = [
+      ...Object.values(taskTitleInputRefs.current),
+      ...Object.values(taskMinutesInputRefs.current),
+      newCategoryInputRef.current,
+    ].find((candidate) => candidate?.isFocused())
+    const scrollView = taskListScrollViewRef.current
+    const contentView = scrollView?.getInnerViewRef()
+    if (!input || !scrollView || !contentView) {
+      return
+    }
+
+    input.measureLayout(
+      contentView,
+      (_x, top) => {
+        // Ignore a measurement superseded by resize, blur, unmount, or a user's drag.
+        if (version !== presetMeasurementVersionRef.current || !input.isFocused()) {
+          return
+        }
+        scrollView.scrollTo({
+          y: Math.max(0, top - PRESET_TASK_FOCUS_SCROLL_OFFSET_PX),
+          animated: false,
+        })
+      },
+      () => {
+        // The native input can disappear while a sheet is being dismissed.
+      }
+    )
+  }, [])
 
   useEffect(() => {
     const keyboardDidHideSubscription = Keyboard.addListener(
@@ -289,6 +340,7 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
 
     return () => {
       keyboardDidHideSubscription.remove()
+      presetMeasurementVersionRef.current += 1
       // Cancel deferred UI work when the editor unmounts.
       if (pendingFooterRestoreFrameRef.current !== null) {
         cancelAnimationFrame(pendingFooterRestoreFrameRef.current)
@@ -378,6 +430,7 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
    * handlePresetInputBlur() // restores Save and Cancel unless another input receives focus
    */
   const handlePresetInputBlur = (): void => {
+    presetMeasurementVersionRef.current += 1
     // Wait one frame so a title-to-minutes handoff can cancel this restoration.
     pendingFooterRestoreFrameRef.current = requestAnimationFrame(() => {
       pendingFooterRestoreFrameRef.current = null
@@ -620,6 +673,12 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
         <ScrollView
           ref={taskListScrollViewRef}
           automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+          onLayout={revealFocusedPresetInput}
+          onContentSizeChange={revealFocusedPresetInput}
+          onScrollBeginDrag={() => {
+            presetMeasurementVersionRef.current += 1
+          }}
+          testID="preset-task-scroll-view"
           className="flex-1 p-4"
           contentContainerStyle={{
             paddingBottom: PRESET_EDITOR_KEYBOARD_EXTRA_SCROLL_PADDING_PX,
