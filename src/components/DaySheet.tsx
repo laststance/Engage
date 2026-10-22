@@ -98,6 +98,8 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
   const pendingTaskIdRef = useRef<string | null>(null)
   const scrollViewRef = useRef<ScrollView>(null)
   const journalOffsetRef = useRef(0)
+  const journalWritingAreaBottomRef = useRef(Infinity)
+  const keyboardLayoutVersionRef = useRef(0)
   const isJournalFocusedRef = useRef(false)
   const [isJournalFocused, setIsJournalFocused] = useState(false)
   const [pendingTask, setPendingTask] = useState<
@@ -140,27 +142,52 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
 
   /**
    * Keeps the writing area visible when focus or keyboard layout changes in {@link DaySheetSession}.
-   * Targets the journal's start because its footer and bottom padding can exceed a compact viewport.
+   * Keeps iOS caret scrolling under native control, including the keyboard-opening animation.
    * @example
    * scrollToJournal()
    */
   const scrollToJournal = useCallback(() => {
+    // Native iOS scrolling accounts for the caret and accessory in compact viewports.
+    if (Platform.OS === 'ios') return
     // Scrolling to the content end can move the first writing line behind the modal header.
     scrollViewRef.current?.scrollTo({ y: journalOffsetRef.current, animated: true })
   }, [])
 
   useEffect(() => {
-    const keyboardSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      // Align the editor after the keyboard reduces the available viewport.
-      if (isJournalFocusedRef.current) {
-        scrollToJournal()
-      }
-    })
+    const keyboardSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardDidChangeFrame' : 'keyboardDidShow',
+      (event) => {
+        if (!isJournalFocusedRef.current) return
+        if (Platform.OS !== 'ios') {
+          scrollToJournal()
+          return
+        }
 
-    return () => keyboardSubscription.remove()
+        // Wait for native keyboard positioning, then anchor only if the whole writing box fits.
+        const layoutVersion = ++keyboardLayoutVersionRef.current
+        scrollViewRef.current?.getNativeScrollRef()?.measureInWindow((_x, top, _width, height) => {
+          if (!isJournalFocusedRef.current || layoutVersion !== keyboardLayoutVersionRef.current) return
+          const availableHeight = Math.min(height, event.endCoordinates.screenY - top)
+          if (availableHeight < journalWritingAreaBottomRef.current) return
+          scrollViewRef.current?.scrollTo({ y: journalOffsetRef.current, animated: false })
+        })
+      }
+    )
+    const keyboardFrameSubscription = Platform.OS === 'ios'
+      ? Keyboard.addListener('keyboardWillChangeFrame', () => {
+          // Discard measurements from a previous frame during rotation or display switching.
+          keyboardLayoutVersionRef.current += 1
+        })
+      : undefined
+
+    return () => {
+      keyboardSubscription.remove()
+      keyboardFrameSubscription?.remove()
+    }
   }, [scrollToJournal])
 
   const handleJournalFocusChange = useCallback((focused: boolean) => {
+    keyboardLayoutVersionRef.current += 1
     isJournalFocusedRef.current = focused
     setIsJournalFocused(focused)
     // Cover focus changes while a hardware keyboard keeps the viewport unchanged.
@@ -301,6 +328,7 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
           ref={scrollViewRef}
           automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
           onLayout={() => {
+            keyboardLayoutVersionRef.current += 1
             // Reposition the focused editor when its viewport changes size.
             if (isJournalFocusedRef.current) {
               scrollToJournal()
@@ -522,6 +550,7 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
             )}
 
             <Box
+              testID="journal-scroll-anchor"
               onLayout={({ nativeEvent }: LayoutChangeEvent) => {
                 journalOffsetRef.current = nativeEvent.layout.y
               }}
@@ -531,6 +560,9 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
                 entry={journalEntry}
                 onUpdate={onJournalUpdate}
                 onFocusChangeAction={handleJournalFocusChange}
+                onWritingAreaLayoutAction={(bottom) => {
+                  journalWritingAreaBottomRef.current = bottom
+                }}
               />
             </Box>
           </VStack>
