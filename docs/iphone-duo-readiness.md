@@ -1,0 +1,79 @@
+# iPhone Duo readiness
+
+Assessed on October 22, 2026, against `origin/main` at `6742ccc` (Engage 1.0.13).
+Status: source preparation, native fold/rotation QA, and final automated acceptance complete. Store delivery is a separate step.
+
+## Apple requirements and Engage decisions
+
+Apple's October newsletter links to a three-step workflow: audit resizing assumptions, fix them, and exercise live resizing. Existing apps remain usable in compatibility layouts. Building with Xcode 27.1 enables the full display behavior and requires testing the new geometry before shipping. See [Apple's preparation guide](https://developer.apple.com/iphone-duo/prepare/).
+
+| Area | Finding and action |
+| --- | --- |
+| Scene lifecycle | Already enabled with `expo-build-properties` and Expo SDK 57.0.28. Prebuild generates `EXExpoAppSceneDelegate`; retain this setup. |
+| Build SDK | Pin production iOS builds to `macos-tahoe-26.6-xcode-27.1`. Preview and E2E production profiles inherit it. Expo's automatic SDK 57 image does not guarantee Xcode 27.1. |
+| Native scheme | Fresh prebuild generates the shared scheme `Engage`. Correct the production and E2E profiles from `engage` to `Engage`; the lowercase scheme fails with Xcode exit 65. |
+| Screen geometry | Application code has no cached `Dimensions.get`, `UIScreen.main`, device-model size switches, or orientation-based layout branches. Existing flex layouts and scroll containers resize with their parents. |
+| Safe areas | `AppScreen` previously padded only the top. Apply live left and right insets to protect content when system regions move to either side. Keep the existing bottom-inset ownership in navigation. |
+| Orientation | Explicitly allow all four iOS orientations in `ios.infoPlist.UISupportedInterfaceOrientations`. The top-level `orientation: portrait` remains for Android. Expo's prebuild warning about overriding the abstract property on iOS is expected. |
+| Modals | Day, task-picker, and preset-editor modals already use `pageSheet` and safe-area views. React Native ignores `supportedOrientations` for `pageSheet`; do not add an ineffective prop. |
+| Keyboard resizing | Native QA found runaway JavaScript `KeyboardAvoidingView` padding after unfolding an open preset sheet, affecting both the sheet and underlying DaySheet. On iOS, delegate keyboard clearance to native ScrollView insets instead; preserve Android height behavior. |
+| Statistics freshness | Native QA also found a previously visited Stats tab retaining its old journal count. React Compiler caches calls to the stable `getStatsForPeriod` function while its underlying store data changes. Opt this screen out of compiler memoization with `use no memo`; preserve the shared store calculation and add a Release-native regression for save, revisit, and relaunch. |
+| Device targeting | Keep `supportsTablet: false` and `requireFullScreen: false`. iPhone Duo support does not require expanding distribution to iPad. |
+| Camera | Engage has no camera capture flow, so Duo camera-selection APIs are not applicable. |
+
+Sources: [Expo build images](https://docs.expo.dev/build-reference/infrastructure/), [Expo build properties](https://docs.expo.dev/versions/latest/sdk/build-properties/), [React Native Modal](https://reactnative.dev/docs/modal#supportedorientations).
+
+The statistics fix is an existing display-refresh defect discovered during this audit, not an iPhone Duo-only requirement. The compiler output confirms that both period calculations were cached by function identity. SQLite retains the new journal while the old screen displays zero. The narrowly scoped [React Compiler opt-out](https://react.dev/reference/react-compiler/directives/use-no-memo) keeps the rest of the application's compiler configuration enabled.
+
+## Verification completed
+
+- Regression test fails on the original `AppScreen` because horizontal padding is missing, then passes with the fix.
+- Synthetic right-edge, left-edge, and cleared insets update in the same mounted screen without losing the draft. Hook values are injected; this does not prove operating-system geometry.
+- `pnpm test --runInBand`: 34 suites, 377 tests passed.
+- `pnpm typecheck` and `pnpm lint`: passed.
+- `pnpm exec expo config --type introspect --json`: verified generated orientations, Scene manifest, and full-screen setting.
+- `pnpm exec expo prebuild --platform ios --no-install`: passed; generated native configuration retains Scene support and all four orientations.
+- `pnpm exec expo export --platform ios --output-dir .expo/duo-export`: passed.
+- Xcode 27.1 (27A9275) Release simulator build: passed with zero errors. Native dependency compiler warnings remain in the build log. Built `Info.plist` confirms `iphonesimulator27.1`, Scene support, all four orientations, and `UIRequiresFullScreen: false`.
+- Apple exported `app-resizability` skill: completed a first-party source and generated-native audit. No further definite source defect was found; the native scenarios below remain the acceptance evidence.
+
+`pnpm exec expo install --check` reports eight newer compatible patches. `expo install --fix` was blocked by the repository's `minimumReleaseAge: 1440` because Expo 57.0.31 and related packages were published less than 24 hours earlier. No dependency or lockfile changes were made. Keep the release-age policy; recheck and install compatible patches once eligible before release.
+
+## Native acceptance gate
+
+Xcode first-launch setup is complete. The iOS 27.1 (24A94425) simulator runtime is installed. Testing uses newly created, isolated simulators: `Engage Duo QA` on iOS 27.1 and `Engage Compact QA` (iPhone SE, third generation) on iOS 27.0. Existing personal simulators are not used or erased.
+
+The Release simulator build embeds JavaScript with `E2E_TEST=true`, `EXPO_PUBLIC_E2E_TEST=true`, and `REACT_NATIVE_NO_DEVTOOLS=1`. An arm64-only local xcconfig avoids unnecessary Intel simulator compilation. Apple's exported `device-interaction` skill provides native observation. Device Hub's actual Closed / Partially Open / Open and Rotate controls change the simulated hardware pose and display orientation. Xcode's synthetic orientation command changed the sensor direction without rotating this Duo's UI, so it was not used as evidence of display rotation.
+
+- Final Closed/portrait Duo build: **14/14 Maestro flows passed** in 5 minutes 10 seconds, including task completion, date browsing, conditions, routine settings, preset editing, backup creation, tab/data persistence, journal keyboard geometry, and journal statistics refresh.
+- Final compact iPhone SE (third generation), iOS 27.0: **3/3 Maestro flows passed** in 1 minute 28 seconds, covering tab navigation, long journal input above the keyboard in both the date sheet and Today, and the new journal statistics/relaunch regression.
+- Dynamic Duo QA exposed a native keyboard-layout feedback loop. The repaired build passed all 377 unit tests, typecheck/lint, the compact native regression, and the exact live unfolding reproduction. The preset container remains 627 points tall in a 669-point window after more than 15 seconds; the original grows beyond 1.2 million points. All 33 captured candidate keyboard-container checks are bounded by their application window.
+
+| Candidate scenario | Observed result |
+| --- | --- |
+| Today journal, keyboard open | Closed → Open → Partially Open → Open → Closed, repeated for each display recording: the same 85-character text, focus, Saved indicator, and Done control remain available. |
+| Journal rotation | Actual left landscape → right landscape → portrait: input stays usable; Done restores normal spacing. |
+| Preset editor | Unfold with no keyboard: contents and Save/Cancel remain visible. Focused task-name draft survives Closed → Open → Closed; minutes accepts `30`; Done restores the footer without a blank gap. Synthetic changes were discarded. |
+| Task picker | Closed → Open retains the task list, footer, and close control. |
+| Date sheet | Closed → Open retains content. Focused journal survives Open → Closed; Done restores normal spacing. |
+| Settings and tabs | Settings Closed → Open, Calendar/Today/Stats in both display sizes: navigation and essential controls remain usable. |
+| Journal statistics refresh | The same Release-native regression fails before the compiler opt-out and passes afterward on Duo and iPhone SE. A previously visited Stats tab updates its journal count after saving, and the text persists after relaunch. |
+| Compact non-Duo iPhone | Both normal navigation and long journal input above the keyboard pass on iPhone SE. |
+
+The app uses JavaScript tabs and custom headers. They do not automatically become UIKit vertical bars. Their essential controls were usable in the tested native scenarios; no migration to native tabs was needed. The partially open journal scenario also remained usable. This is bounded scenario coverage, not proof of every possible fold angle or a native reserved-region API integration. Physical-device ergonomics and Android runtime behavior were not tested. See [Apple's detailed guidance](https://developer.apple.com/documentation/technologyoverviews/preparing-your-app-for-iphone-duo).
+
+Native videos were recorded and sampled into frames for inspection. CoreSimulator allows one display recorder at a time, so the fold cycle was repeated separately for the outer and inner display. Inactive-display black frames are expected. Raw video timestamp discontinuities prevent using wall-clock offsets alone; inspected excerpts and native hierarchy captures provide the evidence.
+
+Local evidence is retained under `.gstack/qa-reports/iphone-duo-native/`, including JUnit results, build logs, before/after videos, native hierarchies, a geometry checker, and source/binary fingerprints. These ignored local artifacts are not included in a Git commit.
+
+## Store delivery
+
+After native acceptance, prepare a new iOS build/version, submit for review, and verify public availability separately. No EAS build, App Store submission, badge, or public release is implied by the checks above.
+
+Apple's current [screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications) list:
+
+- Outer display: 1398 × 2034 or 2034 × 1398 pixels.
+- Inner display: 2007 × 2853 or 2853 × 2007 pixels.
+- No alpha channel or transparency.
+
+Genuine Calendar captures from both simulator displays are prepared in the local evidence directory as `screenshots/duo-outer-portrait.jpg` and `screenshots/duo-inner-portrait.jpg`. They retain the native dimensions and have no alpha channel; original PNG captures are retained too. They are review candidates using synthetic QA data, and have not been uploaded. Submitting Duo screenshots enables the optimization badge. The specifications say these screenshots become required in April 2027 for apps using iOS 27.1 SDK or later. See also [Apple's submission announcement](https://developer.apple.com/news/?id=kkphp5qo).
