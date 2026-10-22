@@ -17,7 +17,8 @@ interface AppScreenProps extends React.ComponentProps<typeof Box> {
 }
 
 /**
- * Wraps app screens with one background, safe-area header, and title rhythm.
+ * Wraps tab and settings screens with a shared header and live safe-area spacing.
+ * Insets update when the window resizes or system controls move between edges.
  * @param props - Screen content plus optional header title, description, and actions.
  * @returns A full-height screen shell that keeps top-level tabs visually aligned.
  * @example
@@ -39,7 +40,15 @@ export function AppScreen({
 
   return (
     <Box {...props} className={classNames('flex-1 bg-gray-50', className)}>
-      <VStack className="flex-1" style={{ paddingTop: insets.top }}>
+      {/* Keep content clear of side system regions; navigation owns the bottom inset. */}
+      <VStack
+        className="flex-1"
+        style={{
+          paddingTop: insets.top,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        }}
+      >
         {shouldRenderHeader && (
           <VStack className="px-4 pt-4 pb-2">
             <HStack className="items-center justify-between mb-2">

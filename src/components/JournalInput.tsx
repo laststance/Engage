@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { Keyboard, Platform, TextInput } from 'react-native'
+import { Keyboard, type LayoutChangeEvent, Platform, TextInput } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -31,6 +31,8 @@ interface JournalInputProps {
   placeholder?: string
   maxLength?: number
   onFocusChangeAction?: (focused: boolean) => void
+  /** Reports the measured bottom of the writing box so its parent can check keyboard clearance. */
+  onWritingAreaLayoutAction?: (bottom: number) => void
 }
 
 type JournalSaveStatus = 'idle' | 'draft' | 'saving' | 'saved' | 'error'
@@ -74,6 +76,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   placeholder,
   maxLength = 1000,
   onFocusChangeAction,
+  onWritingAreaLayoutAction,
 }) => {
   const { t } = useTranslation()
   const triggerFeedback = useInteractionFeedback()
@@ -361,6 +364,11 @@ export const JournalInput: React.FC<JournalInputProps> = ({
 
       {/* Text Input Container */}
       <Box
+        testID="journal-writing-area"
+        onLayout={({ nativeEvent }: LayoutChangeEvent) => {
+          // Include the heading and padding without assuming a font size or screen orientation.
+          onWritingAreaLayoutAction?.(nativeEvent.layout.y + nativeEvent.layout.height)
+        }}
         className={`
           rounded-lg p-4 min-h-[176px] border-2
           ${

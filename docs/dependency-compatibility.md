@@ -15,6 +15,13 @@ waiting period are intentionally retained for a later refresh. The unrestricted
 `--latest` attempt also selected the SDK 58 preview line, so the final update uses
 the supported SDK 57 ranges for Expo and its native runtime dependencies.
 
+The October 22 Duo update installs eight compatible patches, including Expo
+57.0.31 and expo-build-properties 57.0.22. Fourteen exact-version exceptions
+(eight direct and six required transitive versions) retain the 24-hour policy
+for future Expo releases. The patched build passed 14 Duo production Maestro
+flows and three compact-iPhone regressions. See [iPhone Duo readiness](iphone-duo-readiness.md)
+for the complete version table and the separate pre-patch fold/rotation evidence.
+
 For builds made with Xcode 27, `ios.enableSceneSupport` enables Expo's official
 SDK 57 UIKit scene-lifecycle backport. Without it, the app terminates before the
 calendar appears on iOS 27. See the [Expo migration guide](https://github.com/expo/fyi/blob/main/ios-scene-lifecycle.md#staying-on-sdk-57-with-xcode-27).

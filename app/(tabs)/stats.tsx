@@ -8,6 +8,8 @@ import { Statistics } from '@/src/components/Statistics'
 import { useAppStore } from '@/src/stores/app-store'
 
 export default function StatsScreen() {
+  'use no memo'
+  // Store queries read mutable state behind stable functions; compiler caching hides updates.
   const { t } = useTranslation()
   const { categories, getStatsForPeriod } = useAppStore()
 

@@ -40,6 +40,7 @@ pnpm test:e2e:production:single maestro/ios/06-calendar-browsing.yaml
 - `15-calendar-content-reachability.yaml`: lower calendar content remains reachable on compact iPhones or with larger text
 - `16-tab-restore.yaml`: redux-storage-middleware restores the Stats tab when relaunch sets `clearState: false`
 - `17-journal-keyboard-visibility.yaml`: keeps the journal below the fixed header and above the keyboard after short/long input and autosave in Calendar and Today
+- `19-journal-stats-refresh.yaml`: a previously visited Stats tab reflects a newly saved journal, and the text survives relaunch
 
 ### Journal viewport regression
 
