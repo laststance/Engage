@@ -38,6 +38,11 @@ tags:
 - assertVisible:
     text: "1 days"
     below: "Journal Days"
+# Wait for the tab write before asserting its restoration after relaunch.
+- extendedWaitUntil:
+    visible:
+      id: "session-tab-saved-stats"
+    timeout: 15000
 # Act: relaunch and reopen Today.
 - launchApp:
     stopApp: true
