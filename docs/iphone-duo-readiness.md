@@ -9,7 +9,7 @@ Apple's October newsletter links to a three-step workflow: audit resizing assump
 
 | Area | Finding and action |
 | --- | --- |
-| Scene lifecycle | Already enabled with `expo-build-properties` and Expo SDK 57.0.28. Prebuild generates `EXExpoAppSceneDelegate`; retain this setup. |
+| Scene lifecycle | Already enabled with `expo-build-properties`; retained after updating Expo SDK 57.0.28 to 57.0.31. Prebuild generates `EXExpoAppSceneDelegate`. |
 | Build SDK | Pin production iOS builds to `macos-tahoe-26.6-xcode-27.1`. Preview and E2E production profiles inherit it. Expo's automatic SDK 57 image does not guarantee Xcode 27.1. |
 | Native scheme | Fresh prebuild generates the shared scheme `Engage`. Correct the production and E2E profiles from `engage` to `Engage`; the lowercase scheme fails with Xcode exit 65. |
 | Screen geometry | Application code has no cached `Dimensions.get`, `UIScreen.main`, device-model size switches, or orientation-based layout branches. Existing flex layouts and scroll containers resize with their parents. |
@@ -37,7 +37,24 @@ The statistics fix is an existing display-refresh defect discovered during this 
 - Xcode 27.1 (27A9275) Release simulator build: passed with zero errors. Native dependency compiler warnings remain in the build log. Built `Info.plist` confirms `iphonesimulator27.1`, Scene support, all four orientations, and `UIRequiresFullScreen: false`.
 - Apple exported `app-resizability` skill: completed a first-party source and generated-native audit. No further definite source defect was found; the native scenarios below remain the acceptance evidence.
 
-`pnpm exec expo install --check` reports eight newer compatible patches. `expo install --fix` was blocked by the repository's `minimumReleaseAge: 1440` because Expo 57.0.31 and related packages were published less than 24 hours earlier. No dependency or lockfile changes were made. Keep the release-age policy; recheck and install compatible patches once eligible before release.
+The initial patch installation was blocked by the repository's `minimumReleaseAge: 1440`. The owner subsequently requested installing the eight compatible patches and adding pnpm exceptions. All eight are now installed, and `pnpm exec expo install --check` reports that dependencies are up to date.
+
+| Direct dependency | Previous | Installed |
+| --- | --- | --- |
+| `@expo/metro-runtime` | 57.0.16 | 57.0.17 |
+| `expo` | 57.0.28 | 57.0.31 |
+| `expo-build-properties` | 57.0.21 | 57.0.22 |
+| `expo-constants` | 57.0.21 | 57.0.22 |
+| `expo-linking` | 57.0.12 | 57.0.13 |
+| `expo-notifications` | 57.0.22 | 57.0.23 |
+| `expo-router` | 57.0.26 | 57.0.29 |
+| `expo-sharing` | 57.0.23 | 57.0.24 |
+
+`minimumReleaseAgeExclude` now includes these exact versions plus six required transitive versions: `@expo/cli@57.0.32`, `@expo/config-plugins@57.0.11`, `@expo/router-server@57.0.14`, `@expo/ui@57.0.26`, `expo-modules-core@57.0.24`, and `expo-modules-jsi@57.1.3`. The 1440-minute policy and existing exceptions remain. Version-qualified exceptions follow the [pnpm dependency-resolution specification](https://pnpm.io/settings/dependency-resolution#minimumreleaseageexclude); future Expo versions are not automatically exempted. The manifest and lockfile were updated together, and frozen installation succeeds without a global age override.
+
+After installing the patches, all 34 suites / 377 tests, typecheck, lint, iOS prebuild, and a fresh Xcode 27.1 Release simulator build passed. The rebuilt app passed **14/14 Duo flows in 6 minutes 38 seconds** and **3/3 compact iPhone SE flows in 1 minute 53 seconds**, including journal keyboard geometry, saved statistics, and persistence after relaunch. Generated and built native configuration still includes Scene support, four orientations, and no full-screen requirement. These patch-specific results, logs, and source/binary fingerprints are retained separately under `.gstack/qa-reports/expo-sdk57-patches/`. Both task-owned simulators were shut down after validation.
+
+The dependency audit still reports two high-severity advisories: `node-forge@1.4.0` (GHSA-86w9-cpqp-85rv) and `braces@3.0.3` (GHSA-vfj7-8cjw-p6xm). Both resolutions and integrity hashes are identical in the pre-update and updated lockfiles. These existing findings are outside the eight requested Expo compatibility updates; the audit is not a passing release gate.
 
 ## Native acceptance gate
 
@@ -45,8 +62,8 @@ Xcode first-launch setup is complete. The iOS 27.1 (24A94425) simulator runtime 
 
 The Release simulator build embeds JavaScript with `E2E_TEST=true`, `EXPO_PUBLIC_E2E_TEST=true`, and `REACT_NATIVE_NO_DEVTOOLS=1`. An arm64-only local xcconfig avoids unnecessary Intel simulator compilation. Apple's exported `device-interaction` skill provides native observation. Device Hub's actual Closed / Partially Open / Open and Rotate controls change the simulated hardware pose and display orientation. Xcode's synthetic orientation command changed the sensor direction without rotating this Duo's UI, so it was not used as evidence of display rotation.
 
-- Final Closed/portrait Duo build: **14/14 Maestro flows passed** in 5 minutes 10 seconds, including task completion, date browsing, conditions, routine settings, preset editing, backup creation, tab/data persistence, journal keyboard geometry, and journal statistics refresh.
-- Final compact iPhone SE (third generation), iOS 27.0: **3/3 Maestro flows passed** in 1 minute 28 seconds, covering tab navigation, long journal input above the keyboard in both the date sheet and Today, and the new journal statistics/relaunch regression.
+- Before the dependency patches, the final Closed/portrait Duo build passed **14/14 Maestro flows** in 5 minutes 10 seconds, including task completion, date browsing, conditions, routine settings, preset editing, backup creation, tab/data persistence, journal keyboard geometry, and journal statistics refresh.
+- Before the dependency patches, compact iPhone SE (third generation), iOS 27.0 passed **3/3 Maestro flows** in 1 minute 28 seconds, covering tab navigation, long journal input above the keyboard in both the date sheet and Today, and the new journal statistics/relaunch regression.
 - Dynamic Duo QA exposed a native keyboard-layout feedback loop. The repaired build passed all 377 unit tests, typecheck/lint, the compact native regression, and the exact live unfolding reproduction. The preset container remains 627 points tall in a 669-point window after more than 15 seconds; the original grows beyond 1.2 million points. All 33 captured candidate keyboard-container checks are bounded by their application window.
 
 | Candidate scenario | Observed result |
@@ -62,7 +79,7 @@ The Release simulator build embeds JavaScript with `E2E_TEST=true`, `EXPO_PUBLIC
 
 The app uses JavaScript tabs and custom headers. They do not automatically become UIKit vertical bars. Their essential controls were usable in the tested native scenarios; no migration to native tabs was needed. The partially open journal scenario also remained usable. This is bounded scenario coverage, not proof of every possible fold angle or a native reserved-region API integration. Physical-device ergonomics and Android runtime behavior were not tested. See [Apple's detailed guidance](https://developer.apple.com/documentation/technologyoverviews/preparing-your-app-for-iphone-duo).
 
-Native videos were recorded and sampled into frames for inspection. CoreSimulator allows one display recorder at a time, so the fold cycle was repeated separately for the outer and inner display. Inactive-display black frames are expected. Raw video timestamp discontinuities prevent using wall-clock offsets alone; inspected excerpts and native hierarchy captures provide the evidence.
+Native videos were recorded and sampled into frames for inspection before the dependency patches. The patched build has separate automated regression coverage above; fold/rotation recordings were not repeated for that dependency graph. CoreSimulator allows one display recorder at a time, so the fold cycle was repeated separately for the outer and inner display. Inactive-display black frames are expected. Raw video timestamp discontinuities prevent using wall-clock offsets alone; inspected excerpts and native hierarchy captures provide the evidence.
 
 Local evidence is retained under `.gstack/qa-reports/iphone-duo-native/`, including JUnit results, build logs, before/after videos, native hierarchies, a geometry checker, and source/binary fingerprints. These ignored local artifacts are not included in a Git commit.
 

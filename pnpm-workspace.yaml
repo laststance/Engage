@@ -3,6 +3,22 @@ legacyPeerDeps: true
 # Supply-chain security (migrated from .npmrc 2026-05-07)
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
+  # Approved Expo SDK 57 compatibility patches; keep future releases age-gated.
+  - '@expo/metro-runtime@57.0.17'
+  - expo@57.0.31
+  - expo-build-properties@57.0.22
+  - expo-constants@57.0.22
+  - expo-linking@57.0.13
+  - expo-notifications@57.0.23
+  - expo-router@57.0.29
+  - expo-sharing@57.0.24
+  # Required transitive dependencies from the same Expo release.
+  - '@expo/cli@57.0.32'
+  - '@expo/config-plugins@57.0.11'
+  - '@expo/router-server@57.0.14'
+  - '@expo/ui@57.0.26'
+  - expo-modules-core@57.0.24
+  - expo-modules-jsi@57.1.3
   - next
   - react
   - react-dom
