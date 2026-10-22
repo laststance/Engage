@@ -1,0 +1,54 @@
+appId: com.laststance.engage
+tags:
+  - ios
+---
+# Regression: a previously visited Stats tab must reflect a newly saved journal.
+# Arrange: visit Stats before the store entry changes.
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 15000
+- tapOn: "stats-tab"
+- assertVisible:
+    id: "stats-screen"
+- tapOn: "today-tab"
+- scrollUntilVisible:
+    element:
+      id: "journal-text-input"
+    direction: DOWN
+- tapOn:
+    id: "journal-text-input"
+    point: "50%,10%"
+# Act: save through the real keyboard and revisit the mounted Stats screen.
+- inputText: "Duo journal persistence and statistics check."
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 10000
+- tapOn:
+    id: "journal-keyboard-done-button"
+- tapOn: "stats-tab"
+- scrollUntilVisible:
+    element:
+      text: "Journal Days"
+    direction: DOWN
+- scroll
+# Assert: reveal the whole card above the tab bar and verify its updated count.
+- assertVisible:
+    text: "1 days"
+    below: "Journal Days"
+# Act: relaunch and reopen Today.
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible:
+      id: "stats-screen"
+    timeout: 15000
+- tapOn: "today-tab"
+- scrollUntilVisible:
+    element:
+      id: "journal-text-input"
+    direction: DOWN
+# Assert: the journal remains persisted after a cold start.
+- assertVisible: "Duo journal persistence and statistics check."
