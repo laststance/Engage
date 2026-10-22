@@ -10,7 +10,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import Swipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { DesignSystem } from '@/constants/design-system'
 import { Box } from '@/components/ui/box'
@@ -46,7 +46,10 @@ const TaskPickerModalSurface: React.FC<React.PropsWithChildren> = ({
   children,
 }) => (
   <GestureHandlerRootView className="flex-1">
-    <SafeAreaView className="flex-1 bg-white">{children}</SafeAreaView>
+    {/* Measure this native modal instead of inheriting the presenting screen's insets. */}
+    <SafeAreaProvider>
+      <SafeAreaView className="flex-1 bg-white">{children}</SafeAreaView>
+    </SafeAreaProvider>
   </GestureHandlerRootView>
 )
 

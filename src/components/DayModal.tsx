@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { Text } from '@/components/ui/text'
 import { HStack } from '@/components/ui/hstack'
 import { IconSymbol } from '@/components/ui/icon-symbol'
@@ -57,60 +57,63 @@ export const DayModal: React.FC<DayModalProps> = ({ isVisible, onClose }) => {
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView className="flex-1 bg-gray-50">
-        {/* Header */}
-        <HStack className="items-center justify-between p-4 border-b border-gray-200">
-          <Text className="text-lg font-semibold text-gray-800">
-            {t('dayModal.title')}
-          </Text>
-          <AppPressable
-            onPress={onClose}
-            className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
-            pressedClassName="bg-gray-100 rounded-full"
-            testID="day-modal-close"
-            accessibilityLabel={t('common.close')}
-            accessibilityRole="button"
-          >
-            <IconSymbol name="xmark" size={24} color="#666" />
-          </AppPressable>
-        </HStack>
+      {/* Native modals need their own provider to follow rotation and sheet insets. */}
+      <SafeAreaProvider>
+        <SafeAreaView className="flex-1 bg-gray-50">
+          {/* Header */}
+          <HStack className="items-center justify-between p-4 border-b border-gray-200">
+            <Text className="text-lg font-semibold text-gray-800">
+              {t('dayModal.title')}
+            </Text>
+            <AppPressable
+              onPress={onClose}
+              className="p-2 min-w-[44px] min-h-[44px] items-center justify-center"
+              pressedClassName="bg-gray-100 rounded-full"
+              testID="day-modal-close"
+              accessibilityLabel={t('common.close')}
+              accessibilityRole="button"
+            >
+              <IconSymbol name="xmark" size={24} color="#666" />
+            </AppPressable>
+          </HStack>
 
-        {/* Day Sheet Content */}
-        <DaySheet
-          date={selectedDate}
-          tasks={day.assignedTasks}
-          completions={day.dayCompletions}
-          journalEntry={day.dayEntry}
-          categories={day.categories}
-          onTaskToggle={day.handleTaskToggle}
-          onJournalUpdate={day.handleJournalUpdate}
-          onConditionChangeAction={day.handleConditionChangeAction}
-          onTaskSelectionPress={day.handleTaskSelectionPress}
-          isTaskSelectionDisabled={!isInitialized}
-        />
+          {/* Day Sheet Content */}
+          <DaySheet
+            date={selectedDate}
+            tasks={day.assignedTasks}
+            completions={day.dayCompletions}
+            journalEntry={day.dayEntry}
+            categories={day.categories}
+            onTaskToggle={day.handleTaskToggle}
+            onJournalUpdate={day.handleJournalUpdate}
+            onConditionChangeAction={day.handleConditionChangeAction}
+            onTaskSelectionPress={day.handleTaskSelectionPress}
+            isTaskSelectionDisabled={!isInitialized}
+          />
 
-        {/* Task Picker Modal (2nd modal level) */}
-        <TaskPicker
-          isVisible={day.isTaskPickerVisible}
-          presetTasks={day.allTasks}
-          categories={day.categories}
-          selectedTasks={day.selectedTaskIds}
-          onTaskSelect={day.handleTaskSelect}
-          onTaskDeleteAction={day.handleDeletePresetTask}
-          onClose={day.handleTaskPickerClose}
-          onEditPresets={handleEditPresets}
-        />
+          {/* Task Picker Modal (2nd modal level) */}
+          <TaskPicker
+            isVisible={day.isTaskPickerVisible}
+            presetTasks={day.allTasks}
+            categories={day.categories}
+            selectedTasks={day.selectedTaskIds}
+            onTaskSelect={day.handleTaskSelect}
+            onTaskDeleteAction={day.handleDeletePresetTask}
+            onClose={day.handleTaskPickerClose}
+            onEditPresets={handleEditPresets}
+          />
 
-        {/* Preset Editor rendered at DayModal level (2nd modal, not 3rd) */}
-        <PresetTaskEditor
-          isVisible={isPresetEditorVisible}
-          tasks={day.allTasks}
-          categories={day.categories}
-          onSave={handlePresetEditorSave}
-          onCancel={handlePresetEditorCancel}
-          onCreateCategory={day.handleCreateCategory}
-        />
-      </SafeAreaView>
+          {/* Preset Editor rendered at DayModal level (2nd modal, not 3rd) */}
+          <PresetTaskEditor
+            isVisible={isPresetEditorVisible}
+            tasks={day.allTasks}
+            categories={day.categories}
+            onSave={handlePresetEditorSave}
+            onCancel={handlePresetEditorCancel}
+            onCreateCategory={day.handleCreateCategory}
+          />
+        </SafeAreaView>
+      </SafeAreaProvider>
     </Modal>
   )
 }

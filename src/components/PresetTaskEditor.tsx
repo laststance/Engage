@@ -10,7 +10,7 @@ import {
   Platform,
   Switch,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { Box } from '@/components/ui/box'
 import { Text } from '@/components/ui/text'
@@ -213,14 +213,17 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
       presentationStyle="pageSheet"
       onRequestClose={handleCancel}
     >
-      <PresetTaskEditorSession
-        key={String(isVisible)}
-        tasks={tasks}
-        categories={categories}
-        onSave={onSave}
-        onCancel={handleCancel}
-        onCreateCategory={onCreateCategory}
-      />
+      {/* Keep safe-area updates local when this native sheet rotates or resizes. */}
+      <SafeAreaProvider>
+        <PresetTaskEditorSession
+          key={String(isVisible)}
+          tasks={tasks}
+          categories={categories}
+          onSave={onSave}
+          onCancel={handleCancel}
+          onCreateCategory={onCreateCategory}
+        />
+      </SafeAreaProvider>
     </Modal>
   )
 }
