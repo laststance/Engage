@@ -328,29 +328,43 @@ export const Calendar: React.FC<CalendarProps> = ({
                     className={`
                       flex-1 min-h-[48px] items-center justify-center rounded-xl py-1
                       ${dayData.isCurrentMonth ? '' : 'bg-gray-50'}
-                      ${isSelectedDate || isCurrentDate ? 'border-2' : ''}
                     `}
                     style={{
-                      backgroundColor: dayData.isCurrentMonth ? heatmapColor : undefined,
-                      borderColor: isSelectedDate
-                        ? DesignSystem.colors.semantic.calendar.selected
-                        : DesignSystem.colors.semantic.calendar.today,
+                      ...(dayData.isCurrentMonth && { backgroundColor: heatmapColor }),
+                      ...((isSelectedDate || isCurrentDate) && {
+                        borderWidth: 2,
+                        borderColor: isSelectedDate
+                          ? DesignSystem.colors.semantic.calendar.selected
+                          : DesignSystem.colors.semantic.calendar.today,
+                      }),
                     }}
                   >
-                    <Text
-                      testID={`calendar-date-label-${dayData.dateString}`}
-                      className={`
-                        text-sm font-medium
-                        ${dateTextColor}
-                      `}
-                      // An underline keeps today visible when selection owns the outline.
-                      style={isCurrentDate ? {
-                        textDecorationLine: 'underline',
-                        textDecorationColor: DesignSystem.colors.semantic.calendar.today,
-                      } : undefined}
-                    >
-                      {dayData.date}
-                    </Text>
+                    <Box>
+                      <Text
+                        testID={`calendar-date-label-${dayData.dateString}`}
+                        className={`
+                          text-sm font-medium
+                          ${dateTextColor}
+                        `}
+                      >
+                        {dayData.date}
+                      </Text>
+                      {/* A separate underline preserves its color on both iOS and Android. */}
+                      {isCurrentDate && (
+                        <Box
+                          testID={`calendar-today-marker-${dayData.dateString}`}
+                          accessible={false}
+                          style={{
+                            position: 'absolute',
+                            bottom: 1,
+                            left: 0,
+                            right: 0,
+                            height: 1,
+                            backgroundColor: DesignSystem.colors.semantic.calendar.today,
+                          }}
+                        />
+                      )}
+                    </Box>
                     {dayData.isCurrentMonth && conditionLevel != null && (
                       <Box testID={`calendar-condition-${dayData.dateString}`} accessible={false}>
                         <ConditionIcon level={conditionLevel} size={CONDITION_CALENDAR_ICON_SIZE_PX} />
@@ -365,7 +379,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       </VStack>
 
       {/* Include every completion bucket using the same palette as the date cells. */}
-      <HStack className="items-center justify-center mt-7 px-4">
+      <HStack testID="calendar-completion-legend" className="items-center justify-center mt-7 px-4">
         <Text className="text-xs text-gray-500 mr-3">{t('calendar.legendLess')}</Text>
         {[0, 1, 2, 3, 4].map((completionCount) => (
           <VStack key={completionCount} className="items-center mx-1 gap-1">

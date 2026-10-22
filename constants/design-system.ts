@@ -434,7 +434,7 @@ const generateCategoryColor = (
 
 /**
  * Keeps calendar cells and their legend on the same calm completion scale.
- * Calendar rendering calls this for each date and legend swatch.
+ * {@link Calendar} rendering calls this for each date and legend swatch.
  * @param completionCount - Completed tasks for a day; four or more share the highest level.
  * @returns The background color from the shared semantic heatmap palette.
  * @example
