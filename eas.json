@@ -19,9 +19,10 @@
         "REACT_NATIVE_NO_DEVTOOLS": "1"
       },
       "ios": {
+        "image": "macos-tahoe-26.6-xcode-27.1",
         "resourceClass": "medium",
         "buildConfiguration": "Release",
-        "scheme": "engage"
+        "scheme": "Engage"
       },
       "android": {
         "resourceClass": "medium",
@@ -38,7 +39,7 @@
       "ios": {
         "simulator": true,
         "buildConfiguration": "Release",
-        "scheme": "engage"
+        "scheme": "Engage"
       },
       "android": {
         "buildType": "apk"

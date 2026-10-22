@@ -34,6 +34,12 @@
       "supportsTablet": false,
       "requireFullScreen": false,
       "infoPlist": {
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationPortraitUpsideDown",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ],
         "NSUserNotificationsUsageDescription": "この アプリは毎日の習慣を継続するためのリマインダー通知を送信します。通知は設定から無効にできます。",
         "ITSAppUsesNonExemptEncryption": false
       }
