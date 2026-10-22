@@ -363,13 +363,21 @@ export const Calendar: React.FC<CalendarProps> = ({
         ))}
       </VStack>
 
-      {/* Legend - matching Figma design with proper spacing */}
+      {/* Include every completion bucket using the same palette as the date cells. */}
       <HStack className="items-center justify-center mt-7 px-4">
         <Text className="text-xs text-gray-500 mr-3">{t('calendar.legendLess')}</Text>
-        <Box className="w-3 h-3 bg-gray-100 rounded-sm mx-1" />
-        <Box className="w-3 h-3 bg-green-200 rounded-sm mx-1" />
-        <Box className="w-3 h-3 bg-green-400 rounded-sm mx-1" />
-        <Box className="w-3 h-3 bg-green-600 rounded-sm mx-1" />
+        {[0, 1, 2, 3, 4].map((completionCount) => (
+          <VStack key={completionCount} className="items-center mx-1 gap-1">
+            <Box
+              testID={`calendar-legend-level-${completionCount}`}
+              className="w-4 h-4 rounded-sm"
+              style={{ backgroundColor: DesignSystem.utils.getHeatmapColor(completionCount) }}
+            />
+            <Text className="text-xs text-gray-600">
+              {completionCount === 4 ? '4+' : completionCount}
+            </Text>
+          </VStack>
+        ))}
         <Text className="text-xs text-gray-500 ml-3">{t('calendar.legendMore')}</Text>
       </HStack>
 
