@@ -135,6 +135,11 @@ const SemanticColors = {
     high: '#A9CBB6',
     highest: '#84B59A',
   },
+  // Keep current-day and selection markers distinct over every heatmap level.
+  calendar: {
+    today: '#9A3412',
+    selected: '#1E40AF',
+  },
 } as const
 
 // MARK: - Typography System

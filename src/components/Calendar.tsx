@@ -328,18 +328,14 @@ export const Calendar: React.FC<CalendarProps> = ({
                     className={`
                       flex-1 min-h-[48px] items-center justify-center rounded-xl py-1
                       ${dayData.isCurrentMonth ? '' : 'bg-gray-50'}
-                      ${
-                        isSelectedDate
-                          ? 'border-2 border-blue-500'
-                          : ''
-                      }
-                      ${
-                        isCurrentDate
-                          ? 'border-2 border-orange-500'
-                          : ''
-                      }
+                      ${isSelectedDate || isCurrentDate ? 'border-2' : ''}
                     `}
-                    style={dayData.isCurrentMonth ? { backgroundColor: heatmapColor } : undefined}
+                    style={{
+                      backgroundColor: dayData.isCurrentMonth ? heatmapColor : undefined,
+                      borderColor: isSelectedDate
+                        ? DesignSystem.colors.semantic.calendar.selected
+                        : DesignSystem.colors.semantic.calendar.today,
+                    }}
                   >
                     <Text
                       testID={`calendar-date-label-${dayData.dateString}`}
@@ -347,6 +343,11 @@ export const Calendar: React.FC<CalendarProps> = ({
                         text-sm font-medium
                         ${dateTextColor}
                       `}
+                      // An underline keeps today visible when selection owns the outline.
+                      style={isCurrentDate ? {
+                        textDecorationLine: 'underline',
+                        textDecorationColor: DesignSystem.colors.semantic.calendar.today,
+                      } : undefined}
                     >
                       {dayData.date}
                     </Text>
