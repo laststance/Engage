@@ -76,6 +76,12 @@ habit, tracker, productivity, journal, routine, calendar, tasks, goals, daily, m
 
 See [Apple's current screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications). Validate App Store Connect's accepted display-set identifiers at submission time.
 
+Six Japanese release-candidate images are prepared from the 1.0.14 (19) non-E2E Release simulator app: Calendar, Today, and Stats on each Duo display. They use synthetic demonstration data, native portrait dimensions, and RGB JPEG without alpha; the release evidence manifest records SHA-256 hashes. They have not been uploaded.
+
+Approved delivery plan: release 1.0.14 with the existing conventional iPhone screenshots, then submit all six Duo images once Apple accepts those display sets. Release and upload completion must be verified separately.
+
+Upload acceptance remains unconfirmed on October 22, 2026. Apple's September [DTS response](https://developer.apple.com/forums/thread/845505) schedules Duo uploads for later in 2026, and the current [ScreenshotDisplayType reference](https://developer.apple.com/documentation/appstoreconnectapi/screenshotdisplaytype) has no Duo case. The signed-in UI was not verified because its session expired. Later enablement remains possible; confirm that the current UI or API accepts both display sets before submission.
+
 Engage remains iPhone-only (`supportsTablet: false`). Preserve inherited iPad assets if App Store Connect carries them forward; this release does not expand iPad distribution.
 
 ### Screenshot Descriptions
