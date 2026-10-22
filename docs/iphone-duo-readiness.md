@@ -1,7 +1,7 @@
 # iPhone Duo readiness
 
 Assessed on October 22, 2026, against `origin/main` at `6742ccc` (Engage 1.0.13).
-Status: recorded source-fix and dependency-patch acceptance is complete. The 1.0.14 (build 19) Release simulator build and six Store screenshot candidates are prepared; final-release fold recordings and Store delivery remain pending.
+Status: source changes, iOS 1.0.14 (build 19) metadata, and six Store screenshot candidates are prepared. Current-head CI, native acceptance, and Store delivery are tracked separately in [PR #97](https://github.com/laststance/Engage/pull/97).
 
 ## Apple requirements and Engage decisions
 
@@ -17,6 +17,7 @@ Apple's October newsletter links to a three-step workflow: audit resizing assump
 | Orientation | Explicitly allow all four iOS orientations in `ios.infoPlist.UISupportedInterfaceOrientations`. The top-level `orientation: portrait` remains for Android. Expo's prebuild warning about overriding the abstract property on iOS is expected. |
 | Modals | Day, task-picker, and preset-editor modals already use `pageSheet` and safe-area views. React Native ignores `supportedOrientations` for `pageSheet`; do not add an ineffective prop. |
 | Keyboard resizing | Native QA found runaway JavaScript `KeyboardAvoidingView` padding after unfolding an open preset sheet, affecting both the sheet and underlying DaySheet. On iOS, delegate keyboard clearance to native ScrollView insets instead; preserve Android height behavior. |
+| Compact journal editing | SE landscape QA found the journal hidden by its Done accessory because JavaScript heading scrolling overwrote native caret positioning. Keep focus/layout scrolling under native control on iOS; after the keyboard settles, align the heading only when the measured heading and writing box fit above it. Invalidate stale measurements during rotation or unfolding. Android retains its existing anchor. |
 | Statistics freshness | Native QA also found a previously visited Stats tab retaining its old journal count. React Compiler caches calls to the stable `getStatsForPeriod` function while its underlying store data changes. Opt this screen out of compiler memoization with `use no memo`; preserve the shared store calculation and add a Release-native regression for save, revisit, and relaunch. |
 | Device targeting | Keep `supportsTablet: false` and `requireFullScreen: false`. iPhone Duo support does not require expanding distribution to iPad. |
 | Camera | Engage has no camera capture flow, so Duo camera-selection APIs are not applicable. |
@@ -81,15 +82,15 @@ The Release simulator build embeds JavaScript with `E2E_TEST=true`, `EXPO_PUBLIC
 
 The app uses JavaScript tabs and custom headers. They do not automatically become UIKit vertical bars. Their essential controls were usable in the tested native scenarios; no migration to native tabs was needed. The partially open journal scenario also remained usable. This is bounded scenario coverage, not proof of every possible fold angle or a native reserved-region API integration. Physical-device ergonomics and Android runtime behavior were not tested. See [Apple's detailed guidance](https://developer.apple.com/documentation/technologyoverviews/preparing-your-app-for-iphone-duo).
 
-Native videos were recorded and sampled into frames for inspection before the dependency patches. The patched build has separate automated regression coverage above; fold/rotation recordings were not repeated for that dependency graph. CoreSimulator allows one display recorder at a time, so the fold cycle was repeated separately for the outer and inner display. Inactive-display black frames are expected. Raw video timestamp discontinuities prevent using wall-clock offsets alone; inspected excerpts and native hierarchy captures provide the evidence.
+The initial native videos were recorded and sampled into frames for inspection before the dependency patches. Later 1.0.14 recordings cover the patched dependency graph, including actual fold/rotation and compact landscape input. The compact journal repair additionally requires both initial focus paths, long text, and rotation, while retaining the existing portrait heading/144-point editor assertions. See PR #97 for the final candidate's acceptance evidence. CoreSimulator allows one display recorder at a time, so the fold cycle was repeated separately for the outer and inner display. Inactive-display black frames are expected. Raw video timestamp discontinuities prevent using wall-clock offsets alone; inspected excerpts and native hierarchy captures provide the evidence.
 
 Local evidence is retained under `.gstack/qa-reports/iphone-duo-native/`, including JUnit results, build logs, before/after videos, native hierarchies, a geometry checker, and source/binary fingerprints. These ignored local artifacts are not included in a Git commit.
 
 ## Store delivery
 
-Release metadata is prepared for iOS 1.0.14 (build 19), with Japanese update notes in [App Store metadata](../store-assets/app-store-metadata.md). Its non-E2E Release simulator build succeeded with zero errors and one reported warning; the final 34 suites / 377 tests, typecheck, and lint also passed. Fresh fold recordings for this release candidate are still in progress. A signed distribution build, App Store submission, badge, and public release remain separate unverified stages.
+Release metadata is prepared for iOS 1.0.14 (build 19), with Japanese update notes in [App Store metadata](../store-assets/app-store-metadata.md). Non-E2E Release builds use Xcode 27.1. The final source candidate must pass unit tests, typecheck, lint, hosted CI, CodeRabbit, and native regression checks before merge; PR #97 records their current results. A signed distribution build, App Store submission, badge, and public release require separate evidence.
 
-The approved delivery plan is to release 1.0.14 first while preserving the existing conventional iPhone screenshots, then submit the six Duo images after Apple accepts those display sets. This records the delivery plan, not a completed release or upload.
+The approved delivery plan is to release 1.0.14 first while preserving the existing conventional iPhone screenshots. After Apple accepts both Duo display sets, submit the six images with the next app version and its App Review cycle (1.0.15 if no intervening release occurs). Screenshots cannot be added directly to an already approved 1.0.14 listing; revalidate the images against the follow-up version's UI and verify upload processing and review approval separately. This records the delivery plan, not a completed release or upload.
 
 Apple's current [screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications) list:
 
