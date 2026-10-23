@@ -1,9 +1,6 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from 'expo-router/react-navigation'
+import { DefaultTheme, ThemeProvider } from 'expo-router/react-navigation'
 import { Stack } from 'expo-router'
+import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -11,7 +8,6 @@ import { useEffect } from 'react'
 import { LogBox } from 'react-native'
 import '@/src/i18n/config'
 
-import { useColorScheme } from '@/hooks/use-color-scheme'
 import { DailyTaskSynchronization } from '@/src/components/DailyTaskSynchronization'
 import { useAppStore } from '@/src/stores/app-store'
 import { databaseService } from '@/src/services/database'
@@ -20,6 +16,15 @@ import { initializeBackupService } from '@/src/services/backupService'
 
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider'
 import '@/global.css'
+
+// Match the native splash and AppScreen's gray-50 surface before any route paints.
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: '#f9fafb' },
+}
+
+// Expo Router still owns readiness; only animate its native splash dismissal.
+SplashScreen.setOptions({ fade: true, duration: 200 })
 
 // React Native DevTools types for E2E testing
 declare global {
@@ -50,7 +55,6 @@ export const unstable_settings = {
  * <RootLayout />
  */
 export default function RootLayout() {
-  const colorScheme = useColorScheme()
   const initializeApp = useAppStore((state) => state.initializeApp)
 
   useEffect(() => {
@@ -126,12 +130,13 @@ export default function RootLayout() {
 
   return (
     // Gesture Handler must own the app root so modal task rows receive native swipe events.
-    <GestureHandlerRootView className="flex-1">
+    <GestureHandlerRootView
+      className="flex-1"
+      style={{ backgroundColor: '#f9fafb' }}
+    >
       <SafeAreaProvider>
         <GluestackUIProvider mode="light">
-          <ThemeProvider
-            value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
-          >
+          <ThemeProvider value={navigationTheme}>
             <DailyTaskSynchronization />
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
