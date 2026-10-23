@@ -61,7 +61,7 @@ describe('Calendar completion causality', () => {
     expect(getByText('calendar.selectedDateCompleted')).toBeTruthy()
   })
 
-  test('keeps high-completion day numbers readable when the heatmap turns dark green', async () => {
+  test('keeps high-completion day numbers dark and readable on soft-sage backgrounds', async () => {
     // Arrange
     const { getByTestId } = await render(
       <Calendar
@@ -82,8 +82,8 @@ describe('Calendar completion causality', () => {
 
     // Assert
     expect(mediumCompletionDay.props.className).toContain('text-gray-800')
-    expect(highCompletionDay.props.className).toContain('text-white')
-    expect(highestCompletionDay.props.className).toContain('text-white')
+    expect(highCompletionDay.props.className).toContain('text-gray-800')
+    expect(highestCompletionDay.props.className).toContain('text-gray-800')
   })
 
   test('hides the selected-day recap when month navigation leaves that date behind', async () => {

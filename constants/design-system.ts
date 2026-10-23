@@ -129,11 +129,16 @@ const SemanticColors = {
 
   // Completion states for heatmap
   heatmap: {
-    none: SystemColors.systemGray6,
-    low: '#C8E6C9',
-    medium: '#81C784',
-    high: '#4CAF50',
-    highest: '#2E7D32',
+    none: '#F3F4F6',
+    low: '#E6F1E9',
+    medium: '#C8DFCF',
+    high: '#A9CBB6',
+    highest: '#84B59A',
+  },
+  // Keep current-day and selection markers distinct over every heatmap level.
+  calendar: {
+    today: '#9A3412',
+    selected: '#1E40AF',
   },
 } as const
 
@@ -428,7 +433,12 @@ const generateCategoryColor = (
 }
 
 /**
- * Get heatmap color based on completion count
+ * Keeps calendar cells and their legend on the same calm completion scale.
+ * {@link Calendar} rendering calls this for each date and legend swatch.
+ * @param completionCount - Completed tasks for a day; four or more share the highest level.
+ * @returns The background color from the shared semantic heatmap palette.
+ * @example
+ * getHeatmapColor(3) // => '#A9CBB6'
  */
 const getHeatmapColor = (completionCount: number): string => {
   if (completionCount === 0) return SemanticColors.heatmap.none

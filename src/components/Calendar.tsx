@@ -11,9 +11,8 @@ import { AppPressable } from '@/src/components/AppPressable'
 import { formatDate } from '@/src/utils/dateUtils'
 import { ConditionIcon } from '@/src/components/ConditionIcon'
 import { CONDITION_APPEARANCE, CONDITION_CALENDAR_ICON_SIZE_PX } from '@/src/constants/condition'
+import { DesignSystem } from '@/constants/design-system'
 import type { Entry } from '@/src/types'
-
-const DARK_HEATMAP_MIN_COMPLETION_COUNT = 3
 
 interface CalendarProps {
   selectedDate: string
@@ -148,49 +147,6 @@ export const Calendar: React.FC<CalendarProps> = ({
     )
   }, [calendarData, selectedDate])
   const selectedDateCompletionCount = achievementData[selectedDate] || 0
-
-  /**
-   * Calendar date rendering calls this to darken each day as completed tasks accumulate.
-   * @param completionCount - Number of completed tasks for the date cell.
-   * @returns Tailwind background class for the matching heatmap level.
-   * @example
-   * getHeatmapColor(3) // => 'bg-green-600'
-   */
-  const getHeatmapColor = (completionCount: number): string => {
-    if (completionCount === 0) return 'bg-gray-100'
-    if (completionCount === 1) return 'bg-green-200'
-    if (completionCount === 2) return 'bg-green-400'
-    if (completionCount === 3) return 'bg-green-600'
-    return 'bg-green-700' // 4+ completions
-  }
-
-  /**
-   * Calendar date rendering calls this so dark heatmap cells keep legible day numbers.
-   * @param completionCount - Number of completed tasks for the date cell.
-   * @param isCurrentMonth - Whether the date belongs to the visible month.
-   * @param isSelectedDate - Whether the user-selected date matches the cell.
-   * @param isCurrentDate - Whether the cell represents today.
-   * @returns Tailwind text color class, with white reserved for dark green heatmap cells.
-   * @example
-   * getDateTextColor(3, true, false, false) // => 'text-white'
-   */
-  const getDateTextColor = (
-    completionCount: number,
-    isCurrentMonth: boolean,
-    isSelectedDate: boolean,
-    isCurrentDate: boolean
-  ): string => {
-    if (!isCurrentMonth) return 'text-gray-300'
-
-    // Dark heatmap cells need contrast more than accent-colored day numbers.
-    if (completionCount >= DARK_HEATMAP_MIN_COMPLETION_COUNT) {
-      return 'text-white'
-    }
-
-    if (isCurrentDate) return 'text-orange-600'
-    if (isSelectedDate) return 'text-blue-600'
-    return 'text-gray-800'
-  }
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentMonth((prev) => {
@@ -328,17 +284,13 @@ export const Calendar: React.FC<CalendarProps> = ({
             {week.map((dayData, dayIndex) => {
               const conditionLevel = entries[dayData.dateString]?.conditionLevel
               const completionCount = achievementData[dayData.dateString] || 0
-              const heatmapColor = getHeatmapColor(completionCount)
+              const heatmapColor = DesignSystem.utils.getHeatmapColor(completionCount)
               const isCurrentDate = isToday(dayData.dateString)
               const isInteractiveDate = dayData.isCurrentMonth
               const isSelectedDate =
                 isInteractiveDate && isSelected(dayData.dateString)
-              const dateTextColor = getDateTextColor(
-                completionCount,
-                dayData.isCurrentMonth,
-                isSelectedDate,
-                isCurrentDate
-              )
+              // Dark numerals remain readable across every soft-sage level and state.
+              const dateTextColor = dayData.isCurrentMonth ? 'text-gray-800' : 'text-gray-300'
               const dateAccessibilityValue = getDateA11yValue(
                 isInteractiveDate,
                 isCurrentDate
@@ -375,28 +327,44 @@ export const Calendar: React.FC<CalendarProps> = ({
                     }
                     className={`
                       flex-1 min-h-[48px] items-center justify-center rounded-xl py-1
-                      ${dayData.isCurrentMonth ? heatmapColor : 'bg-gray-50'}
-                      ${
-                        isSelectedDate
-                          ? 'border-2 border-blue-500'
-                          : ''
-                      }
-                      ${
-                        isCurrentDate
-                          ? 'border-2 border-orange-500'
-                          : ''
-                      }
+                      ${dayData.isCurrentMonth ? '' : 'bg-gray-50'}
                     `}
+                    style={{
+                      ...(dayData.isCurrentMonth && { backgroundColor: heatmapColor }),
+                      ...((isSelectedDate || isCurrentDate) && {
+                        borderWidth: 2,
+                        borderColor: isSelectedDate
+                          ? DesignSystem.colors.semantic.calendar.selected
+                          : DesignSystem.colors.semantic.calendar.today,
+                      }),
+                    }}
                   >
-                    <Text
-                      testID={`calendar-date-label-${dayData.dateString}`}
-                      className={`
-                        text-sm font-medium
-                        ${dateTextColor}
-                      `}
-                    >
-                      {dayData.date}
-                    </Text>
+                    <Box>
+                      <Text
+                        testID={`calendar-date-label-${dayData.dateString}`}
+                        className={`
+                          text-sm font-medium
+                          ${dateTextColor}
+                        `}
+                      >
+                        {dayData.date}
+                      </Text>
+                      {/* A separate underline preserves its color on both iOS and Android. */}
+                      {isCurrentDate && (
+                        <Box
+                          testID={`calendar-today-marker-${dayData.dateString}`}
+                          accessible={false}
+                          style={{
+                            position: 'absolute',
+                            bottom: 1,
+                            left: 0,
+                            right: 0,
+                            height: 1,
+                            backgroundColor: DesignSystem.colors.semantic.calendar.today,
+                          }}
+                        />
+                      )}
+                    </Box>
                     {dayData.isCurrentMonth && conditionLevel != null && (
                       <Box testID={`calendar-condition-${dayData.dateString}`} accessible={false}>
                         <ConditionIcon level={conditionLevel} size={CONDITION_CALENDAR_ICON_SIZE_PX} />
@@ -410,13 +378,21 @@ export const Calendar: React.FC<CalendarProps> = ({
         ))}
       </VStack>
 
-      {/* Legend - matching Figma design with proper spacing */}
-      <HStack className="items-center justify-center mt-7 px-4">
+      {/* Include every completion bucket using the same palette as the date cells. */}
+      <HStack testID="calendar-completion-legend" className="items-center justify-center mt-7 px-4">
         <Text className="text-xs text-gray-500 mr-3">{t('calendar.legendLess')}</Text>
-        <Box className="w-3 h-3 bg-gray-100 rounded-sm mx-1" />
-        <Box className="w-3 h-3 bg-green-200 rounded-sm mx-1" />
-        <Box className="w-3 h-3 bg-green-400 rounded-sm mx-1" />
-        <Box className="w-3 h-3 bg-green-600 rounded-sm mx-1" />
+        {[0, 1, 2, 3, 4].map((completionCount) => (
+          <VStack key={completionCount} className="items-center mx-1 gap-1">
+            <Box
+              testID={`calendar-legend-level-${completionCount}`}
+              className="w-4 h-4 rounded-sm"
+              style={{ backgroundColor: DesignSystem.utils.getHeatmapColor(completionCount) }}
+            />
+            <Text className="text-xs text-gray-600">
+              {completionCount === 4 ? '4+' : completionCount}
+            </Text>
+          </VStack>
+        ))}
         <Text className="text-xs text-gray-500 ml-3">{t('calendar.legendMore')}</Text>
       </HStack>
 

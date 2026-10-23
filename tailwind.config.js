@@ -84,11 +84,11 @@ module.exports = {
         'personal-dark': '#F57F17',
 
         // Heatmap Colors
-        'heatmap-none': '#F2F2F7',
-        'heatmap-low': '#C8E6C9',
-        'heatmap-medium': '#81C784',
-        'heatmap-high': '#4CAF50',
-        'heatmap-highest': '#2E7D32',
+        'heatmap-none': '#F3F4F6',
+        'heatmap-low': '#E6F1E9',
+        'heatmap-medium': '#C8DFCF',
+        'heatmap-high': '#A9CBB6',
+        'heatmap-highest': '#84B59A',
 
         // Legacy Gluestack colors (for backward compatibility)
         primary: {
