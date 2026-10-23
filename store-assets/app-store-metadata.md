@@ -18,6 +18,8 @@ notes when submitting the iOS 1.0.14 (19) build:
 
 #### What's New (Japanese, 1.0.14)
 
+カレンダーを、達成が増えても見やすい、やさしい緑のデザインに更新しました。アプリ起動時の画面切り替えも滑らかになりました。
+
 iPhone Duoに対応しました。画面を開閉したり回転したりしても、タスクや日記を快適に操作できます。日記やタスクの編集時にキーボード周辺の余白が崩れる問題と、保存した日記の件数が統計にすぐ反映されない問題を修正しました。
 
 #### Short Description (30 characters)
@@ -68,7 +70,7 @@ habit, tracker, productivity, journal, routine, calendar, tasks, goals, daily, m
 
 ### iPhone Screenshots
 
-- Preserve the currently approved conventional iPhone screenshot sets.
+- Replace every inherited Japanese screenshot with a capture of the final release candidate, including the new calendar design. Refresh the existing large iPhone, Face ID iPhone, and inherited iPad sets; also supply the required medium Dynamic Island set.
 - **iPhone Duo outer display**: 1398 x 2034 pixels (portrait), or 2034 x 1398 (landscape).
 - **iPhone Duo inner display**: 2007 x 2853 pixels (portrait), or 2853 x 2007 (landscape).
 - Use JPEG or PNG without alpha/transparency. Capture the release candidate with synthetic demonstration data.
@@ -76,21 +78,21 @@ habit, tracker, productivity, journal, routine, calendar, tasks, goals, daily, m
 
 See [Apple's current screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications). Validate App Store Connect's accepted display-set identifiers at submission time.
 
-Six Japanese release-candidate images are prepared from the 1.0.14 (19) non-E2E Release simulator app: Calendar, Today, and Stats on each Duo display. They use synthetic demonstration data, native portrait dimensions, and RGB JPEG without alpha; the release evidence manifest records SHA-256 hashes. They have not been uploaded.
+Capture Calendar, Today, day details, statistics, and daily routines from a non-E2E Release simulator build with synthetic Japanese demonstration data. Record native dimensions, SHA-256 hashes, the source commit, and the binary fingerprint in the release evidence manifest. The six Duo images prepared for PR #97 predate the new calendar and must be replaced.
 
-Approved delivery plan: release 1.0.14 with the existing conventional iPhone screenshots. Once Apple accepts both Duo display sets, include all six images in the next app version and its App Review submission (1.0.15 if no intervening release occurs). An approved 1.0.14 listing cannot receive replacement screenshots directly. Revalidate the captures against that version's UI, retain the existing conventional images, and verify upload processing, review approval, and public availability separately. See [Apple's asset management guidance](https://developer.apple.com/help/app-store-connect/manage-app-information/manage-your-app-store-assets).
+Approved delivery plan, October 23: release 1.0.14 after PR #101 passes CI and CodeRabbit and is merged, with every Store screenshot refreshed. Include both Duo displays in the same submission. Check each upload reaches `COMPLETE` and verify review submission, approval, and public availability separately. See [Apple's asset management guidance](https://developer.apple.com/help/app-store-connect/manage-app-information/manage-your-app-store-assets).
 
-Upload acceptance remains unconfirmed on October 22, 2026. Apple's September [DTS response](https://developer.apple.com/forums/thread/845505) schedules Duo uploads for later in 2026, and the current [ScreenshotDisplayType reference](https://developer.apple.com/documentation/appstoreconnectapi/screenshotdisplaytype) has no Duo case. The signed-in UI was not verified because its session expired. Later enablement remains possible; confirm that the current UI or API accepts both display sets before submission.
+On October 23, App Store Connect accepted creation of an `APP_IPHONE_DUO` screenshot set for the Japanese 1.0.14 localization. Apple's [October submission announcement](https://developer.apple.com/news/?id=kkphp5qo) also confirms availability. OpenAPI 4.5.1 still omits that enum value; set creation alone does not prove image processing or submission. Verify the inner and outer images independently after upload.
 
-Engage remains iPhone-only (`supportsTablet: false`). Preserve inherited iPad assets if App Store Connect carries them forward; this release does not expand iPad distribution.
+Engage remains iPhone-only (`supportsTablet: false`). Refresh the inherited iPad screenshots with the actual compatibility presentation; this release does not expand iPad distribution.
 
 ### Screenshot Descriptions
 
 1. **Calendar View**: Monthly calendar with completion heatmap
 2. **Today View**: Current day's tasks and progress
-3. **Task Selection**: Choosing tasks from preset categories
+3. **Day Details**: A selected day's condition, tasks, and journal
 4. **Statistics View**: Progress tracking and analytics
-5. **Journal Entry**: Daily reflection interface
+5. **Daily Routines**: Preset task settings and daily automatic assignment
 
 ## App Preview Video (Optional)
 

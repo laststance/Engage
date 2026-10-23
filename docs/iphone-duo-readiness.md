@@ -1,7 +1,7 @@
 # iPhone Duo readiness
 
 Assessed on October 22, 2026, against `origin/main` at `6742ccc` (Engage 1.0.13).
-Status: source changes, iOS 1.0.14 (build 19) metadata, and six Store screenshot candidates are prepared. Current-head CI, native acceptance, and Store delivery are tracked separately in [PR #97](https://github.com/laststance/Engage/pull/97).
+The sections below retain the October 22 / [PR #97](https://github.com/laststance/Engage/pull/97) implementation and native-validation history. The final 1.0.14 release also includes the calendar update in [PR #100](https://github.com/laststance/Engage/pull/100) and splash transition in [PR #101](https://github.com/laststance/Engage/pull/101). See Store delivery for the October 23 screenshot refresh and separate distribution gates.
 
 ## Apple requirements and Engage decisions
 
@@ -91,7 +91,7 @@ Local evidence is retained under `.gstack/qa-reports/iphone-duo-native/`, includ
 
 Release metadata is prepared for iOS 1.0.14 (build 19), with Japanese update notes in [App Store metadata](../store-assets/app-store-metadata.md). Non-E2E Release builds use Xcode 27.1. The final source candidate must pass unit tests, typecheck, lint, hosted CI, CodeRabbit, and native regression checks before merge; PR #97 records their current results. A signed distribution build, App Store submission, badge, and public release require separate evidence.
 
-The approved delivery plan is to release 1.0.14 first while preserving the existing conventional iPhone screenshots. After Apple accepts both Duo display sets, submit the six images with the next app version and its App Review cycle (1.0.15 if no intervening release occurs). Screenshots cannot be added directly to an already approved 1.0.14 listing; revalidate the images against the follow-up version's UI and verify upload processing and review approval separately. This records the delivery plan, not a completed release or upload.
+The owner superseded the earlier deferred-Duo plan on October 23: release 1.0.14 after PR #101 passes CI and CodeRabbit and is merged, and refresh every Store screenshot to show the latest calendar and previous improvements. PR #101 merged after 17 successful CI checks and a CodeRabbit CLI full-policy review with zero findings; its GitHub formal review decision remained empty. The release uses a fresh signed build from the final source, not the earlier PR #97 binary.
 
 Apple's current [screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications) list:
 
@@ -99,8 +99,8 @@ Apple's current [screenshot specifications](https://developer.apple.com/help/app
 - Inner display: 2007 × 2853 or 2853 × 2007 pixels.
 - No alpha channel or transparency.
 
-Six fresh Japanese screenshots now cover Calendar, Today, and Stats on both Duo displays, captured from the 1.0.14 (19) non-E2E Release simulator app with synthetic demonstration data. All six are RGB JPEGs at the native portrait dimensions above, without alpha. The local `screenshots/manifest.json` in the release evidence directory records their SHA-256 hashes and the app binary fingerprints. Earlier pre-patch Calendar captures remain historical evidence. No screenshots have been uploaded.
+The six Japanese Duo images captured for PR #97 are historical candidates and predate the calendar redesign. Replace them with current Calendar, Today, and Stats captures on both displays. Also replace every inherited Japanese image in the large iPhone, Face ID iPhone, and iPad sets, and add the required medium Dynamic Island set. Use synthetic demonstration data and the non-E2E Release app. Retain dimensions, SHA-256 hashes, source and binary fingerprints, and per-asset processing state in the release evidence manifest. Inherited iPad images show compatibility mode; device targeting remains iPhone-only.
 
 The specifications associate Duo screenshot submission with the optimization badge and require these screenshots from April 2027 for apps using iOS 27.1 SDK or later. See [Apple's submission announcement](https://developer.apple.com/news/?id=kkphp5qo).
 
-Upload acceptance is unconfirmed as of October 22, 2026. Apple's September [DTS response](https://developer.apple.com/forums/thread/845505) schedules Duo asset-upload support for later in 2026. Neither the current [ScreenshotDisplayType reference](https://developer.apple.com/documentation/appstoreconnectapi/screenshotdisplaytype) nor the official OpenAPI 4.5.1 schema has a Duo case. The authenticated App Store Connect UI could not be checked because its session expired. Support may have been enabled after that announcement; verify the current UI or API accepts both display sets before claiming submission.
+App Store Connect accepted creation of an `APP_IPHONE_DUO` screenshot set for Engage's Japanese 1.0.14 localization on October 23. This confirms that the earlier upload-availability uncertainty is resolved for set creation, despite the enum still being absent from OpenAPI 4.5.1. Actual image processing, App Review submission, approval, and the public optimization badge require separate evidence; none is established by creating the set.

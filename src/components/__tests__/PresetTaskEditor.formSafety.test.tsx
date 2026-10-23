@@ -188,6 +188,26 @@ describe('PresetTaskEditor form safety', () => {
     expect(getByTestId('preset-editor-cancel')).toBeTruthy()
   })
 
+  test('hides preset actions when the native keyboard reopens without a focus change', async () => {
+    // Arrange
+    const { getByTestId, queryByTestId } = await renderEditor()
+    await fireEvent.press(getByTestId('add-task-button'))
+    await fireEvent(getByTestId('task-title-input-2'), 'focus')
+
+    // Act: iOS may hide and reopen its keyboard while the same field stays focused.
+    for (const eventName of ['keyboardDidHide', 'keyboardDidShow']) {
+      await act(() => {
+        ;(Keyboard.addListener as jest.Mock).mock.calls
+          .filter(([name]) => name === eventName)
+          .forEach(([, listener]) => listener())
+      })
+    }
+
+    // Assert
+    expect(queryByTestId('preset-editor-save')).toBeNull()
+    expect(queryByTestId('preset-editor-cancel')).toBeNull()
+  })
+
   test('hides the editor without calling cancel when visibility changes', async () => {
     // Arrange
     const editorProps = {

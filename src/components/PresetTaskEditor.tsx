@@ -326,6 +326,17 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
   }, [])
 
   useEffect(() => {
+    const keyboardDidShowSubscription = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        // iOS can reopen the keyboard without sending another input focus event.
+        if (pendingFooterRestoreFrameRef.current !== null) {
+          cancelAnimationFrame(pendingFooterRestoreFrameRef.current)
+          pendingFooterRestoreFrameRef.current = null
+        }
+        setIsPresetKeyboardVisible(true)
+      }
+    )
     const keyboardDidHideSubscription = Keyboard.addListener(
       'keyboardDidHide',
       () => {
@@ -339,6 +350,7 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
     )
 
     return () => {
+      keyboardDidShowSubscription.remove()
       keyboardDidHideSubscription.remove()
       presetMeasurementVersionRef.current += 1
       // Cancel deferred UI work when the editor unmounts.

@@ -22,6 +22,10 @@ for future Expo releases. The patched build passed 14 Duo production Maestro
 flows and three compact-iPhone regressions. See [iPhone Duo readiness](iphone-duo-readiness.md)
 for the complete version table and the separate pre-patch fold/rotation evidence.
 
+The October 23 release preflight advances only `expo-notifications` to 57.0.24,
+the patch now required by Expo's compatibility check. Its exact-version
+minimum-age exception replaces 57.0.23; future versions remain age-gated.
+
 For builds made with Xcode 27, `ios.enableSceneSupport` enables Expo's official
 SDK 57 UIKit scene-lifecycle backport. Without it, the app terminates before the
 calendar appears on iOS 27. See the [Expo migration guide](https://github.com/expo/fyi/blob/main/ios-scene-lifecycle.md#staying-on-sdk-57-with-xcode-27).
@@ -52,4 +56,6 @@ transitive advisories: [`braces`](https://github.com/advisories/GHSA-vfj7-8cjw-p
 through Metro/Tailwind tooling and [`node-forge`](https://github.com/advisories/GHSA-86w9-cpqp-85rv)
 through Expo CLI. Their currently published latest releases are 3.0.3 and
 1.4.0, respectively; the advisory-fixed 3.0.4 and 1.4.1 releases are not
-published yet. Recheck these before the next Store build.
+published yet. The October 23 release preflight confirmed both fixed versions
+remain unavailable in the npm registry; this is a known tooling advisory, not a
+clean audit result. Recheck these before the next Store build.
