@@ -90,9 +90,9 @@ Engage remains iPhone-only (`supportsTablet: false`). Refresh the inherited iPad
 
 1. **Calendar View**: Monthly calendar with completion heatmap
 2. **Today View**: Current day's tasks and progress
-3. **Task Selection**: Choosing tasks from preset categories
+3. **Day Details**: A selected day's condition, tasks, and journal
 4. **Statistics View**: Progress tracking and analytics
-5. **Journal Entry**: Daily reflection interface
+5. **Daily Routines**: Preset task settings and daily automatic assignment
 
 ## App Preview Video (Optional)
 
