@@ -1,11 +1,1033 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=support.html">
-  <title>Engage</title>
-</head>
-<body>
-  <p>Redirecting to <a href="support.html">Support</a>...</p>
-</body>
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Engage is a private, offline habit tracker for iPhone. Track your tasks, record your mood, and reflect on your day. Available in Japanese and English."
+    />
+    <meta name="theme-color" content="#f8f8f2" />
+    <meta property="og:title" content="Engage — Small steps. More you." />
+    <meta
+      property="og:description"
+      content="Engage is a private, offline habit tracker for iPhone. Track your tasks, record your mood, and reflect on your day. Available in Japanese and English."
+    />
+    <meta property="og:type" content="website" />
+    <title>Engage — 自分のペースで、一日ずつ。</title>
+    <link rel="icon" href="assets/app-icon.png" type="image/png" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="site.js" defer></script>
+  </head>
+  <body
+    data-title-ja="Engage — 自分のペースで、一日ずつ。"
+    data-title-en="Engage — Small steps. More you."
+  >
+    <a class="skip-link" href="#main"
+      ><span lang="ja">本文へ移動</span
+      ><span lang="en">Skip to content</span></a
+    >
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a href="index.html" class="brand" aria-label="Engage home"
+          ><img
+            src="assets/app-icon.png"
+            width="33"
+            height="33"
+            alt=""
+          />Engage<span class="brand-dot">.</span></a
+        >
+        <nav id="site-navigation" class="main-nav" aria-label="Main navigation">
+          <a href="index.html#features"
+            ><span lang="ja">Engageのこと</span
+            ><span lang="en">The app</span></a
+          ><a href="index.html#how-it-works"
+            ><span lang="ja">使い方</span><span lang="en">How it works</span></a
+          ><a href="support.html"
+            ><span lang="ja">サポート</span><span lang="en">Support</span></a
+          >
+        </nav>
+        <div class="header-actions">
+          <div class="language-control" role="group" aria-label="Language">
+            <button
+              type="button"
+              data-language="ja"
+              aria-pressed="true"
+              aria-label="日本語"
+            >
+              JP</button
+            ><i aria-hidden="true"></i
+            ><button
+              type="button"
+              data-language="en"
+              aria-pressed="false"
+              aria-label="English"
+            >
+              EN
+            </button>
+          </div>
+          <a
+            class="button button-small header-download"
+            href="https://apps.apple.com/us/app/engage/id6760552941"
+            target="_blank"
+            rel="noopener noreferrer"
+            >App Store
+            <svg
+              class=""
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M7 17 17 7M7 7h10v10" /></svg></a
+          ><button
+            type="button"
+            class="menu-toggle"
+            data-menu-button
+            aria-controls="site-navigation"
+            aria-expanded="false"
+            aria-label="メニュー"
+            data-label-ja="メニュー"
+            data-label-en="Menu"
+          >
+            <svg
+              class=""
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 8h14M5 16h14" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+    <main id="main">
+      <section class="hero wrap">
+        <div class="hero-copy">
+          <p class="eyebrow">A LITTLE, EVERY DAY.</p>
+          <h1>
+            <span lang="ja"
+              >今日の小さな一歩が、<br /><em>明日の自分になる。</em></span
+            ><span lang="en">Small steps.<br /><em>More you.</em></span>
+          </h1>
+          <p class="hero-description">
+            <span lang="ja"
+              >習慣を続ける。気持ちを残す。日々を振り返る。<br />Engageは、あなたの毎日にそっと寄り添う<br />プライベートな習慣トラッカーです。</span
+            ><span lang="en"
+              >Build a habit. Keep a feeling. Look back with a smile.<br />A
+              private little space for your daily habits,<br />reflections, and
+              everything you’re becoming.</span
+            >
+          </p>
+          <div class="hero-cta">
+            <a
+              class="button store-button"
+              href="https://apps.apple.com/us/app/engage/id6760552941"
+              target="_blank"
+              rel="noopener noreferrer"
+              ><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M17.1 12.5c0-2 1.7-3 1.8-3.1-1-1.4-2.5-1.6-3-1.6-1.3-.1-2.5.8-3.1.8-.7 0-1.7-.8-2.7-.7-1.4 0-2.7.8-3.4 2-1.5 2.5-.4 6.2 1 8.3.7 1 1.5 2.1 2.6 2 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7s1.8-1 2.5-2c.8-1.2 1.1-2.3 1.1-2.3s-2.2-.9-2.2-3.4ZM15 6.2c.6-.7 1-1.6.9-2.6-.9 0-1.8.6-2.4 1.2-.6.7-1 1.6-.9 2.6.9 0 1.8-.5 2.4-1.2Z"
+                /></svg
+              ><span class="store-label"
+                ><small
+                  ><span lang="ja">iPhoneではじめる</span
+                  ><span lang="en">Download on the</span></small
+                ><span lang="ja">App Storeで入手</span
+                ><span lang="en">App Store</span></span
+              ><svg
+                class=""
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M7 17 17 7M7 7h10v10" /></svg></a
+            ><a class="text-link" href="#features"
+              ><span lang="ja">どんなアプリ？</span
+              ><span lang="en">Take a little look</span
+              ><svg
+                class=""
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14m-6-6 6 6-6 6" /></svg
+            ></a>
+          </div>
+          <p class="hero-note">
+            <span lang="ja">アカウント不要 · オフラインで使えます</span
+            ><span lang="en">No account needed. At home, even offline.</span>
+          </p>
+        </div>
+        <div class="hero-art">
+          <div class="art-orbit" aria-hidden="true"></div>
+          <div class="art-label" aria-hidden="true">
+            One day at a time.<svg
+              viewBox="0 0 60 40"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.2"
+            >
+              <path d="M48 1C60 28 28 36 8 24m1-8L7 25l11 1" />
+            </svg>
+          </div>
+          <div
+            class="phone"
+            role="img"
+            aria-label="習慣の達成状況を緑の濃淡で示したカレンダーのサンプル"
+            data-label-ja="習慣の達成状況を緑の濃淡で示したカレンダーのサンプル"
+            data-label-en="Illustrative calendar with green shades showing daily habit progress"
+          >
+            <div class="phone-screen">
+              <div class="phone-status">
+                <span>9:41</span><span class="phone-island"></span
+                ><span class="phone-signals">▮▮▮ ▰</span>
+              </div>
+              <div class="phone-title">
+                Engage<span
+                  ><svg
+                    class=""
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                      d="m9 3-1 3-3 1v3l-2 2 2 2v3l3 1 1 3h6l1-3 3-1v-3l2-2-2-2V7l-3-1-1-3Z"
+                    /></svg
+                ></span>
+              </div>
+              <div class="phone-month">
+                <span lang="ja">2026年 10月</span
+                ><span lang="en">October 2026</span
+                ><span aria-hidden="true">‹ ›</span>
+              </div>
+              <div class="calendar">
+                <span class="weekday"
+                  ><span lang="ja">月</span><span lang="en">M</span></span
+                ><span class="weekday"
+                  ><span lang="ja">火</span><span lang="en">T</span></span
+                ><span class="weekday"
+                  ><span lang="ja">水</span><span lang="en">W</span></span
+                ><span class="weekday"
+                  ><span lang="ja">木</span><span lang="en">T</span></span
+                ><span class="weekday"
+                  ><span lang="ja">金</span><span lang="en">F</span></span
+                ><span class="weekday"
+                  ><span lang="ja">土</span><span lang="en">S</span></span
+                ><span class="weekday"
+                  ><span lang="ja">日</span><span lang="en">S</span></span
+                ><span class="empty"></span><span class="empty"></span
+                ><span class="empty"></span><span class="level-2">1</span
+                ><span class="level-3">2</span><span class="level-4">3</span
+                ><span class="level-1">4</span><span class="level-3">5</span
+                ><span class="level-4">6</span><span class="level-0">7</span
+                ><span class="level-3">8</span><span class="level-2">9</span
+                ><span class="level-4">10</span><span class="level-3">11</span
+                ><span class="level-4">12</span><span class="level-2">13</span
+                ><span class="level-4">14</span><span class="level-3">15</span
+                ><span class="level-1">16</span><span class="level-4">17</span
+                ><span class="level-4">18</span><span class="level-2">19</span
+                ><span class="level-3">20</span><span class="level-4">21</span
+                ><span class="level-3">22</span><span class="level-4">23</span
+                ><span class="level-2">24</span><span class="level-4">25</span
+                ><span class="level-3">26</span><span class="level-4">27</span
+                ><span class="level-2 current">28</span
+                ><span class="level-0">29</span><span class="level-0">30</span
+                ><span class="level-0">31</span>
+              </div>
+              <div class="calendar-legend">
+                <span lang="ja">少</span><span lang="en">Less</span><i></i
+                ><i></i><i></i><span lang="ja">多</span
+                ><span lang="en">More</span>
+              </div>
+              <div class="phone-daily">
+                <div class="phone-daily-head">
+                  <span lang="ja">今日の小さな積み重ね</span
+                  ><span lang="en">Today’s little wins</span><span>2 / 3</span>
+                </div>
+                <div class="phone-progress"><i></i><i></i><i></i></div>
+                <div class="phone-task">
+                  <svg
+                    class=""
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m5 12 4 4L19 6" /></svg
+                  ><span lang="ja">朝、少し歩く</span
+                  ><span lang="en">A little morning walk</span>
+                </div>
+                <div class="phone-task">
+                  <svg
+                    class=""
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m5 12 4 4L19 6" /></svg
+                  ><span lang="ja">本を10ページ読む</span
+                  ><span lang="en">Read 10 pages</span>
+                </div>
+              </div>
+              <div class="phone-tabs">
+                <div>
+                  <svg
+                    class=""
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="5" width="18" height="16" rx="3" />
+                    <path d="M7 3v4m10-4v4M3 11h18m-12 4h1m4 0h1m-7 3h1" /></svg
+                  ><span lang="ja">カレンダー</span
+                  ><span lang="en">Calendar</span>
+                </div>
+                <div>
+                  <svg
+                    class=""
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m5 12 4 4L19 6" /></svg
+                  ><span lang="ja">今日</span><span lang="en">Today</span>
+                </div>
+                <div>
+                  <svg
+                    class=""
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 20V10m7 10V4m7 16v-7" /></svg
+                  ><span lang="ja">統計</span><span lang="en">Insights</span>
+                </div>
+              </div>
+              <div class="phone-home"></div>
+            </div>
+          </div>
+          <div class="streak-note" aria-hidden="true">
+            <div class="streak-icon">
+              <svg
+                class=""
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 3C10 2 3 6 4 13s11 11 15 0c1-3 1-7 1-10Z" />
+                <path d="M4 21 15 9" />
+              </svg>
+            </div>
+            <div>
+              <strong
+                ><span lang="ja">12日間</span
+                ><span lang="en">12 days</span></strong
+              ><small
+                ><span lang="ja">小さな一歩が、続いてる。</span
+                ><span lang="en">A little more, every day.</span></small
+              >
+            </div>
+          </div>
+          <div class="floating-note" aria-hidden="true">
+            <span class="note-date">OCTOBER 28, 2026</span>
+            <p>
+              <span lang="ja"
+                >散歩で見つけた秋の色。<br />今日も、いい一日だった。</span
+              ><span lang="en"
+                >Found a little autumn<br />on my morning walk.</span
+              >
+            </p>
+            <div class="note-face">
+              <svg
+                class=""
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8 9h.01M16 9h.01M8 14q4 5 8 0" /></svg
+              ><span lang="ja">今日の気分は、いい感じ。</span
+              ><span lang="en">Feeling good today.</span>
+            </div>
+          </div>
+          <p class="sample-caption">
+            <span lang="ja">画面・記録はイメージです</span
+            ><span lang="en">Illustrative screens and sample entries</span>
+          </p>
+        </div>
+      </section>
+      <div class="promise-strip">
+        <div class="wrap promise-inner">
+          <p class="promise-title">A little space, just for you.</p>
+          <div class="promises">
+            <span
+              ><svg
+                class=""
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="5" y="10" width="14" height="11" rx="3" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2" /></svg
+              ><span lang="ja">記録は端末の中に</span
+              ><span lang="en">Your data stays yours</span></span
+            ><span
+              ><svg
+                class=""
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="m3 3 18 18M8.5 8.5A12 12 0 0 1 21 9M3 9a12 12 0 0 1 2.2-1.7M6 12a8 8 0 0 1 4-2m5 1a8 8 0 0 1 3 1m-9 3a4 4 0 0 1 6 0m-3 4h.01"
+                /></svg
+              ><span lang="ja">いつでもオフライン</span
+              ><span lang="en">Happily offline</span></span
+            ><span
+              ><svg
+                class=""
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 3C10 2 3 6 4 13s11 11 15 0c1-3 1-7 1-10Z" />
+                <path d="M4 21 15 9" /></svg
+              ><span lang="ja">自分のペースで</span
+              ><span lang="en">At your own pace</span></span
+            >
+          </div>
+        </div>
+      </div>
+      <section class="section wrap" id="features">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">01 — YOUR EVERYDAY, A LITTLE BETTER</p>
+            <h2>
+              <span lang="ja">毎日を整える、<br />3つのシンプルなこと。</span
+              ><span lang="en"
+                >A little structure.<br />A lot more possibility.</span
+              >
+            </h2>
+          </div>
+          <p>
+            <span lang="ja"
+              >大きく変わろうとしなくていい。<br />今日できることを、ひとつずつ。</span
+            ><span lang="en"
+              >You don’t have to change everything.<br />Just make a little room
+              for what matters.</span
+            >
+          </p>
+        </div>
+        <div class="features">
+          <article class="feature">
+            <div class="feature-visual">
+              <div class="demo-list">
+                <div class="demo-heading">
+                  <span lang="ja">今日やりたいこと</span
+                  ><span lang="en">A little list for today</span
+                  ><output data-demo-count aria-live="polite">1 / 3</output>
+                </div>
+                <button
+                  type="button"
+                  class="demo-task"
+                  data-demo-task
+                  aria-pressed="true"
+                >
+                  <span class="demo-check"
+                    ><svg
+                      class=""
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m5 12 4 4L19 6" /></svg></span
+                  ><span class="task-label"
+                    ><span lang="ja">朝、少し歩く</span
+                    ><span lang="en">Take a morning walk</span></span
+                  ></button
+                ><button
+                  type="button"
+                  class="demo-task"
+                  data-demo-task
+                  aria-pressed="false"
+                >
+                  <span class="demo-check"
+                    ><svg
+                      class=""
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m5 12 4 4L19 6" /></svg></span
+                  ><span class="task-label"
+                    ><span lang="ja">本を10ページ読む</span
+                    ><span lang="en">Read 10 pages</span></span
+                  ></button
+                ><button
+                  type="button"
+                  class="demo-task"
+                  data-demo-task
+                  aria-pressed="false"
+                >
+                  <span class="demo-check"
+                    ><svg
+                      class=""
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m5 12 4 4L19 6" /></svg></span
+                  ><span class="task-label"
+                    ><span lang="ja">今日をひとこと残す</span
+                    ><span lang="en">Write a little reflection</span></span
+                  >
+                </button>
+                <div
+                  class="demo-progress"
+                  data-demo-progress
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="3"
+                  aria-valuenow="1"
+                  aria-label="サンプルの達成タスク数"
+                  data-label-ja="サンプルの達成タスク数"
+                  data-label-en="Sample completed tasks"
+                  style="--progress: 33.333%"
+                ></div>
+              </div>
+              <p class="demo-caption">
+                <span lang="ja">タップで体験 · サンプルは保存されません</span
+                ><span lang="en"
+                  >Try checking a task · Demo only, not saved</span
+                >
+              </p>
+            </div>
+            <div class="feature-copy">
+              <div class="feature-number">01 / DO</div>
+              <h3>
+                <span lang="ja">自分に合う、小さな習慣。</span
+                ><span lang="en">Make room for small wins.</span>
+              </h3>
+              <p>
+                <span lang="ja"
+                  >プリセットや自分で作ったタスクから、今日やりたいことを選ぶ。できたらチェック。それだけで、一歩前へ。</span
+                ><span lang="en"
+                  >Choose a preset or create your own task. Pick what matters
+                  today, then check it off when you’re done.</span
+                >
+              </p>
+            </div>
+          </article>
+          <article class="feature">
+            <div class="feature-visual">
+              <div class="journal-card">
+                <div class="journal-top">
+                  <span lang="ja">今日のふりかえり</span
+                  ><span lang="en">A NOTE TO MYSELF</span
+                  ><svg
+                    class=""
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 3C10 2 3 6 4 13s11 11 15 0c1-3 1-7 1-10Z" />
+                    <path d="M4 21 15 9" />
+                  </svg>
+                </div>
+                <p>
+                  <span lang="ja"
+                    >少し早起きできた。<br />明日も、このペースで。</span
+                  ><span lang="en"
+                    >An earlier start. A slower morning.<br />More of this,
+                    tomorrow.</span
+                  >
+                </p>
+              </div>
+              <div class="mood-row" aria-hidden="true">
+                <svg
+                  class=""
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M8 9h.01M16 9h.01M8 16q4-5 8 0" /></svg
+                ><svg
+                  class=""
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M8 9h.01M16 9h.01M8 15h8" /></svg
+                ><svg
+                  class=""
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M8 9h.01M16 9h.01M8 14q4 5 8 0" /></svg
+                ><svg
+                  class="active-face"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M8 9h.01M16 9h.01M8 14q4 5 8 0" /></svg
+                ><svg
+                  class=""
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M8 9h.01M16 9h.01M8 14q4 5 8 0" />
+                </svg>
+              </div>
+            </div>
+            <div class="feature-copy">
+              <div class="feature-number">02 / REFLECT</div>
+              <h3>
+                <span lang="ja">できたことも、気持ちも。</span
+                ><span lang="en">Keep a little of the day.</span>
+              </h3>
+              <p>
+                <span lang="ja"
+                  >5段階の気分と、短い日記。一日の終わりに、数字だけでは残せない自分のことを。</span
+                ><span lang="en"
+                  >A five-level mood check and a few words. Remember how your
+                  day felt, alongside what you did.</span
+                >
+              </p>
+            </div>
+          </article>
+          <article class="feature">
+            <div class="feature-visual">
+              <div class="chart-card">
+                <p class="chart-title">
+                  <span lang="ja">今週の達成率</span
+                  ><span lang="en">THIS WEEK</span>
+                </p>
+                <p class="chart-value">78<small>%</small></p>
+                <div class="bar-chart" aria-hidden="true">
+                  <i style="--bar: 40%"></i><i style="--bar: 65%"></i
+                  ><i style="--bar: 50%"></i><i style="--bar: 85%"></i
+                  ><i style="--bar: 70%"></i><i style="--bar: 90%"></i
+                  ><i style="--bar: 100%"></i>
+                </div>
+                <div class="chart-days" aria-hidden="true">
+                  <span>M</span><span>T</span><span>W</span><span>T</span
+                  ><span>F</span><span>S</span><span>S</span>
+                </div>
+              </div>
+              <p class="demo-caption">
+                <span lang="ja">統計表示のサンプル</span
+                ><span lang="en">Sample progress, for illustration</span>
+              </p>
+            </div>
+            <div class="feature-copy">
+              <div class="feature-number">03 / GROW</div>
+              <h3>
+                <span lang="ja">続けた日々を、見渡そう。</span
+                ><span lang="en">See how far you’ve come.</span>
+              </h3>
+              <p>
+                <span lang="ja"
+                  >カレンダーの緑、ストリーク、達成率。振り返ると、小さな積み重ねがちゃんと見えてきます。</span
+                ><span lang="en"
+                  >A greener calendar, your streaks, and completion rates. A
+                  quiet way to see the progress you’re making.</span
+                >
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="rhythm" id="how-it-works">
+        <div class="wrap rhythm-inner">
+          <div class="rhythm-copy">
+            <p class="section-kicker">02 — FIND YOUR RHYTHM</p>
+            <h2>
+              <span lang="ja">暮らしの中に、<br />心地よいリズムを。</span
+              ><span lang="en">Less keeping up.<br />More showing up.</span>
+            </h2>
+            <p>
+              <span lang="ja"
+                >忙しい日にも、ゆっくり過ごす日にも。<br />少しずつ積み重ねる、その時間を大切に。</span
+              ><span lang="en"
+                >For your busy days and your slower ones.<br />A simple rhythm
+                that leaves room for real life.</span
+              >
+            </p>
+          </div>
+          <div class="rhythm-steps">
+            <div class="rhythm-step">
+              <span class="step-number">01</span>
+              <div>
+                <h3>
+                  <span lang="ja">今日の「やりたい」を選ぶ。</span
+                  ><span lang="en">Choose your little things.</span>
+                </h3>
+                <p>
+                  <span lang="ja"
+                    >無理のない数で。自分のペースで始めましょう。</span
+                  ><span lang="en"
+                    >Pick a few things that matter to you. Keep it
+                    manageable.</span
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="rhythm-step">
+              <span class="step-number">02</span>
+              <div>
+                <h3>
+                  <span lang="ja">できたら、ひとつチェック。</span
+                  ><span lang="en">Do it. Check it. Feel good.</span>
+                </h3>
+                <p>
+                  <span lang="ja"
+                    >小さな達成を、カレンダーに残していきます。</span
+                  ><span lang="en"
+                    >Each completed task adds a little more green to your
+                    day.</span
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="rhythm-step">
+              <span class="step-number">03</span>
+              <div>
+                <h3>
+                  <span lang="ja">一日を、ひとこと振り返る。</span
+                  ><span lang="en">Leave a note for yourself.</span>
+                </h3>
+                <p>
+                  <span lang="ja">気分や気づきを記録して、また明日。</span
+                  ><span lang="en"
+                    >Capture a feeling or a thought. Tomorrow is another
+                    day.</span
+                  >
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section wrap privacy-section">
+        <div class="privacy-symbol" aria-hidden="true">
+          <svg
+            class=""
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z" />
+            <path d="m8 12 3 3 5-6" />
+          </svg>
+        </div>
+        <div>
+          <p class="section-kicker">03 — PERSONAL MEANS PERSONAL</p>
+          <h2>
+            <span lang="ja">あなたの毎日は、<br />あなただけのもの。</span
+            ><span lang="en"
+              >Your life. Your device.<br />Your little space.</span
+            >
+          </h2>
+          <p>
+            <span lang="ja"
+              >習慣も、気分も、ひとりごとのような日記も。アプリの記録はすべて、あなたの端末に保存されます。アカウントも、クラウド同期も、広告もありません。</span
+            ><span lang="en"
+              >Your habits, your moods, your notes to yourself. Everything you
+              record in the app stays on your device. No account, no cloud sync,
+              and no ads.</span
+            >
+          </p>
+          <a class="text-link" href="privacy-policy.html"
+            ><span lang="ja">プライバシーについて</span
+            ><span lang="en">Our privacy promise</span
+            ><svg
+              class=""
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14m-6-6 6 6-6 6" /></svg
+          ></a>
+        </div>
+      </section>
+      <section class="section wrap faq-layout" id="faq">
+        <div class="faq-title">
+          <p class="section-kicker">A FEW GOOD QUESTIONS</p>
+          <h2>
+            <span lang="ja">気になること。</span
+            ><span lang="en">Good to know.</span>
+          </h2>
+          <p>
+            <span lang="ja"
+              >ほかにもお困りごとがあれば、<br /><a href="support.html"
+                >サポートガイド</a
+              >へ。</span
+            ><span lang="en"
+              >A question we haven’t covered?<br />Visit our
+              <a href="support.html">support guide</a>.</span
+            >
+          </p>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>
+              <span lang="ja">アカウント登録は必要ですか？</span
+              ><span lang="en">Do I need an account?</span>
+            </summary>
+            <p>
+              <span lang="ja"
+                >いいえ。登録やログインなしで、そのまま使い始められます。</span
+              ><span lang="en"
+                >No. There’s no sign-up or login. Open Engage and start your
+                first day.</span
+              >
+            </p>
+          </details>
+          <details>
+            <summary>
+              <span lang="ja">インターネットがなくても使えますか？</span
+              ><span lang="en">Can I use Engage offline?</span>
+            </summary>
+            <p>
+              <span lang="ja"
+                >はい。タスク、気分、日記、統計はオフラインで利用できます。記録は端末内に保存されます。</span
+              ><span lang="en"
+                >Yes. Tasks, moods, journaling, and statistics work offline.
+                Your records stay on your device.</span
+              >
+            </p>
+          </details>
+          <details>
+            <summary>
+              <span lang="ja">データのバックアップはできますか？</span
+              ><span lang="en">Can I back up my data?</span>
+            </summary>
+            <p>
+              <span lang="ja"
+                >はい。アプリ内のバックアップ機能でエクスポート・インポートができます。機種変更やアプリの削除前にバックアップを保存してください。</span
+              ><span lang="en"
+                >Yes. Export and import your records with the in-app backup
+                feature. Save a backup before changing devices or deleting the
+                app.</span
+              >
+            </p>
+          </details>
+          <details>
+            <summary>
+              <span lang="ja">日本語と英語に対応していますか？</span
+              ><span lang="en"
+                >Is Engage available in Japanese and English?</span
+              >
+            </summary>
+            <p>
+              <span lang="ja"
+                >はい。アプリは日本語と英語に対応しています。このサイトも右上のJP
+                / ENで切り替えられます。</span
+              ><span lang="en"
+                >Yes. The app supports Japanese and English. You can also switch
+                this website using JP / EN in the header.</span
+              >
+            </p>
+          </details>
+        </div>
+      </section>
+      <section class="closing">
+        <div class="wrap closing-inner">
+          <div>
+            <p class="section-kicker">YOUR NEXT CHAPTER STARTS SMALL.</p>
+            <h2>
+              <span lang="ja">今日から、ひとつずつ。</span
+              ><span lang="en">A good day to begin.</span>
+            </h2>
+            <p>
+              <span lang="ja">なりたい自分へ。まずは、小さな一歩から。</span
+              ><span lang="en"
+                >Make a little room for the person you’re becoming.</span
+              >
+            </p>
+          </div>
+          <a
+            class="button store-button"
+            href="https://apps.apple.com/us/app/engage/id6760552941"
+            target="_blank"
+            rel="noopener noreferrer"
+            ><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M17.1 12.5c0-2 1.7-3 1.8-3.1-1-1.4-2.5-1.6-3-1.6-1.3-.1-2.5.8-3.1.8-.7 0-1.7-.8-2.7-.7-1.4 0-2.7.8-3.4 2-1.5 2.5-.4 6.2 1 8.3.7 1 1.5 2.1 2.6 2 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7s1.8-1 2.5-2c.8-1.2 1.1-2.3 1.1-2.3s-2.2-.9-2.2-3.4ZM15 6.2c.6-.7 1-1.6.9-2.6-.9 0-1.8.6-2.4 1.2-.6.7-1 1.6-.9 2.6.9 0 1.8-.5 2.4-1.2Z"
+              /></svg
+            ><span class="store-label"
+              ><small
+                ><span lang="ja">iPhoneではじめる</span
+                ><span lang="en">Download on the</span></small
+              ><span lang="ja">App Storeで入手</span
+              ><span lang="en">App Store</span></span
+            ><svg
+              class=""
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M7 17 17 7M7 7h10v10" /></svg
+          ></a>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <div class="footer-main">
+          <div>
+            <a
+              href="index.html"
+              class="brand footer-brand"
+              aria-label="Engage home"
+              ><img
+                src="assets/app-icon.png"
+                width="33"
+                height="33"
+                alt=""
+              />Engage<span class="brand-dot">.</span></a
+            >
+            <p class="footer-tagline">
+              <span lang="ja">自分のペースで、一日ずつ。</span
+              ><span lang="en">A little progress. A little more you.</span>
+            </p>
+          </div>
+          <nav class="footer-links" aria-label="Footer">
+            <a href="support.html"
+              ><span lang="ja">サポート</span><span lang="en">Support</span></a
+            ><a href="privacy-policy.html"
+              ><span lang="ja">プライバシーポリシー</span
+              ><span lang="en">Privacy policy</span></a
+            ><a
+              href="https://github.com/laststance/Engage"
+              target="_blank"
+              rel="noopener noreferrer"
+              >GitHub ↗</a
+            >
+          </nav>
+        </div>
+        <div class="footer-bottom">
+          <span>© 2026 Engage · Laststance.io</span
+          ><span>Made for your everyday.</span>
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>
