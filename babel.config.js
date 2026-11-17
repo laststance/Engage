@@ -16,8 +16,7 @@ module.exports = function (api) {
       [
         'module-resolver',
         {
-          root: ['./'],
-
+          // Explicit aliases cover this app; avoid legacy glob-root expansion with glob 14.
           alias: {
             '@': './',
             'tailwind.config': './tailwind.config.js',
