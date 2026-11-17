@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react'
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Keyboard, type LayoutChangeEvent, Platform, TextInput } from 'react-native'
 import { useTranslation } from 'react-i18next'
@@ -94,7 +95,7 @@ export const JournalInput: React.FC<JournalInputProps> = ({
   )}`
   const shouldShowKeyboardDoneButton = Platform.OS === 'ios'
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const textInputRef = useRef<TextInput>(null)
+  const textInputRef = useRef<ComponentRef<typeof TextInput>>(null)
   const lastPersistedTextRef = useRef(entry?.note || '')
   const textRef = useRef(entry?.note || '')
   const pendingSaveRef = useRef<{

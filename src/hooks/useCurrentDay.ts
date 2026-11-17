@@ -1,10 +1,10 @@
 import { useSyncExternalStore } from 'react'
-import { AppState, type AppStateStatus } from 'react-native'
+import { AppState } from 'react-native'
 import { getCurrentDate } from '@/src/utils/dateUtils'
 
 interface CurrentDaySnapshot {
   readonly date: string
-  readonly appState: AppStateStatus | null
+  readonly appState: typeof AppState.currentState
 }
 
 const listeners = new Set<() => void>()

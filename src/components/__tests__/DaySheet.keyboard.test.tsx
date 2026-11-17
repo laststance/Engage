@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react'
 import React, { useImperativeHandle } from 'react'
 import { act, cleanup, fireEvent, render } from '@testing-library/react-native'
 import { Keyboard, Platform, ScrollView, ScrollViewProps, View } from 'react-native'
@@ -9,7 +10,7 @@ const measureInWindow = jest.fn()
 const getNativeScrollRef = jest.fn()
 const scrollViewMock = ScrollView as unknown as {
   render: React.ForwardRefRenderFunction<
-    Pick<ScrollView, 'scrollTo' | 'scrollToEnd' | 'getNativeScrollRef'>,
+    Pick<ComponentRef<typeof ScrollView>, 'scrollTo' | 'scrollToEnd' | 'getNativeScrollRef'>,
     ScrollViewProps
   >
 }

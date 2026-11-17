@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Linking } from 'react-native'
 import * as Notifications from 'expo-notifications'
+import { IosAuthorizationStatus } from 'expo-notifications'
 import {
   DAILY_REMINDER_NOTIFICATION_ID,
   DEFAULT_REMINDER_HOUR,
@@ -68,15 +69,15 @@ export const getNotificationPermissionState = (
   if (
     permissions.granted ||
     permissions.status === 'granted' ||
-    permissions.ios?.status === Notifications.IosAuthorizationStatus.AUTHORIZED ||
-    permissions.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL
+    permissions.ios?.status === IosAuthorizationStatus.AUTHORIZED ||
+    permissions.ios?.status === IosAuthorizationStatus.PROVISIONAL
   ) {
     return 'enabled'
   }
 
   if (
     permissions.status === 'denied' ||
-    permissions.ios?.status === Notifications.IosAuthorizationStatus.DENIED
+    permissions.ios?.status === IosAuthorizationStatus.DENIED
   ) {
     return 'denied'
   }
