@@ -93,11 +93,10 @@ tags:
     notVisible:
       id: "preset-editor-close"
     timeout: 10000
-# session-tab-saved-today appears only after the debounced setItem resolves.
-- extendedWaitUntil:
-    visible:
-      id: "session-tab-saved-today"
-    timeout: 15000
+# Today was restored above and has not changed, so no new tab write is pending.
+# The editor closes only after the routine settings have been persisted.
+- assertVisible:
+    id: "today-screen"
 - launchApp:
     stopApp: true
 - waitForAnimationToEnd:
