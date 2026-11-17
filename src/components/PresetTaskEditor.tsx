@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react'
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import {
   Modal,
@@ -43,8 +44,8 @@ type PresetTaskEditorSessionProps = Omit<PresetTaskEditorProps, 'isVisible'>
 
 // RN exposes this host ref at runtime, but omits it from ScrollView's TS declaration.
 // Fabric measureLayout requires the host instance; getInnerViewNode returns a number.
-type PresetScrollView = ScrollView & {
-  getInnerViewRef: ScrollView['getNativeScrollRef']
+type PresetScrollView = ComponentRef<typeof ScrollView> & {
+  getInnerViewRef: ComponentRef<typeof ScrollView>['getNativeScrollRef']
 }
 
 interface EditingTask {
@@ -262,9 +263,9 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
   const [operationFeedback, setOperationFeedback] =
     useState<PresetEditorFeedback | null>(null)
   const taskListScrollViewRef = useRef<PresetScrollView>(null)
-  const taskTitleInputRefs = useRef<Record<number, TextInput | null>>({})
-  const taskMinutesInputRefs = useRef<Record<number, TextInput | null>>({})
-  const newCategoryInputRef = useRef<TextInput>(null)
+  const taskTitleInputRefs = useRef<Record<number, ComponentRef<typeof TextInput> | null>>({})
+  const taskMinutesInputRefs = useRef<Record<number, ComponentRef<typeof TextInput> | null>>({})
+  const newCategoryInputRef = useRef<ComponentRef<typeof TextInput>>(null)
   const presetMeasurementVersionRef = useRef(0)
   const pendingFooterRestoreFrameRef = useRef<
     ReturnType<typeof requestAnimationFrame> | null

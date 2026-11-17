@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Keyboard, KeyboardAvoidingView, LayoutChangeEvent, Platform, ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
@@ -96,7 +97,7 @@ const DaySheetSession: React.FC<DaySheetProps> = ({
   const triggerFeedback = useInteractionFeedback()
   const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingTaskIdRef = useRef<string | null>(null)
-  const scrollViewRef = useRef<ScrollView>(null)
+  const scrollViewRef = useRef<ComponentRef<typeof ScrollView>>(null)
   const journalOffsetRef = useRef(0)
   const journalWritingAreaBottomRef = useRef(Infinity)
   const keyboardLayoutVersionRef = useRef(0)

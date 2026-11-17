@@ -39,6 +39,10 @@ const createDailyReminder = (
     sound: null,
     subtitle: null,
     categoryIdentifier: null,
+    launchImageName: null,
+    badge: null,
+    attachments: [],
+    threadIdentifier: null,
   },
   trigger: {
     type: Notifications.SchedulableTriggerInputTypes.DAILY,
