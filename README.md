@@ -22,8 +22,11 @@ Engage is a React Native habit tracker built with Expo. It focuses on daily task
 - Maestro for E2E testing
 - Expo development and E2E scripts pin Metro to port 8090.
 
+On a fresh Node.js installation, run these commands from the repository root.
+
 ```bash
-corepack enable
+npm install --global corepack
+corepack enable pnpm
 pnpm install
 ```
 
@@ -109,7 +112,7 @@ website/                Static support and privacy pages published by GitHub Pag
 - See [iPhone Duo readiness](docs/iphone-duo-readiness.md) for display configuration, native validation, and screenshot submission requirements.
 - See [App Store metadata](store-assets/app-store-metadata.md) for the current iOS release details and Japanese update notes.
 - See the [Maestro E2E guide](maestro/README.md) for suite and selector details, and [dependency patches](patches/README.md) for patched package behavior.
-- Keep native package versions compatible with Expo SDK 57. Use `pnpm exec expo install --check` before merging dependency updates.
+- Keep native package versions compatible with Expo SDK 58. Use `pnpm exec expo install --check` before merging dependency updates.
 - Regenerate ignored `ios/` and `android/` projects with `pnpm exec expo prebuild --clean` after an SDK change; inspect local native customizations first because clean prebuild replaces those directories.
 - Keep Tailwind on v3 while using NativeWind 4.x.
 - Keep task assignment and completion separate: `completed=false` means assigned, `completed=true` means done.
