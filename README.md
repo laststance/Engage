@@ -4,9 +4,9 @@ Engage is a React Native habit tracker built with Expo. It focuses on daily task
 
 ## Stack
 
-- Expo SDK 57
-- React Native 0.86
-- React 19.2
+- Expo SDK 58
+- React Native 0.88
+- React 19.3
 - Expo Router
 - SQLite via `expo-sqlite`
 - Redux Toolkit
@@ -16,14 +16,21 @@ Engage is a React Native habit tracker built with Expo. It focuses on daily task
 
 ## Requirements
 
-- Node.js 24.19.0
-- pnpm 11.13.1 through Corepack
-- Xcode 27.1 for iPhone Duo validation and production builds (Expo SDK 57 itself requires Xcode 26.4 or newer)
+- Node.js 26.13.1
+- pnpm 12.21.0 through Corepack
+- Xcode 27.1 for iPhone Duo validation and production builds
 - Maestro for E2E testing
 - Expo development and E2E scripts pin Metro to port 8090.
 
+If `pnpm --version` already reports 12.21.0 in the repository root, run `pnpm install`.
+
+To set up Corepack, use a Node.js installation with a writable npm global directory, such as one managed by nvm.
+If you are replacing npm-installed copies of Yarn or pnpm with Corepack, remove them first with `npm uninstall --global yarn pnpm`.
+Then run these commands from the repository root.
+
 ```bash
-corepack enable
+npm install --global corepack
+corepack enable pnpm
 pnpm install
 ```
 
@@ -109,7 +116,7 @@ website/                Static support and privacy pages published by GitHub Pag
 - See [iPhone Duo readiness](docs/iphone-duo-readiness.md) for display configuration, native validation, and screenshot submission requirements.
 - See [App Store metadata](store-assets/app-store-metadata.md) for the current iOS release details and Japanese update notes.
 - See the [Maestro E2E guide](maestro/README.md) for suite and selector details, and [dependency patches](patches/README.md) for patched package behavior.
-- Keep native package versions compatible with Expo SDK 57. Use `pnpm exec expo install --check` before merging dependency updates.
+- Keep native package versions compatible with Expo SDK 58. Use `pnpm exec expo install --check` before merging dependency updates.
 - Regenerate ignored `ios/` and `android/` projects with `pnpm exec expo prebuild --clean` after an SDK change; inspect local native customizations first because clean prebuild replaces those directories.
 - Keep Tailwind on v3 while using NativeWind 4.x.
 - Keep task assignment and completion separate: `completed=false` means assigned, `completed=true` means done.
