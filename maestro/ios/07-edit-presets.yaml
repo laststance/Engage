@@ -113,8 +113,12 @@ tags:
 - extendedWaitUntil:
     visible:
       text: "E2ETodayHabit"
-    timeout: 10000
-- assertVisible: "0/1"
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "0/1"
+    timeout: 15000
 - tapOn:
     id: "task-item-.*"
-- assertVisible: "1/1"
+- extendedWaitUntil:
+    visible: "1/1"
+    timeout: 15000

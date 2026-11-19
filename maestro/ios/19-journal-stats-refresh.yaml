@@ -32,8 +32,9 @@ tags:
 # Assert: scroll to the journal count so the check also works on short screens.
 - scrollUntilVisible:
     element:
-      text: "1/7 days"
-      below: "Days with a Journal Entry"
+      id: "stats-journal-days"
+      containsDescendants:
+        - text: "1/7 days"
     direction: DOWN
 # Wait for the tab write before asserting its restoration after relaunch.
 - extendedWaitUntil:
