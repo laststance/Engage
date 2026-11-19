@@ -6,13 +6,7 @@ tags:
 # QA-03: Task Selection
 # Manual redundancy check; QA-04 and QA-10 cover this setup in the main suite.
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 # Navigate to Today tab
 - tapOn: "today-tab"

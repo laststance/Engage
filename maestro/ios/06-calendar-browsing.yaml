@@ -5,13 +5,7 @@ tags:
 # QA-06: Calendar Browsing
 # Verifies month navigation and date tap opening DayModal
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 # Tap previous month
 - tapOn:

@@ -4,12 +4,7 @@ tags:
 ---
 # Regression: the writing area must stay between the fixed header and keyboard.
 # Header ordering and fixed editor height detect scrolling and growth regressions.
-- launchApp:
-    clearState: true
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 - tapOn:
     id: "calendar-date-.*-15"
     retryTapIfNoChange: false

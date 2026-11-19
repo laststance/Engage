@@ -4,15 +4,7 @@ tags:
 ---
 # QA-16: redux-storage-middleware restores the last tab from AsyncStorage.
 # The first launch clears state. clearState: false appears only on the relaunch.
-- launchApp:
-    clearState: true
-- waitForAnimationToEnd:
-    timeout: 3000
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 15000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 - tapOn: "stats-tab"
 

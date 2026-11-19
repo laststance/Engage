@@ -6,13 +6,7 @@ tags:
 # QA-08: Statistics
 # Manual redundancy check; component tests cover the toggle and QA-02 covers tab reachability.
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 # Navigate to Stats tab
 - tapOn: "stats-tab"

@@ -6,13 +6,7 @@ tags:
 # QA-09: Settings Navigation
 # Manual redundancy check; QA-11 covers the Settings > Backup path in the main suite.
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 # Navigate to Stats tab
 - tapOn: "stats-tab"

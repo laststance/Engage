@@ -5,13 +5,7 @@ tags:
 # QA-11: Backup Creation
 # Verifies backup creation succeeds without Expo FileSystem deprecation errors.
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 # Navigate to Settings > Data Backup
 - tapOn: "stats-tab"

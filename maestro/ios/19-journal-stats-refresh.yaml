@@ -4,12 +4,7 @@ tags:
 ---
 # Regression: a previously visited Stats tab must reflect a newly saved journal.
 # Arrange: visit Stats before the store entry changes.
-- launchApp:
-    clearState: true
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 15000
+- runFlow: ../shared/launch-clean-calendar.yaml
 - tapOn: "stats-tab"
 - assertVisible:
     id: "stats-screen"

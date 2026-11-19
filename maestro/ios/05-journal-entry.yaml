@@ -5,13 +5,7 @@ tags:
 # QA-05: Journal Entry
 # Verifies journal text input and character count
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 # Navigate to Today tab
 - tapOn: "today-tab"

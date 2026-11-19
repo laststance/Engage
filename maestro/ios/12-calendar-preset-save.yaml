@@ -5,13 +5,7 @@ tags:
 # QA-12: Calendar Preset Save
 # Verifies saving presets dismisses only the editor and keeps DayModal visible.
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 # Open a calendar date so PresetTaskEditor is presented above DayModal.
 - tapOn:
