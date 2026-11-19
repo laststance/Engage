@@ -4,9 +4,9 @@ Engage is a React Native habit tracker built with Expo. It focuses on daily task
 
 ## Stack
 
-- Expo SDK 57
-- React Native 0.86
-- React 19.2
+- Expo SDK 58
+- React Native 0.88
+- React 19.3
 - Expo Router
 - SQLite via `expo-sqlite`
 - Redux Toolkit
@@ -16,9 +16,9 @@ Engage is a React Native habit tracker built with Expo. It focuses on daily task
 
 ## Requirements
 
-- Node.js 24.19.0
-- pnpm 11.13.1 through Corepack
-- Xcode 27.1 for iPhone Duo validation and production builds (Expo SDK 57 itself requires Xcode 26.4 or newer)
+- Node.js 26.13.1
+- pnpm 12.21.0 through Corepack
+- Xcode 27.1 for iPhone Duo validation and production builds
 - Maestro for E2E testing
 - Expo development and E2E scripts pin Metro to port 8090.
 

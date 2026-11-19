@@ -1,5 +1,13 @@
 # Dependency compatibility
 
+## November 19, 2026
+
+Expo SDK 58.0.26 runs with React Native 0.88.1 and React 19.3.1 in this project. The refresh uses Node 26.13.1, pnpm 12.21.0, and Maestro 2.12.1. The 24-hour release-age policy applies to the regenerated lockfile.
+
+NativeWind 4.2.7 requires Tailwind CSS 3.4.19. Its Metro integration rejects Tailwind CSS 4 when exporting the iOS bundle. The Expo compatibility check also reports six existing version differences for AsyncStorage, React, React DOM, Gesture Handler, SVG, and Worklets. These packages retain the versions already used by the app.
+
+## October 2026 verification history
+
 `pnpm upgrade --latest` was applied for the October 2026 refresh. The newest stable
 Expo release is SDK 57, which targets React Native 0.86 and React 19.2. The app
 keeps Expo's supported runtime versions for React, React Native, AsyncStorage,

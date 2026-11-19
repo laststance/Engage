@@ -44,7 +44,7 @@ pnpm test:e2e:production:single maestro/ios/06-calendar-browsing.yaml
 
 ### Journal viewport regression
 
-Use Maestro CLI **2.11.0**, also pinned in the iOS workflow. Run the viewport flow
+Use Maestro CLI **2.12.1**, also pinned in the iOS workflow. Run the viewport flow
 on a compact iPhone as well as the current iOS runtime:
 
 ```bash

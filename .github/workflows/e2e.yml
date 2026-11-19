@@ -59,7 +59,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '26.12.1'
+          node-version: '26.13.1'
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -67,7 +67,7 @@ jobs:
 
       - name: Install Maestro
         env:
-          MAESTRO_VERSION: 2.11.0
+          MAESTRO_VERSION: 2.12.1
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "${HOME}/.maestro/bin" >> "$GITHUB_PATH"
