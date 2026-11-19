@@ -5,14 +5,7 @@ tags:
 # QA-07: Edit Presets
 # Verifies Edit Presets button opens PresetTaskEditor with expected elements
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    # A cold simulator's first accessibility snapshot can take over 20 seconds.
-    timeout: 30000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 # Navigate to Today tab
 - tapOn: "today-tab"

@@ -3,14 +3,7 @@ tags:
   - ios
 ---
 # QA-15: Run on a compact iPhone or with accessibility text sizes to protect the lower calendar content.
-- launchApp:
-    clearState: true
-- waitForAnimationToEnd:
-    timeout: 5000
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 15000
+- runFlow: ../shared/launch-clean-calendar.yaml
 - scrollUntilVisible:
     element:
       id: "calendar-monthly-summary-hint"

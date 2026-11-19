@@ -5,13 +5,7 @@ tags:
 # QA-10: Data Persistence
 # Verifies completed task state survives app restart
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 # Navigate to Today tab
 - tapOn: "today-tab"

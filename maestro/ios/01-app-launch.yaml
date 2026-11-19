@@ -6,13 +6,7 @@ tags:
 # QA-01: App Launch
 # Fast smoke check for launch-only diagnosis; the main suite covers launch via navigation.
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 - assertVisible:
     id: "calendar-title"

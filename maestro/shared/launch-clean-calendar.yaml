@@ -1,0 +1,12 @@
+appId: com.laststance.engage
+---
+- launchApp:
+    clearState: true
+# The first XCTest accessibility snapshot can take over 20 seconds on a cold runner.
+- extendedWaitUntil:
+    visible:
+      id: "calendar-screen"
+    timeout: 45000
+# Let the native launch transition settle before the first interaction.
+- waitForAnimationToEnd:
+    timeout: 5000

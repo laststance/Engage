@@ -3,14 +3,7 @@ tags:
   - ios
 ---
 # QA-13: A routine switch persists only after saving the preset editor.
-- launchApp:
-    clearState: true
-- waitForAnimationToEnd:
-    timeout: 5000
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 - tapOn:
     id: "today-tab"
 - tapOn:

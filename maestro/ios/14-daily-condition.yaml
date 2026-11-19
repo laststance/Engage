@@ -4,16 +4,22 @@ tags:
 ---
 # QA-14: One-tap conditions persist and remain independent from journal text.
 # iOS exposes React Native radio state in its accessibility value, not Maestro's checked flag.
-- launchApp:
-    clearState: true
-- waitForAnimationToEnd:
-    timeout: 5000
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 15000
-- tapOn:
-    id: "today-tab"
+- runFlow: ../shared/launch-clean-calendar.yaml
+# A cold runner can acknowledge the tab tap while Calendar is still on screen.
+- retry:
+    maxRetries: 1
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "calendar-screen"
+          commands:
+            - tapOn:
+                id: "today-tab"
+      - extendedWaitUntil:
+          visible:
+            id: "today-screen"
+          timeout: 15000
 - assertVisible:
     id: "condition-option-1"
 - assertVisible:

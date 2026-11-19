@@ -5,13 +5,7 @@ tags:
 # QA-04: Task Completion
 # Verifies tapping a task item toggles its completion state
 
-- launchApp:
-    clearState: true
-
-- extendedWaitUntil:
-    visible:
-      id: "calendar-screen"
-    timeout: 10000
+- runFlow: ../shared/launch-clean-calendar.yaml
 
 # Navigate to Today tab
 - tapOn: "today-tab"
