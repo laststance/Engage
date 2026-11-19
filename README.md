@@ -22,7 +22,11 @@ Engage is a React Native habit tracker built with Expo. It focuses on daily task
 - Maestro for E2E testing
 - Expo development and E2E scripts pin Metro to port 8090.
 
-On a fresh Node.js installation, run these commands from the repository root.
+If `pnpm --version` already reports 12.21.0 in the repository root, run `pnpm install`.
+
+To set up Corepack, use a Node.js installation with a writable npm global directory, such as one managed by nvm.
+If you are replacing npm-installed copies of Yarn or pnpm with Corepack, remove them first with `npm uninstall --global yarn pnpm`.
+Then run these commands from the repository root.
 
 ```bash
 npm install --global corepack
