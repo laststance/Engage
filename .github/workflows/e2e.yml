@@ -41,13 +41,14 @@ jobs:
   e2e-ios:
     name: E2E Tests (iOS)
     runs-on: macos-26
-    timeout-minutes: 60
+    # A cold arm64 Release build can take 40 minutes before Maestro starts.
+    timeout-minutes: 90
     env:
       APP_READY_WAIT_SECONDS: 60
       BUILD_POLL_INTERVAL_SECONDS: 15
       E2E_BUILD_LOG: e2e-build.log
       E2E_BUILD_READY_TEXT: Opening com.laststance.engage
-      MAX_BUILD_WAIT_SECONDS: 2400
+      MAX_BUILD_WAIT_SECONDS: 3000
 
     steps:
       - name: Checkout code

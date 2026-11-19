@@ -11,7 +11,8 @@ tags:
 - extendedWaitUntil:
     visible:
       id: "calendar-screen"
-    timeout: 10000
+    # A cold simulator's first accessibility snapshot can take over 20 seconds.
+    timeout: 30000
 
 # Navigate to Today tab
 - tapOn: "today-tab"
@@ -86,7 +87,9 @@ tags:
     notVisible:
       id: "preset-editor-close"
     timeout: 10000
-- assertNotVisible: "E2EStableTask"
+- assertNotVisible:
+    id: "task-item-.*"
+    text: "E2EStableTask .*"
 
 # A new preset saved from Today's editor appears in the day's list immediately.
 - tapOn:
@@ -112,13 +115,20 @@ tags:
     id: "preset-editor-save"
 - extendedWaitUntil:
     visible:
-      text: "E2ETodayHabit"
+      id: "task-item-.*"
+      text: "E2ETodayHabit Not completed"
     timeout: 15000
 - extendedWaitUntil:
     visible: "0/1"
     timeout: 15000
 - tapOn:
     id: "task-item-.*"
+    text: "E2ETodayHabit Not completed"
+- extendedWaitUntil:
+    visible:
+      id: "task-item-.*"
+      text: "E2ETodayHabit Completed"
+    timeout: 15000
 - extendedWaitUntil:
     visible: "1/1"
     timeout: 15000
