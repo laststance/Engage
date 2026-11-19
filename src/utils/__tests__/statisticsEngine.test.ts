@@ -78,6 +78,29 @@ const mockEntries: Record<string, Entry> = {
 
 describe('statisticsEngine', () => {
   describe('calculateStreakDays', () => {
+    test('keeps the current streak when a future habit is already checked off', () => {
+      // Arrange
+      const completions = {
+        ...mockCompletions,
+        '2025-01-21': [
+          {
+            id: 'future',
+            date: '2025-01-21',
+            taskId: 'task1',
+            completed: true,
+            createdAt: 0,
+          },
+        ],
+      }
+
+      // Act
+      const result = calculateStreakDays(completions, '2025-01-19')
+
+      // Assert
+      expect(result.currentStreak).toBe(1)
+      expect(result.streakDates).toEqual(['2025-01-19'])
+    })
+
     test('should calculate current streak correctly', () => {
       const result = calculateStreakDays(mockCompletions, '2025-01-19')
 
@@ -159,7 +182,7 @@ describe('statisticsEngine', () => {
   })
 
   describe('calculateCategoryBreakdown', () => {
-    test('should calculate category breakdown correctly', () => {
+    test('counts only scheduled task-days in each category', () => {
       const breakdown = calculateCategoryBreakdown(
         mockTasks,
         mockCompletions,
@@ -169,15 +192,15 @@ describe('statisticsEngine', () => {
       )
 
       expect(breakdown.business.completed).toBe(2) // task1 completed on 15th and 16th
-      expect(breakdown.business.total).toBe(3) // 1 task * 3 days
+      expect(breakdown.business.total).toBe(2)
       expect(breakdown.life.completed).toBe(2) // task2 completed on 15th and 17th
-      expect(breakdown.life.total).toBe(3) // 1 task * 3 days
+      expect(breakdown.life.total).toBe(2)
     })
 
-    test('should handle empty categories', () => {
+    test('shows zero counts in categories without scheduled habits', () => {
       const breakdown = calculateCategoryBreakdown(
-        [],
-        mockCompletions,
+        mockTasks,
+        {},
         mockCategories,
         '2025-01-15',
         '2025-01-17'

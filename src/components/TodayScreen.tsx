@@ -7,7 +7,7 @@ import { PresetTaskEditor } from '@/src/components/PresetTaskEditor'
 import { TodayScreenErrorBoundary } from '@/src/components/TodayScreenErrorBoundary'
 import { OperationFeedback } from '@/src/components/OperationFeedback'
 import { useAppStore } from '@/src/stores/app-store'
-import type { Task } from '@/src/types'
+import type { NewPresetTodayAssignment, Task } from '@/src/types'
 import { useDayView } from '@/src/hooks/useDayView'
 import { useCurrentDay } from '@/src/hooks/useCurrentDay'
 
@@ -87,12 +87,13 @@ function TodayScreenContent() {
   /**
    * Persists edited presets and closes the editor after its Save action succeeds.
    * @param tasks - The complete preset task list submitted by PresetTaskEditor.
+   * @param todayAssignment - The new presets to assign and the local date at Save.
    * @returns A promise that settles after presets are stored and the editor closes.
    * @example
    * await handlePresetEditorSave(updatedTasks)
    */
-  const handlePresetEditorSave = async (tasks: Task[]) => {
-    await day.handleUpdatePresets(tasks)
+  const handlePresetEditorSave = async (tasks: Task[], todayAssignment?: NewPresetTodayAssignment) => {
+    await day.handleUpdatePresets(tasks, todayAssignment)
     setPresetEditorVisible(false)
   }
 
@@ -150,6 +151,7 @@ function TodayScreenContent() {
 
       {/* Keep the editor beside TaskPicker so iOS receives at most two nested modals. */}
       <PresetTaskEditor
+        offerAddToToday
         isVisible={isPresetEditorVisible}
         tasks={day.allTasks}
         categories={day.categories}

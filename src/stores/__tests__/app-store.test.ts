@@ -165,6 +165,78 @@ describe('useAppStore', () => {
       expect(state.error).toBeNull()
     })
 
+    test('retains future scheduled habits after reopening across the year boundary', async () => {
+      // Arrange
+      jest.useFakeTimers()
+      try {
+        jest.setSystemTime(new Date(2026, 11, 30, 9))
+        const savedRecords: Completion[] = [
+          {
+            ...mockCompletions[0],
+            id: 'dec-start',
+            date: '2026-12-01',
+            completed: false,
+          },
+          {
+            ...mockCompletions[0],
+            id: 'dec-today',
+            date: '2026-12-30',
+          },
+          {
+            ...mockCompletions[0],
+            id: 'dec-future',
+            date: '2026-12-31',
+            completed: false,
+          },
+          {
+            ...mockCompletions[0],
+            id: 'jan-future',
+            date: '2027-01-02',
+            completed: false,
+          },
+          {
+            ...mockCompletions[0],
+            id: 'jan-later',
+            date: '2027-01-25',
+            completed: false,
+          },
+        ]
+        jest.mocked(categoryRepository.findAll).mockResolvedValue(mockCategories)
+        jest.mocked(taskRepository.findAll).mockResolvedValue(mockTasks)
+        jest.mocked(entryRepository.findAll).mockResolvedValue([])
+        jest.mocked(completionRepository.findByDateRange).mockImplementation(
+          async (start, end) => savedRecords.filter(
+            ({ date }) => date >= start && (end === undefined || date <= end)
+          )
+        )
+        useAppStore.setState({
+          completions: Object.fromEntries(
+            savedRecords.map((record) => [record.date, [record]])
+          ),
+        })
+
+        const { getStatsForPeriod, loadData } = useAppStore.getState()
+        expect(getStatsForPeriod('week')).toMatchObject({ totalTasks: 1, assignedTasks: 3 })
+        expect(getStatsForPeriod('month')).toMatchObject({ totalTasks: 1, assignedTasks: 3 })
+
+        // Act: clear in-memory data and reload the persisted records.
+        useAppStore.setState({ completions: {} })
+        await loadData()
+
+        // Assert: both December and its final week retain their saved plans.
+        expect(getStatsForPeriod('week')).toMatchObject({ totalTasks: 1, assignedTasks: 3 })
+        expect(getStatsForPeriod('month')).toMatchObject({ totalTasks: 1, assignedTasks: 3 })
+
+        // Act: advance the local clock without reopening the app.
+        jest.setSystemTime(new Date(2027, 0, 1, 9))
+
+        // Assert: January includes plans beyond the week that spans both months.
+        expect(getStatsForPeriod('month')).toMatchObject({ totalTasks: 0, assignedTasks: 2 })
+      } finally {
+        jest.useRealTimers()
+      }
+    })
+
     test('should handle loading errors', async () => {
       const error = new Error('Database error')
       ;(categoryRepository.findAll as jest.Mock).mockRejectedValue(error)

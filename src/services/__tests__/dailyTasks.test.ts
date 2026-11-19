@@ -3,8 +3,10 @@ import { DatabaseSync, SQLInputValue } from 'node:sqlite'
 import * as SQLite from 'expo-sqlite'
 import * as FileSystem from 'expo-file-system/legacy'
 import * as DocumentPicker from 'expo-document-picker'
-import { DatabaseService } from '@/src/services/database'
+import { DatabaseService, databaseService as appDatabaseService } from '@/src/services/database'
+import { useAppStore } from '@/src/stores/app-store'
 import { backupService, initializeBackupService } from '@/src/services/backupService'
+import { calculateWeeklyStats } from '@/src/utils/statisticsEngine'
 
 describe('daily routine persistence with real SQLite', () => {
   let sqliteDatabase: DatabaseSync
@@ -36,6 +38,92 @@ describe('daily routine persistence with real SQLite', () => {
   afterEach(() => {
     sqliteDatabase.close()
     jest.clearAllMocks()
+  })
+
+  test('creates and assigns only selected new presets today through an atomic save that can be retried', async () => {
+    // Arrange
+    const previousStoreState = useAppStore.getState()
+    try {
+      await appDatabaseService.initialize()
+      const finishedTask = await appDatabaseService.createTask({
+        title: 'Finished', categoryId: 'life', archived: false,
+      })
+      const finishedAssignment = await appDatabaseService.createCompletion({
+        date: '2026-09-05', taskId: finishedTask.id, completed: true,
+      })
+      const excludedRoutine = await appDatabaseService.createTask({
+        title: 'Excluded routine', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-05',
+      })
+      await appDatabaseService.applyDailyTasks('2026-09-05')
+      await appDatabaseService.deleteCompletion('2026-09-05', excludedRoutine.id)
+      useAppStore.setState({
+        tasks: [finishedTask, excludedRoutine],
+        // Today is relative to the local clock even if the calendar has another date selected.
+        selectedDate: '2026-09-03',
+        completions: { '2026-09-05': [finishedAssignment] },
+      })
+      const todayAssignment = { date: '2026-09-05', draftTaskIds: ['read-draft'] }
+      const drafts = [
+        { ...finishedTask, title: 'Edited finished task' },
+        excludedRoutine,
+        { ...finishedTask, id: 'read-draft', title: 'Read' },
+        { ...finishedTask, id: 'walk-draft', title: 'Walk', dailyAutoAddFrom: '2026-09-06' },
+      ]
+      sqliteDatabase.exec(`
+        CREATE TRIGGER fail_new_assignment BEFORE INSERT ON completions
+        BEGIN SELECT RAISE(ABORT, 'Cannot assign task'); END;
+      `)
+
+      // Act / Assert: an assignment failure rolls back preset creation and edits.
+      await expect(useAppStore.getState().updatePresetTasks(drafts, todayAssignment))
+        .rejects.toThrow('Transaction failed')
+      expect((await databaseService.getAllTasks()).map((task) => task.title).sort())
+        .toEqual(['Excluded routine', 'Finished'])
+      expect(useAppStore.getState().completions['2026-09-05']).toEqual([finishedAssignment])
+
+      // Act / Assert: a snapshot read failure also rolls back successful writes.
+      sqliteDatabase.exec('DROP TRIGGER fail_new_assignment')
+      const failSnapshot = jest.spyOn(appDatabaseService, 'getAllTasks')
+        .mockRejectedValueOnce(new Error('Cannot read saved tasks'))
+      try {
+        await expect(useAppStore.getState().updatePresetTasks(drafts, todayAssignment))
+          .rejects.toThrow('Transaction failed')
+        expect((await databaseService.getAllTasks()).map((task) => task.title).sort())
+          .toEqual(['Excluded routine', 'Finished'])
+        expect(await databaseService.getCompletions('2026-09-05')).toHaveLength(1)
+      } finally {
+        failSnapshot.mockRestore()
+      }
+
+      // Act: retry after the failures clear.
+      await useAppStore.getState().updatePresetTasks(drafts, todayAssignment)
+
+      // Assert: assignments point to saved IDs and survive a reload or routine refresh.
+      const savedTasks = await databaseService.getAllTasks()
+      const reading = savedTasks.find((task) => task.title === 'Read')
+      expect(reading?.id).toBeDefined()
+      expect(reading?.id).not.toBe('read-draft')
+      const today = await appDatabaseService.applyDailyTasks('2026-09-05')
+      expect(today).toHaveLength(2)
+      expect(today).toEqual(expect.arrayContaining([
+        expect.objectContaining({ taskId: finishedTask.id, completed: true }),
+        expect.objectContaining({ taskId: reading?.id, completed: false }),
+      ]))
+      expect(useAppStore.getState().completions['2026-09-05']).toEqual([
+        finishedAssignment,
+        expect.objectContaining({ taskId: reading?.id, completed: false }),
+      ])
+      expect(useAppStore.getState().tasks).toEqual(savedTasks)
+      expect(await databaseService.getCompletions('2026-09-03')).toEqual([])
+      expect(await databaseService.getCompletions('2026-09-06')).toEqual([])
+      const tomorrow = await appDatabaseService.applyDailyTasks('2026-09-06')
+      const taskNames = tomorrow.map((assignment) =>
+        savedTasks.find((task) => task.id === assignment.taskId)?.title
+      )
+      expect(taskNames.sort()).toEqual(['Excluded routine', 'Walk'])
+    } finally {
+      useAppStore.setState(previousStoreState)
+    }
   })
 
   test('keeps existing tasks opted out when upgrading the database from version 3', async () => {
@@ -159,6 +247,38 @@ describe('daily routine persistence with real SQLite', () => {
     expect(today).toEqual([])
     expect(tomorrow).toHaveLength(1)
     expect(tomorrow[0]).toMatchObject({ taskId: routine.id, date: '2026-09-07', completed: false })
+  })
+
+  test('keeps completed and pending archived habits in the category totals', async () => {
+    // Arrange
+    const routine = await databaseService.createTask({
+      title: 'Read', categoryId: 'life', archived: false, dailyAutoAddFrom: '2026-09-06',
+    })
+    await databaseService.applyDailyTasks('2026-09-06')
+    await databaseService.toggleCompletion('2026-09-06', routine.id)
+    await databaseService.applyDailyTasks('2026-09-07')
+    await databaseService.updateTask(routine.id, { archived: true })
+
+    // Act
+    const tasks = await databaseService.getAllTasks()
+    const completed = await databaseService.getCompletions('2026-09-06')
+    const pending = await databaseService.getCompletionsByDateRange('2026-09-07')
+    const stats = calculateWeeklyStats(
+      tasks,
+      { '2026-09-06': completed, '2026-09-07': pending },
+      {},
+      [{ id: 'life', name: 'Life' }],
+      '2026-09-06',
+      '2026-09-12'
+    )
+
+    // Assert
+    expect(tasks).toEqual([])
+    expect(stats).toMatchObject({
+      totalTasks: 1,
+      assignedTasks: 2,
+      categoryBreakdown: { life: { completed: 1, total: 2 } },
+    })
   })
 
   test('adds the next day even when yesterday remains unfinished', async () => {

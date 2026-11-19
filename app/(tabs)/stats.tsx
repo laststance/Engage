@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { AppPressable } from '@/src/components/AppPressable'
 import { AppScreen } from '@/src/components/AppScreen'
 import { Statistics } from '@/src/components/Statistics'
+import { useCurrentDay } from '@/src/hooks/useCurrentDay'
 import { useAppStore } from '@/src/stores/app-store'
 
 export default function StatsScreen() {
@@ -13,6 +14,8 @@ export default function StatsScreen() {
   const { t } = useTranslation()
   const { categories, getStatsForPeriod } = useAppStore()
 
+  // Recalculate the periods at local midnight even if the stored records are unchanged.
+  useCurrentDay()
   const weeklyStats = getStatsForPeriod('week')
   const monthlyStats = getStatsForPeriod('month')
 

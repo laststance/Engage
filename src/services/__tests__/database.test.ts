@@ -459,9 +459,39 @@ describe('DatabaseService', () => {
 
         expect(result).toHaveLength(2)
         expect(mockDb.getAllAsync).toHaveBeenCalledWith(
-          'SELECT * FROM completions WHERE date >= ? AND date <= ? ORDER BY date DESC, created_at DESC',
+          `SELECT completions.*, tasks.category_id AS task_category_id
+         FROM completions LEFT JOIN tasks ON tasks.id = completions.task_id
+         WHERE completions.date >= ? AND completions.date <= ? ORDER BY completions.date DESC, completions.created_at DESC`,
           ['2024-01-15', '2024-01-16']
         )
+      })
+
+      test('loads future task assignments when there is no end date', async () => {
+        // Arrange
+        mockDb.getAllAsync.mockResolvedValue([
+          {
+            id: 'future-assignment',
+            date: '2027-01-02',
+            task_id: 'task1',
+            task_category_id: 'life',
+            completed: 0,
+            created_at: 0,
+          },
+        ])
+
+        // Act
+        const result = await databaseService.getCompletionsByDateRange('2026-11-30')
+
+        // Assert
+        expect(mockDb.getAllAsync).toHaveBeenCalledWith(
+          `SELECT completions.*, tasks.category_id AS task_category_id
+         FROM completions LEFT JOIN tasks ON tasks.id = completions.task_id
+         WHERE completions.date >= ? ORDER BY completions.date DESC, completions.created_at DESC`,
+          ['2026-11-30']
+        )
+        expect(result).toMatchObject([
+          { date: '2027-01-02', completed: false, taskCategoryId: 'life' },
+        ])
       })
     })
   })
