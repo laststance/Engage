@@ -345,6 +345,9 @@ importers:
         specifier: ^3.4.19
         version: 3.4.19
     devDependencies:
+      '@babel/plugin-transform-react-jsx':
+        specifier: 7.29.7
+        version: 7.29.7(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
       '@eslint/compat':
         specifier: ^2.1.1
         version: 2.1.1(eslint@10.15.0(jiti@1.21.7)(supports-color@8.1.1))
