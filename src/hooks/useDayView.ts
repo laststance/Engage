@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useAppStore } from '@/src/stores/app-store'
-import { ConditionLevel, Task } from '@/src/types'
+import type { ConditionLevel } from '@/src/types'
 import { getCurrentDate } from '@/src/utils/dateUtils'
 
 /**
@@ -94,11 +94,6 @@ export function useDayView(date: string) {
     [date, addTasksToDate],
   )
 
-  const handleUpdatePresets = useCallback(
-    async (tasks: Task[]) => updatePresetTasks(tasks),
-    [updatePresetTasks],
-  )
-
   /**
    * Deletes one preset from every day view when TaskPicker's swipe action is confirmed.
    * @param taskId - The persisted preset task ID to remove.
@@ -135,7 +130,7 @@ export function useDayView(date: string) {
     handleTaskSelectionPress,
     handleTaskPickerClose,
     handleTaskSelect,
-    handleUpdatePresets,
+    handleUpdatePresets: updatePresetTasks,
     handleDeletePresetTask,
     handleCreateCategory,
   }

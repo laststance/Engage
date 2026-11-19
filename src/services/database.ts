@@ -756,7 +756,9 @@ class DatabaseService {
     try {
       this.validateDate(date)
       const result = await this.executeQuery<any>(
-        'SELECT * FROM completions WHERE date = ? ORDER BY created_at DESC',
+        `SELECT completions.*, tasks.category_id AS task_category_id
+         FROM completions LEFT JOIN tasks ON tasks.id = completions.task_id
+         WHERE completions.date = ? ORDER BY completions.created_at DESC`,
         [date]
       )
       return result.map(this.mapRowToCompletion)
@@ -765,17 +767,34 @@ class DatabaseService {
     }
   }
 
+  /**
+   * Answers bounded or open-ended completion range requests from the repository.
+   * @param startDate - The inclusive first local date.
+   * @param endDate - The inclusive last local date when a caller supplies one.
+   * @example
+   * await databaseService.getCompletionsByDateRange('2026-11-01')
+   */
   async getCompletionsByDateRange(
     startDate: string,
-    endDate: string
+    endDate?: string
   ): Promise<Completion[]> {
     try {
       this.validateDate(startDate)
-      this.validateDate(endDate)
+      const bounds = ['completions.date >= ?']
+      const dates = [startDate]
+
+      // Retain the upper bound for callers requesting a closed range.
+      if (endDate !== undefined) {
+        this.validateDate(endDate)
+        bounds.push('completions.date <= ?')
+        dates.push(endDate)
+      }
 
       const result = await this.executeQuery<any>(
-        'SELECT * FROM completions WHERE date >= ? AND date <= ? ORDER BY date DESC, created_at DESC',
-        [startDate, endDate]
+        `SELECT completions.*, tasks.category_id AS task_category_id
+         FROM completions LEFT JOIN tasks ON tasks.id = completions.task_id
+         WHERE ${bounds.join(' AND ')} ORDER BY completions.date DESC, completions.created_at DESC`,
+        dates
       )
       return result.map(this.mapRowToCompletion)
     } catch (error) {
@@ -964,6 +983,7 @@ class DatabaseService {
       id: row.id,
       date: row.date,
       taskId: row.task_id,
+      ...(row.task_category_id && { taskCategoryId: row.task_category_id }),
       minutes: row.minutes,
       completed: Boolean(row.completed),
       createdAt: row.created_at,

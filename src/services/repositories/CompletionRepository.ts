@@ -30,9 +30,16 @@ class CompletionRepository {
     return await databaseService.getCompletions(date)
   }
 
+  /**
+   * Loads task-day records for date-filtered views and for initial store hydration.
+   * @param startDate - The inclusive first local date.
+   * @param endDate - The inclusive last local date, or omit it to include future assignments.
+   * @example
+   * await completionRepository.findByDateRange('2026-11-01')
+   */
   async findByDateRange(
     startDate: string,
-    endDate: string
+    endDate?: string
   ): Promise<Completion[]> {
     return await databaseService.getCompletionsByDateRange(startDate, endDate)
   }

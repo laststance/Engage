@@ -34,6 +34,8 @@ export const Statistics: React.FC<StatisticsProps> = ({
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month'>('week')
 
   const currentStats = selectedPeriod === 'week' ? weeklyStats : monthlyStats
+  const isPeriodEmpty =
+    currentStats.assignedTasks === 0 && currentStats.journalDays === 0
   const hasPeriodCompletions = currentStats.totalTasks > 0
 
   // Get category color
@@ -156,16 +158,18 @@ export const Statistics: React.FC<StatisticsProps> = ({
             </HStack>
           </VStack>
 
-          <AppCard className="py-3" tone="info" testID="stats-period-recap">
-            <Text className="text-sm font-medium leading-5 text-blue-700">
-              {hasPeriodCompletions
-                ? t('stats.periodRecap', {
-                    count: currentStats.totalTasks,
-                    days: currentStats.activeDays,
-                  })
-                : t('stats.periodEmptyNextAction')}
-            </Text>
-          </AppCard>
+          {(hasPeriodCompletions || isPeriodEmpty) && (
+            <AppCard className="py-3" tone="info" testID="stats-period-recap">
+              <Text className="text-sm font-medium leading-5 text-blue-700">
+                {hasPeriodCompletions
+                  ? t('stats.periodRecap', {
+                      count: currentStats.totalTasks,
+                      days: currentStats.activeDays,
+                    })
+                  : t('stats.periodEmptyNextAction')}
+              </Text>
+            </AppCard>
+          )}
 
           <AppSection title={t('stats.todayAchievements')}>
             <AppCard className="bg-blue-600 border-blue-600 p-6">
@@ -190,53 +194,38 @@ export const Statistics: React.FC<StatisticsProps> = ({
             })}
           >
             <VStack space="md">
-              {/* First Row */}
-              <HStack space="md">
-                <Box className="flex-1">
-                  <StatCard
-                    title={t('stats.completionRate')}
-                    value={formatPercentage(currentStats.completionRate)}
-                    color="text-green-600"
-                  />
-                </Box>
-                <Box className="flex-1">
-                  <StatCard
-                    title={t('stats.activeDays')}
-                    value={t('stats.activeDaysValue', { count: currentStats.activeDays })}
-                    color="text-blue-600"
-                  />
-                </Box>
-              </HStack>
-
-              {/* Second Row */}
-              <HStack space="md">
-                <Box className="flex-1">
-                  <StatCard
-                    title={t('stats.totalTasks')}
-                    value={currentStats.totalTasks}
-                    color="text-purple-600"
-                  />
-                </Box>
-                <Box className="flex-1">
-                  <StatCard
-                    title={t('stats.dailyAverage')}
-                    value={t('stats.dailyAverageValue', { value: currentStats.dailyAverage.toFixed(1) })}
-                    color="text-orange-600"
-                  />
-                </Box>
-              </HStack>
-
-              {/* Journal Days */}
+              <StatCard
+                title={t('stats.assignedHabitsCompleted')}
+                value={t('stats.habitCountOverTotal', {
+                  count: currentStats.totalTasks,
+                  total: currentStats.assignedTasks,
+                })}
+                color="text-green-600"
+              />
+              <StatCard
+                title={t('stats.activeDays')}
+                testID="stats-active-days"
+                value={t('stats.dayCountOverTotal', {
+                  count: currentStats.activeDays,
+                  total: currentStats.periodDays,
+                })}
+                color="text-blue-600"
+              />
               <StatCard
                 title={t('stats.journalDays')}
-                value={t('stats.journalDaysValue', { count: currentStats.journalDays })}
-                subtitle={t('stats.journalDaysSubtitle', {
-                  percentage: formatPercentage(
-                    currentStats.journalDays /
-                      Math.max(currentStats.activeDays, 1)
-                  ),
+                testID="stats-journal-days"
+                value={t('stats.dayCountOverTotal', {
+                  count: currentStats.journalDays,
+                  total: currentStats.periodDays,
                 })}
                 color="text-indigo-600"
+              />
+              <StatCard
+                title={t('stats.dailyAverage')}
+                value={t('stats.dailyAverageValue', {
+                  value: currentStats.dailyAverage.toFixed(1),
+                })}
+                color="text-orange-600"
               />
             </VStack>
           </AppSection>
@@ -309,32 +298,31 @@ export const Statistics: React.FC<StatisticsProps> = ({
 
 interface StatCardProps {
   title: string
-  value: string | number
-  subtitle?: string
-  color?: string
+  value: string
+  color: string
+  testID?: string
 }
 
 /**
  * Renders one metric card whenever Statistics lays out the selected period summary.
- * @param props - The metric label, value, optional detail, and value color.
+ * @param props - The metric label, value, color, and optional card identifier.
  * @returns A consistently styled statistics card.
  * @example
- * <StatCard title="Completion" value="80%" color="text-green-600" />
+ * <StatCard title="Scheduled Habits Completed" value="4 of 5" color="text-green-600" />
  */
 const StatCard: React.FC<StatCardProps> = ({
   title,
   value,
-  subtitle,
-  color = 'text-blue-600',
+  color,
+  testID,
 }) => (
-  <AppCard>
+  <AppCard testID={testID}>
     <VStack space="sm">
       <HStack className="items-center justify-between">
         <Text className="text-sm font-medium text-gray-600">{title}</Text>
         <IconSymbol name="chart.bar" size={14} color="#9CA3AF" />
       </HStack>
       <Text className={`text-2xl font-bold ${color}`}>{value}</Text>
-      {subtitle && <Text className="text-xs text-gray-500">{subtitle}</Text>}
     </VStack>
   </AppCard>
 )

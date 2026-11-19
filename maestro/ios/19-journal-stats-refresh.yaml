@@ -29,15 +29,12 @@ tags:
 - tapOn:
     id: "journal-keyboard-done-button"
 - tapOn: "stats-tab"
+# Assert: scroll to the journal count so the check also works on short screens.
 - scrollUntilVisible:
     element:
-      text: "Journal Days"
+      text: "1/7 days"
+      below: "Days with a Journal Entry"
     direction: DOWN
-- scroll
-# Assert: reveal the whole card above the tab bar and verify its updated count.
-- assertVisible:
-    text: "1 days"
-    below: "Journal Days"
 # Wait for the tab write before asserting its restoration after relaunch.
 - extendedWaitUntil:
     visible:

@@ -10,6 +10,8 @@ const categories: Category[] = [
 
 const emptyStats: StatsData = {
   activeDays: 0,
+  assignedTasks: 0,
+  periodDays: 7,
   categoryBreakdown: {},
   completionRate: 0,
   dailyAverage: 0,
@@ -20,6 +22,8 @@ const emptyStats: StatsData = {
 
 const activeStats: StatsData = {
   activeDays: 2,
+  assignedTasks: 4,
+  periodDays: 7,
   categoryBreakdown: {
     business: { completed: 3, total: 4 },
   },

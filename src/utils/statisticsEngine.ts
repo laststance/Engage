@@ -30,16 +30,6 @@ export interface MonthlyStats extends StatsData {
   month: number
 }
 
-interface PeriodSummaryStats {
-  streakDays: number
-  completionRate: number
-  activeDays: number
-  totalTasks: number
-  dailyAverage: number
-  journalDays: number
-  categoryBreakdown: Record<string, { completed: number; total: number }>
-}
-
 const DECIMAL_PRECISION_FACTOR = 100
 
 /**
@@ -49,9 +39,11 @@ export const calculateStreakDays = (
   completions: Record<string, Completion[]>,
   currentDate: string = getCurrentDate()
 ): StreakCalculationResult => {
-  // Get all dates with completed tasks, sorted in descending order
+  // A completed future date does not count toward the streak as of currentDate.
   const completionDates = Object.keys(completions)
-    .filter((date) => completions[date].some((c) => c.completed))
+    .filter(
+      (date) => date <= currentDate && completions[date].some((c) => c.completed)
+    )
     .sort((a, b) => b.localeCompare(a))
 
   if (completionDates.length === 0) {
@@ -132,7 +124,14 @@ export const calculateCompletionRate = (
 }
 
 /**
- * Calculate category breakdown statistics
+ * Groups period assignments for the weekly and monthly category cards.
+ * @param tasks - Current tasks whose category changes take precedence over hydrated assignments.
+ * @param completions - Assigned task-day records, keyed by local date.
+ * @param categories - Categories to display, including those without assignments.
+ * @param startDate - The first local date in the period.
+ * @param endDate - The last local date in the period.
+ * @example
+ * calculateCategoryBreakdown([], {}, [], '2026-11-01', '2026-11-07') // {}
  */
 export const calculateCategoryBreakdown = (
   tasks: Task[],
@@ -142,36 +141,39 @@ export const calculateCategoryBreakdown = (
   endDate: string
 ): Record<string, CategoryStats> => {
   const daysInRange = getDaysInRange(startDate, endDate)
-  const breakdown: Record<string, CategoryStats> = {}
+  const taskCategories = new Map(tasks.map((task) => [task.id, task.categoryId]))
+  const counts = new Map(
+    categories.map((category) => [category.id, { completed: 0, total: 0 }])
+  )
 
-  categories.forEach((category) => {
-    const categoryTasks = tasks.filter((t) => t.categoryId === category.id)
-
-    // Count completions for this category (only completed tasks)
-    let totalCompletions = 0
-    daysInRange.forEach((date) => {
-      const dayCompletions = (completions[date] || []).filter((c) => c.completed)
-      const categoryCompletions = dayCompletions.filter((completion) =>
-        categoryTasks.some((task) => task.id === completion.taskId)
-      )
-      totalCompletions += categoryCompletions.length
-    })
-
-    const totalPossible = categoryTasks.length * daysInRange.length
-    const completionRate =
-      totalPossible > 0 ? (totalCompletions / totalPossible) * 100 : 0
-    const averagePerDay =
-      daysInRange.length > 0 ? totalCompletions / daysInRange.length : 0
-
-    breakdown[category.id] = {
-      completed: totalCompletions,
-      total: totalPossible,
-      completionRate: Math.round(completionRate * 100) / 100,
-      averagePerDay: Math.round(averagePerDay * 100) / 100,
+  // Count every scheduled task-day, including incomplete and archived habits.
+  for (const date of daysInRange) {
+    for (const assignment of completions[date] ?? []) {
+      const categoryId =
+        taskCategories.get(assignment.taskId) ?? assignment.taskCategoryId ?? ''
+      const category = counts.get(categoryId) ?? { completed: 0, total: 0 }
+      category.total += 1
+      // An unchecked assignment contributes only to the denominator.
+      if (assignment.completed) category.completed += 1
+      counts.set(categoryId, category)
     }
-  })
+  }
 
-  return breakdown
+  return Object.fromEntries(
+    Array.from(counts, ([categoryId, { completed, total }]) => [
+      categoryId,
+      {
+        completed,
+        total,
+        completionRate:
+          total > 0 ? Math.round((completed / total) * 100 * 100) / 100 : 0,
+        averagePerDay:
+          daysInRange.length > 0
+            ? Math.round((completed / daysInRange.length) * 100) / 100
+            : 0,
+      },
+    ])
+  )
 }
 
 /**
@@ -230,12 +232,13 @@ const calculatePeriodSummaryStats = (
   categories: Category[],
   startDate: string,
   endDate: string
-): PeriodSummaryStats => {
+): StatsData => {
   const daysInRange = getDaysInRange(startDate, endDate)
 
-  const totalCompletions = daysInRange.reduce((total, date) => {
-    return total + (completions[date]?.filter((c) => c.completed).length || 0)
-  }, 0)
+  const periodAssignments = daysInRange.flatMap((date) => completions[date] ?? [])
+  const totalCompletions = periodAssignments.filter(
+    (completion) => completion.completed
+  ).length
 
   const activeDays = daysInRange.filter(
     (date) => completions[date] && completions[date].some((c) => c.completed)
@@ -262,6 +265,8 @@ const calculatePeriodSummaryStats = (
     completionRate,
     activeDays,
     totalTasks: totalCompletions,
+    assignedTasks: periodAssignments.length,
+    periodDays: daysInRange.length,
     dailyAverage:
       Math.round(dailyAverage * DECIMAL_PRECISION_FACTOR) /
       DECIMAL_PRECISION_FACTOR,

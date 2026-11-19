@@ -1,7 +1,7 @@
 import React, { type ComponentProps } from 'react'
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native'
 import { Alert, Keyboard } from 'react-native'
-import { Category, Task } from '@/src/types'
+import { Category, NewPresetTodayAssignment, Task } from '@/src/types'
 import * as dateUtils from '@/src/utils/dateUtils'
 import { PresetTaskEditor } from '../PresetTaskEditor'
 
@@ -460,6 +460,52 @@ describe('PresetTaskEditor form safety', () => {
     await saveAction
   })
 
+  test('offers Today assignment only for newly added presets and saves each choice independently of routines', async () => {
+    // Arrange
+    const onSave = jest.fn()
+    const { getByTestId, queryByText } = await renderEditor({
+      offerAddToToday: true,
+      onSave,
+    })
+    expect(queryByText('presetEditor.addToToday')).toBeNull()
+
+    // Act
+    await fireEvent.press(getByTestId('add-task-button'))
+    await fireEvent.changeText(getByTestId('task-title-input-2'), 'Read')
+    const assignReading = getByTestId('task-add-to-today-switch-2')
+    expect(assignReading).toBeChecked()
+    expect(getByTestId('task-daily-auto-add-switch-2')).not.toBeChecked()
+
+    await fireEvent.press(getByTestId('add-task-button'))
+    await fireEvent.changeText(getByTestId('task-title-input-3'), 'Walk')
+    await fireEvent(getByTestId('task-add-to-today-switch-3'), 'valueChange', false)
+    await fireEvent(getByTestId('task-daily-auto-add-switch-3'), 'valueChange', true)
+    await fireEvent.press(getByTestId('preset-editor-save'))
+
+    // Assert
+    const [savedTasks, todayAssignment] = onSave.mock.calls[0] as [Task[], NewPresetTodayAssignment]
+    expect(savedTasks.map((task) => task.title)).toEqual([
+      'Networking', 'Exercise', 'Read', 'Walk',
+    ])
+    expect(todayAssignment).toEqual({
+      date: dateUtils.getCurrentDate(),
+      draftTaskIds: [savedTasks[2].id],
+    })
+    expect(savedTasks[2].dailyAutoAddFrom).toBeUndefined()
+    expect(savedTasks[3].dailyAutoAddFrom).toBeDefined()
+  })
+
+  test('keeps new presets outside Today free of the Today assignment control', async () => {
+    // Arrange
+    const { getByTestId, queryByText } = await renderEditor()
+
+    // Act
+    await fireEvent.press(getByTestId('add-task-button'))
+
+    // Assert
+    expect(queryByText('presetEditor.addToToday')).toBeNull()
+  })
+
   describe('daily routine settings', () => {
     beforeEach(() => {
       jest.spyOn(dateUtils, 'getCurrentDate').mockReturnValue('2026-09-05')
@@ -567,30 +613,34 @@ describe('PresetTaskEditor form safety', () => {
       ])
     })
 
-    test('starts a newly enabled routine tomorrow when the editor is saved after midnight', async () => {
+    test('uses the Save date for Today assignment and tomorrow scheduling when the editor spans midnight', async () => {
       // Arrange
       const onSave = jest.fn()
       const { getByTestId } = await renderEditor({
+        offerAddToToday: true,
         onSave,
         tasks: [mockTasks[0]],
       })
-      await fireEvent(
-        getByTestId('task-daily-auto-add-switch-0'),
-        'valueChange',
-        true
-      )
+      await fireEvent.press(getByTestId('add-task-button'))
+      await fireEvent.changeText(getByTestId('task-title-input-1'), 'Read')
+      await fireEvent(getByTestId('task-daily-auto-add-switch-0'), 'valueChange', true)
+      await fireEvent(getByTestId('task-daily-auto-add-switch-1'), 'valueChange', true)
 
       // Act
       jest.mocked(dateUtils.getCurrentDate).mockReturnValue('2026-09-06')
       await fireEvent.press(getByTestId('preset-editor-save'))
 
       // Assert
-      expect(onSave).toHaveBeenCalledWith([
-        expect.objectContaining({
-          id: 'task-business',
-          dailyAutoAddFrom: '2026-09-07',
-        }),
-      ])
+      const [savedTasks, todayAssignment] = onSave.mock.calls[0] as [Task[], NewPresetTodayAssignment]
+      expect(savedTasks.map(({ title, dailyAutoAddFrom }) => ({ title, dailyAutoAddFrom })))
+        .toEqual([
+          { title: 'Networking', dailyAutoAddFrom: '2026-09-07' },
+          { title: 'Read', dailyAutoAddFrom: '2026-09-07' },
+        ])
+      expect(todayAssignment).toEqual({
+        date: '2026-09-06',
+        draftTaskIds: [savedTasks[1].id],
+      })
     })
 
     test('removes the routine start date when an enabled preset is turned off and saved', async () => {

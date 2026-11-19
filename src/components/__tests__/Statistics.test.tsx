@@ -21,6 +21,8 @@ describe('Statistics', () => {
     completionRate: 0.75,
     activeDays: 6,
     totalTasks: 20,
+    assignedTasks: 25,
+    periodDays: 7,
     dailyAverage: 2.8,
     journalDays: 4,
     categoryBreakdown: {
@@ -35,6 +37,8 @@ describe('Statistics', () => {
     completionRate: 0.68,
     activeDays: 25,
     totalTasks: 90,
+    assignedTasks: 110,
+    periodDays: 30,
     dailyAverage: 3.6,
     journalDays: 18,
     categoryBreakdown: {
@@ -64,11 +68,11 @@ describe('Statistics', () => {
     // Should show weekly streak
     expect(getByText('5日連続')).toBeTruthy()
 
-    // Should show weekly completion rate
-    expect(getByText('75%')).toBeTruthy()
+    // Should show weekly completed habits
+    expect(getByText('20/25件')).toBeTruthy()
 
     // Should show weekly active days
-    expect(getByText('6日')).toBeTruthy()
+    expect(getByText('6/7日')).toBeTruthy()
   })
 
   test('switches to monthly stats when monthly toggle is pressed', async () => {
@@ -80,11 +84,11 @@ describe('Statistics', () => {
     // Should show monthly streak
     expect(getByText('12日連続')).toBeTruthy()
 
-    // Should show monthly completion rate
-    expect(getByText('68%')).toBeTruthy()
+    // Should show monthly completed habits
+    expect(getByText('90/110件')).toBeTruthy()
 
     // Should show monthly active days
-    expect(getByText('25日')).toBeTruthy()
+    expect(getByText('25/30日')).toBeTruthy()
   })
 
   test('marks the active stats period for assistive technologies', async () => {
@@ -133,7 +137,7 @@ describe('Statistics', () => {
 
     // Should show weekly stats again
     expect(getByText('5日連続')).toBeTruthy()
-    expect(getByText('75%')).toBeTruthy()
+    expect(getByText('20/25件')).toBeTruthy()
   })
 
   test('displays category breakdown correctly', async () => {
@@ -174,7 +178,7 @@ describe('Statistics', () => {
     const { getByText } = await render(<Statistics {...defaultProps} />)
 
     // Should show weekly journal days
-    expect(getByText('4日')).toBeTruthy()
+    expect(getByText('4/7日')).toBeTruthy()
   })
 
   test('handles zero stats gracefully', async () => {
@@ -183,12 +187,14 @@ describe('Statistics', () => {
       completionRate: 0,
       activeDays: 0,
       totalTasks: 0,
+      assignedTasks: 0,
+      periodDays: 7,
       dailyAverage: 0,
       journalDays: 0,
       categoryBreakdown: {},
     }
 
-    const { getByText } = await render(
+    const { getByText, getAllByText } = await render(
       <Statistics
         {...defaultProps}
         weeklyStats={zeroStats}
@@ -197,8 +203,8 @@ describe('Statistics', () => {
     )
 
     expect(getByText('0日連続')).toBeTruthy()
-    expect(getByText('0%')).toBeTruthy()
-    expect(getByText('0日')).toBeTruthy()
+    expect(getByText('0/0件')).toBeTruthy()
+    expect(getAllByText('0/7日')).toHaveLength(2)
   })
 
   test('handles empty category breakdown', async () => {
@@ -215,11 +221,11 @@ describe('Statistics', () => {
     expect(queryByText('8/10')).toBeNull()
   })
 
-  test('calculates completion percentages correctly', async () => {
+  test('shows completed habits over assigned habits', async () => {
     const { getByText } = await render(<Statistics {...defaultProps} />)
 
-    // 75% completion rate should be displayed
-    expect(getByText('75%')).toBeTruthy()
+    // 20 of 25 completed habits should be displayed
+    expect(getByText('20/25件')).toBeTruthy()
   })
 
   test('shows proper visual indicators for different achievement levels', async () => {
@@ -237,7 +243,7 @@ describe('Statistics', () => {
     const { getByText } = await render(<Statistics {...defaultProps} />)
 
     // Should show total tasks for the period
-    expect(getByText('20')).toBeTruthy() // weekly total
+    expect(getByText('20/25件')).toBeTruthy() // weekly total
   })
 
   test('handles categories with no tasks', async () => {

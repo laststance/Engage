@@ -23,7 +23,7 @@ import {
   OperationFeedback,
   OperationFeedbackKind,
 } from '@/src/components/OperationFeedback'
-import { Task, Category } from '@/src/types'
+import { Task, Category, NewPresetTodayAssignment } from '@/src/types'
 import { getCategoryDisplayName } from '@/src/i18n/config'
 import { formatDate, getCurrentDate, parseDate } from '@/src/utils/dateUtils'
 import {
@@ -35,12 +35,15 @@ interface PresetTaskEditorProps {
   isVisible: boolean
   tasks: Task[]
   categories: Category[]
-  onSave: (tasks: Task[]) => Promise<void>
+  onSave: (tasks: Task[], todayAssignment?: NewPresetTodayAssignment) => Promise<void>
+  offerAddToToday?: boolean
   onCancel: () => void
   onCreateCategory: (name: string) => Promise<void>
 }
 
-type PresetTaskEditorSessionProps = Omit<PresetTaskEditorProps, 'isVisible'>
+type PresetTaskEditorSessionProps = Omit<PresetTaskEditorProps, 'isVisible'> & {
+  savingRef: React.RefObject<boolean>
+}
 
 // RN exposes this host ref at runtime, but omits it from ScrollView's TS declaration.
 // Fabric measureLayout requires the host instance; getInnerViewNode returns a number.
@@ -56,6 +59,7 @@ interface EditingTask {
   dailyAutoAddFrom?: Task['dailyAutoAddFrom']
   archived: boolean
   isNew?: boolean
+  addToToday?: boolean
 }
 
 interface PresetEditorFeedback {
@@ -187,10 +191,12 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
   tasks,
   categories,
   onSave,
+  offerAddToToday,
   onCancel,
   onCreateCategory,
 }) => {
   const { t } = useTranslation()
+  const savingRef = useRef(false)
 
   /**
    * Confirms discarded edits when the editor close button or native sheet dismissal triggers.
@@ -199,6 +205,8 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
    * handleCancel() // => opens the discard confirmation
    */
   const handleCancel = (): void => {
+    if (savingRef.current) return
+
     Alert.alert(
       t('presetEditor.discardChangesTitle'),
       t('presetEditor.discardChangesMessage'),
@@ -227,6 +235,8 @@ export const PresetTaskEditor: React.FC<PresetTaskEditorProps> = ({
           tasks={tasks}
           categories={categories}
           onSave={onSave}
+          offerAddToToday={offerAddToToday}
+          savingRef={savingRef}
           onCancel={handleCancel}
           onCreateCategory={onCreateCategory}
         />
@@ -246,8 +256,10 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
   tasks,
   categories,
   onSave,
+  offerAddToToday,
   onCancel,
   onCreateCategory,
+  savingRef,
 }) => {
   const { t } = useTranslation()
   const [editingTasks, setEditingTasks] = useState<EditingTask[]>(() =>
@@ -398,6 +410,7 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
       defaultMinutes: undefined,
       archived: false,
       isNew: true,
+      addToToday: offerAddToToday,
     }
     setPendingFocusedTaskIndex(editingTasks.length)
     setEditingTasks((prev) => [...prev, newTask])
@@ -574,6 +587,8 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
   }
 
   const handleSave = async () => {
+    if (savingRef.current) return
+
     const latestValidation = validatePresetTaskDrafts(editingTasks)
 
     if (!latestValidation.isValid) {
@@ -584,6 +599,7 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
       return
     }
 
+    savingRef.current = true
     setSaving(true)
     setOperationFeedback({
       kind: 'saving',
@@ -591,7 +607,8 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
     })
     try {
       // Recompute tomorrow at Save when a new routine draft stayed open across midnight.
-      const tomorrow = parseDate(getCurrentDate())
+      const today = getCurrentDate()
+      const tomorrow = parseDate(today)
       tomorrow.setDate(tomorrow.getDate() + 1)
       const newRoutineStartDate = formatDate(tomorrow)
       // Convert editing tasks back to Task objects
@@ -614,7 +631,17 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
         }
       })
 
-      await onSave(tasksToSave)
+      const addTodayTaskIds = offerAddToToday
+        ? tasksToSave
+            .filter((_, index) => editingTasks[index].isNew && editingTasks[index].addToToday)
+            .map((task) => task.id)
+        : []
+
+      if (addTodayTaskIds.length > 0) {
+        await onSave(tasksToSave, { date: today, draftTaskIds: addTodayTaskIds })
+      } else {
+        await onSave(tasksToSave)
+      }
       setOperationFeedback({
         kind: 'success',
         message: t('presetEditor.saveSuccess'),
@@ -629,6 +656,7 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
         },
       })
     } finally {
+      savingRef.current = false
       setSaving(false)
     }
   }
@@ -650,6 +678,7 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
             </Text>
             <Pressable
               onPress={onCancel}
+              disabled={isLoading}
               className="p-2"
               testID="preset-editor-close"
             >
@@ -854,6 +883,37 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
                       />
                     </VStack>
 
+                    {offerAddToToday && task.isNew && (
+                      <HStack space="md" className="items-center">
+                        <Text className="flex-1 text-sm font-medium text-gray-700">
+                          {t('presetEditor.addToToday')}
+                        </Text>
+                        <Pressable
+                          accessible={false}
+                          importantForAccessibility="no"
+                          className="touch-target-minimum items-center justify-center"
+                          disabled={isLoading}
+                          onPress={() => updateTask(task.index, { addToToday: !task.addToToday })}
+                        >
+                          <Switch
+                            accessible
+                            value={Boolean(task.addToToday)}
+                            onValueChange={(addToToday) => updateTask(task.index, { addToToday })}
+                            disabled={isLoading}
+                            accessibilityRole="switch"
+                            accessibilityLabel={`${t('presetEditor.addToToday')}: ${task.title || t('presetEditor.taskNamePlaceholder')}`}
+                            accessibilityState={{
+                              checked: Boolean(task.addToToday),
+                              disabled: isLoading,
+                            }}
+                            testID={`task-add-to-today-switch-${task.index}`}
+                            trackColor={{ false: '#E5E7EB', true: '#007AFF' }}
+                            thumbColor="#FFFFFF"
+                          />
+                        </Pressable>
+                      </HStack>
+                    )}
+
                     {/* Keep the switch outside the wrapping text column on narrow screens. */}
                     <HStack space="md" className="items-center">
                       <VStack space="xs" className="flex-1">
@@ -996,6 +1056,7 @@ const PresetTaskEditorSession: React.FC<PresetTaskEditorSessionProps> = ({
             <HStack space="md">
               <Pressable
                 onPress={onCancel}
+                disabled={isLoading}
                 className="flex-1 bg-gray-100 rounded-lg py-3"
                 testID="preset-editor-cancel"
               >

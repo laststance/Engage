@@ -15,6 +15,7 @@ import {
   StatsData,
   Category,
   ConditionLevel,
+  NewPresetTodayAssignment,
   TaskAssignmentOperationResult,
   TaskCompletionOperationResult,
 } from '../types'
@@ -99,7 +100,7 @@ interface AppState {
     date: string,
     taskIds: string[]
   ) => Promise<TaskAssignmentOperationResult>
-  updatePresetTasks: (tasks: Task[]) => Promise<void>
+  updatePresetTasks: (tasks: Task[], todayAssignment?: NewPresetTodayAssignment) => Promise<void>
   createCategory: (category: Omit<Category, 'id'>) => Promise<void>
   updateCategory: (id: string, updates: Partial<Category>) => Promise<void>
   deleteCategory: (id: string) => Promise<void>
@@ -184,20 +185,19 @@ function createActions(set: SetAppState, get: () => AppState): AppActions {
 
       // Use offline service to execute data loading with proper error handling
       const loadOperation = async () => {
-        // Load all data from repositories
-        const [categories, tasks, entries, recentCompletions] =
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+        // Include future assignments so a new week or month can render without reloading.
+        const [categories, tasks, entries, loadedCompletions] =
           await Promise.all([
             categoryRepository.findAll(),
             taskRepository.findAll(),
             entryRepository.findAll(), // Keep conditions visible when browsing older calendar months.
-            completionRepository.findByDateRange(
-              // Load last 30 days of completions
-              formatDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
-              formatDate(new Date())
-            ),
+            completionRepository.findByDateRange(formatDate(thirtyDaysAgo)),
           ])
 
-        return { categories, tasks, entries, recentCompletions }
+        return { categories, tasks, entries, loadedCompletions }
       }
 
       // Execute load operation directly
@@ -210,7 +210,7 @@ function createActions(set: SetAppState, get: () => AppState): AppActions {
       })
 
       const completionsMap: Record<string, Completion[]> = {}
-      result.recentCompletions.forEach((completion) => {
+      result.loadedCompletions.forEach((completion) => {
         if (!completionsMap[completion.date]) {
           completionsMap[completion.date] = []
         }
@@ -234,7 +234,7 @@ function createActions(set: SetAppState, get: () => AppState): AppActions {
         categories: result.categories.length,
         tasks: result.tasks.length,
         entries: result.entries.length,
-        completions: result.recentCompletions.length,
+        completions: result.loadedCompletions.length,
         isOffline: offlineStatus.isOffline,
       })
     } catch (error) {
@@ -516,11 +516,12 @@ function createActions(set: SetAppState, get: () => AppState): AppActions {
   /**
    * Reconciles the complete preset list when PresetTaskEditor or TaskPicker submits a mutation.
    * @param tasks - The complete preset list that should remain persisted.
+   * @param todayAssignment - New preset draft IDs and the local day captured when Save was pressed.
    * @returns A promise that settles after repository and loaded completion state agree.
    * @example
    * await useAppStore.getState().updatePresetTasks(remainingTasks)
    */
-  updatePresetTasks: (tasks: Task[]) => enqueueDataMutation(async () => {
+  updatePresetTasks: (tasks, todayAssignment) => enqueueDataMutation(async () => {
     try {
       set({ error: null })
 
@@ -552,11 +553,22 @@ function createActions(set: SetAppState, get: () => AppState): AppActions {
         })
       })
 
-      // Create new tasks
+      const addTodayIds = new Set(todayAssignment?.draftTaskIds)
+      const newAssignments: Completion[] = []
+
+      // Create and assign selected drafts using their persisted IDs.
       tasksToCreate.forEach((task) => {
         operations.push(async () => {
           const { id, createdAt, updatedAt, ...taskData } = task
-          await taskRepository.create(taskData)
+          const createdTask = await taskRepository.create(taskData)
+          if (todayAssignment && addTodayIds.has(id)) {
+            const assignment = await completionRepository.create({
+              date: todayAssignment.date,
+              taskId: createdTask.id,
+              completed: false,
+            })
+            newAssignments.push(assignment)
+          }
         })
       })
 
@@ -568,32 +580,39 @@ function createActions(set: SetAppState, get: () => AppState): AppActions {
         })
       })
 
-      // Keep deletes, creates, and updates atomic so a later failure restores earlier writes.
+      // Read the saved list before commit so a read failure can roll back and be retried safely.
+      let updatedTasks: Task[] = []
+      operations.push(async () => {
+        updatedTasks = await taskRepository.findAll()
+      })
       await databaseService.executeTransaction(operations)
 
-      // Reload tasks from database to get accurate state
-      const updatedTasks = await taskRepository.findAll()
       const deletedTaskIds = new Set(tasksToDelete.map((task) => task.id))
 
-      // Preserve the completions reference when preset edits contain no deletions.
-      if (deletedTaskIds.size === 0) {
-        set({ tasks: updatedTasks })
-      } else {
-        set((current) => ({
-          tasks: updatedTasks,
-          // Mirror SQLite's cascading delete so loaded day assignments never retain ghost task IDs.
-          completions: Object.fromEntries(
-            Object.entries(current.completions).map(
-              ([date, dateCompletions]) => [
+      set((current) => {
+        // Mirror the cascading deletes across loaded days before appending today's assignments.
+        const completions = deletedTaskIds.size === 0
+          ? current.completions
+          : Object.fromEntries(
+              Object.entries(current.completions).map(([date, dayCompletions]) => [
                 date,
-                dateCompletions.filter(
-                  (completion) => !deletedTaskIds.has(completion.taskId)
-                ),
-              ]
+                dayCompletions.filter((completion) => !deletedTaskIds.has(completion.taskId)),
+              ])
             )
-          ),
-        }))
-      }
+
+        return {
+          tasks: updatedTasks,
+          completions: todayAssignment && newAssignments.length > 0
+            ? {
+                ...completions,
+                [todayAssignment.date]: [
+                  ...(completions[todayAssignment.date] ?? []),
+                  ...newAssignments,
+                ],
+              }
+            : completions,
+        }
+      })
 
       console.log('Preset tasks updated successfully', {
         created: tasksToCreate.length,
@@ -777,11 +796,12 @@ function createActions(set: SetAppState, get: () => AppState): AppActions {
     // Get recent completions for recommendations
     const recentCompletions: Completion[] = []
     const thirtyDaysAgo = new Date()
+    const today = formatDate(thirtyDaysAgo)
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     const cutoffDate = formatDate(thirtyDaysAgo)
 
     Object.entries(state.completions).forEach(([date, completions]) => {
-      if (date >= cutoffDate) {
+      if (date >= cutoffDate && date <= today) {
         recentCompletions.push(...completions)
       }
     })

@@ -16,6 +16,11 @@ export interface Task {
 
 export type ConditionLevel = 1 | 2 | 3 | 4 | 5
 
+export interface NewPresetTodayAssignment {
+  date: string // Local date when Save was pressed.
+  draftTaskIds: string[]
+}
+
 export interface Entry {
   id: string
   date: string // YYYY-MM-DD
@@ -34,6 +39,7 @@ export interface Completion {
   id: string
   date: string // YYYY-MM-DD
   taskId: string
+  taskCategoryId?: Category['id'] // Task category when loaded alongside the assignment.
   minutes?: number
   completed: boolean
   createdAt: number
@@ -68,7 +74,9 @@ export interface StatsData {
   streakDays: number
   completionRate: number
   activeDays: number
-  totalTasks: number
+  totalTasks: number // Completed task-day assignments
+  assignedTasks: number // All task-day assignments in the period
+  periodDays: number // Calendar days in the period
   dailyAverage: number
   journalDays: number
   categoryBreakdown: Record<string, { completed: number; total: number }>

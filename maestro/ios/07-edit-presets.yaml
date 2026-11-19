@@ -82,3 +82,39 @@ tags:
 - tapOn:
     text: "Discard"
     optional: true
+- extendedWaitUntil:
+    notVisible:
+      id: "preset-editor-close"
+    timeout: 10000
+- assertNotVisible: "E2EStableTask"
+
+# A new preset saved from Today's editor appears in the day's list immediately.
+- tapOn:
+    id: "task-selection-button"
+- tapOn:
+    id: "edit-presets-button"
+- tapOn:
+    id: "add-task-button"
+- extendedWaitUntil:
+    visible: "Enter task name"
+    timeout: 15000
+- inputText: "E2ETodayHabit"
+- tapOn: "Done"
+- scrollUntilVisible:
+    element:
+      id: "task-add-to-today-switch-.*"
+    direction: DOWN
+    timeout: 10000
+- assertVisible:
+    id: "task-add-to-today-switch-.*"
+    checked: true
+- tapOn:
+    id: "preset-editor-save"
+- extendedWaitUntil:
+    visible:
+      text: "E2ETodayHabit"
+    timeout: 10000
+- assertVisible: "0/1"
+- tapOn:
+    id: "task-item-.*"
+- assertVisible: "1/1"
